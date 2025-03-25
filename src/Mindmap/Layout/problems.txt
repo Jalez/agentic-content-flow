@@ -1,0 +1,41 @@
+## Potential Problems with Container Nodes in ELK Layout
+
+1. **Nested Hierarchy Handling**: 
+   - ELK might not properly understand the parent-child relationships in our nested container structure
+   - Children might be positioned without considering their parent container's position
+   - Complex hierarchies (course > module > topic) might not maintain proper containment
+
+2. **Container Sizing Issues**:
+   - Container nodes might not be properly sized to accommodate all their children
+   - When children are rearranged, container dimensions might not be updated accordingly
+   - Padding and spacing between children might not be considered in container dimensions
+
+3. **Handle Position Inconsistency**:
+   - Container nodes might not have their handles positioned correctly based on layout direction
+   - Child nodes might have handle positions that don't align with parent container's handles
+   - Handle positions need to be consistently updated when layout direction changes
+
+4. **Coordinate System Mismatches**:
+   - ELK's coordinate system might not align with React Flow's coordinate expectations
+   - Children positions might be absolute rather than relative to their parent
+   - Container transformations might not be properly applied to children
+
+5. **Layout Algorithm Limitations**:
+   - Not all ELK algorithms might support container nodes equally well
+   - Tree layouts might behave differently than layered layouts for containers
+   - Algorithm-specific options might need adjustment for container support
+
+6. **Performance Concerns**:
+   - Large nested structures might be computationally expensive to layout
+   - Frequent recalculations of container dimensions could impact performance
+   - Layout cache might not be properly handling container hierarchies
+
+7. **Style and Visual Issues**:
+   - Container styling might be affected by layout changes
+   - Visual elements might break when containers are resized
+   - Animations and transitions might not work smoothly with nested structures
+
+8. **Layout Direction Changes**:
+   - Switching between horizontal and vertical layouts might not properly reposition containers
+   - Container dimensions might need to be recalculated differently based on direction
+   - Parent-child relationships might be visually broken when changing directions
