@@ -1,0 +1,32 @@
+name: Project Board Automation
+
+on:
+  issues:
+    types: [opened, labeled, unlabeled]
+
+jobs:
+  project_automation:
+    runs-on: ubuntu-latest
+    steps:
+      # Add issues to project when created
+      - uses: actions/add-to-project@v0.5.0
+        if: github.event.action == 'opened'
+        with:
+          project-url: https://github.com/users/jalez/projects/1
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
+
+      # Update issue status based on labels
+      - uses: leonsteinhaeuser/project-beta-automations@v2.1.0
+        if: github.event.action == 'labeled' || github.event.action == 'unlabeled'
+        with:
+          github_token: ${{ secrets.ADD_TO_PROJECT_PAT }}
+          organization: jalez
+          project_id: 1
+          resource_node_id: ${{ github.event.issue.node_id }}
+          status_field: "Status"
+          status_value: >-
+            ${{
+              (contains(github.event.issue.labels.*.name, 'in-progress') && 'In Progress') ||
+              (contains(github.event.issue.labels.*.name, 'done') && 'Done') ||
+              'Todo'
+            }}
