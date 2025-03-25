@@ -16,15 +16,44 @@ jobs:
           github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
       
       # Update issue status based on labels
+      - name: Get project data
+        env:
+          GITHUB_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
+          ORGANIZATION: jalez
+          PROJECT_NUMBER: 1
+        run: |
+          gh api graphql -f query='
+            query($org: String!, $number: Int!) {
+              user(login: $org){
+                projectV2(number: $number) {
+                  id
+                  fields(first:20) {
+                    nodes {
+                      ... on ProjectV2Field {
+                        id
+                        name
+                      }
+                      ... on ProjectV2SingleSelectField {
+                        id
+                        name
+                        options {
+                          id
+                          name
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }' -f org=$ORGANIZATION -f number=$PROJECT_NUMBER > project_data.json
+
       - uses: leonsteinhaeuser/project-beta-automations@v2.1.0
         with:
           github_token: ${{ secrets.ADD_TO_PROJECT_PAT }}
           organization: jalez
           project_id: 1
-          # Always include the issue node ID
           resource_node_id: ${{ github.event.issue.node_id }}
           status_field: "Status"
-          # Map labels to status values
           status_value: ${{ 
             contains(github.event.issue.labels.*.name, 'in-progress') && 'In Progress' ||
             contains(github.event.issue.labels.*.name, 'done') && 'Done' ||
