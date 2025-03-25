@@ -14,19 +14,19 @@ jobs:
         with:
           project-url: https://github.com/users/jalez/projects/1
           github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
-
+      
       # Update issue status based on labels
       - uses: leonsteinhaeuser/project-beta-automations@v2.1.0
-        if: github.event.action == 'labeled' || github.event.action == 'unlabeled'
         with:
           github_token: ${{ secrets.ADD_TO_PROJECT_PAT }}
           organization: jalez
           project_id: 1
+          # Always include the issue node ID
           resource_node_id: ${{ github.event.issue.node_id }}
           status_field: "Status"
-          status_value: >-
-            ${{
-              (contains(github.event.issue.labels.*.name, 'in-progress') && 'In Progress') ||
-              (contains(github.event.issue.labels.*.name, 'done') && 'Done') ||
-              'Todo'
-            }}
+          # Map labels to status values
+          status_value: ${{ 
+            contains(github.event.issue.labels.*.name, 'in-progress') && 'In Progress' ||
+            contains(github.event.issue.labels.*.name, 'done') && 'Done' ||
+            'Todo'
+          }}
