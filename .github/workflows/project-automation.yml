@@ -1,92 +1,29 @@
-name: Project Board Automation
+name: Simple Project Automation
 
 on:
   issues:
-    types: [opened, labeled, unlabeled]
+    types: [labeled, unlabeled]
 
 jobs:
-  project_automation:
+  update_issue_status:
     runs-on: ubuntu-latest
     steps:
-      # Add issues to project when created
-      - uses: actions/add-to-project@v0.5.0
-        if: github.event.action == 'opened'
+      - name: Determine new status
+        id: determine_status
+        run: |
+          labels=$(jq -r '.issue.labels[].name' "$GITHUB_EVENT_PATH")
+          if echo "$labels" | grep -qi "in-progress"; then
+            echo "status=In Progress" >> $GITHUB_OUTPUT
+          elif echo "$labels" | grep -qi "done"; then
+            echo "status=Done" >> $GITHUB_OUTPUT
+          else
+            echo "status=Todo" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update project status
+        uses: nipe0324/update-project-v2-item-field@v2.0.2
         with:
           project-url: https://github.com/users/jalez/projects/1
           github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
-      
-      # Get Project and Field IDs
-      - name: Get project data
-        env:
-          GH_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
-        run: |
-          project_data=$(gh api graphql -f query='
-            query{
-              viewer {
-                projectV2(number: 1) {
-                  id
-                  fields(first: 20) {
-                    nodes {
-                      ... on ProjectV2SingleSelectField {
-                        id
-                        name
-                        options {
-                          id
-                          name
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          ' --jq '.data.viewer.projectV2')
-
-          echo "PROJECT_ID=$(echo $project_data | jq -r '.id')" >> $GITHUB_ENV
-          
-          status_field_data=$(echo $project_data | jq -r '.fields.nodes[] | select(.name == "Status")')
-          echo "STATUS_FIELD_ID=$(echo $status_field_data | jq -r '.id')" >> $GITHUB_ENV
-          
-          # Get option IDs for each status
-          echo "TODO_OPTION_ID=$(echo $status_field_data | jq -r '.options[] | select(.name == "Todo") | .id')" >> $GITHUB_ENV
-          echo "IN_PROGRESS_OPTION_ID=$(echo $status_field_data | jq -r '.options[] | select(.name == "In Progress") | .id')" >> $GITHUB_ENV
-          echo "DONE_OPTION_ID=$(echo $status_field_data | jq -r '.options[] | select(.name == "Done") | .id')" >> $GITHUB_ENV
-
-      # Update issue status based on labels
-      - name: Update issue status
-        if: github.event.action == 'labeled' || github.event.action == 'unlabeled'
-        env:
-          GH_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
-          ISSUE_NODE_ID: ${{ github.event.issue.node_id }}
-        run: |
-          option_id=""
-          if [[ "${{ contains(github.event.issue.labels.*.name, 'in-progress') }}" == "true" ]]; then
-            option_id="$IN_PROGRESS_OPTION_ID"
-          elif [[ "${{ contains(github.event.issue.labels.*.name, 'done') }}" == "true" ]]; then
-            option_id="$DONE_OPTION_ID"
-          else
-            option_id="$TODO_OPTION_ID"
-          fi
-
-          gh api graphql -f query='
-            mutation (
-              $project_id: ID!
-              $item_id: ID!
-              $field_id: ID!
-              $option_id: String!
-            ) {
-              updateProjectV2ItemFieldValue(input: {
-                projectId: $project_id
-                itemId: $item_id
-                fieldId: $field_id
-                value: { singleSelectOptionId: $option_id }
-              }) {
-                projectV2Item {
-                  id
-                }
-              }
-            }' \
-            -f project_id="$PROJECT_ID" \
-            -f item_id="$ISSUE_NODE_ID" \
-            -f field_id="$STATUS_FIELD_ID" \
-            -f option_id="$option_id"
+          field-name: "Status"
+          field-value: ${{ steps.determine_status.outputs.status }}
