@@ -6,12 +6,7 @@ import {
   useRef,
   MutableRefObject,
 } from "react";
-import {
-  Node,
-  useReactFlow,
-  useOnViewportChange,
-  Viewport,
-} from "@xyflow/react";
+import { Node, useReactFlow, Viewport } from "@xyflow/react";
 import {
   ViewportManager,
   CenterOptions,
@@ -23,18 +18,13 @@ export interface ExtendedViewportManager extends ViewportManager {
 }
 
 /**
- * Hook that implements the ViewportManager interface
+ * Lightweight hook that implements the ViewportManager interface
  * to provide viewport operations abstracted from @xyflow/react
  */
 export function useViewportManager(
   flowWrapper: MutableRefObject<HTMLDivElement | null> | null
 ): ExtendedViewportManager {
   const [initialRender, setInitialRender] = useState(true);
-  const [viewport, setViewportState] = useState<Viewport>({
-    x: 0,
-    y: 0,
-    zoom: VIEWPORT_CONSTRAINTS.DEFAULT_ZOOM,
-  });
   const [wheelMode, setWheelModeState] = useState<"zoom" | "pan">("zoom");
   const reactFlowInstance = useReactFlow();
   const centeringInProgress = useRef(false);
@@ -54,7 +44,7 @@ export function useViewportManager(
     setWheelModeState(mode);
   }, []);
 
-  // Handle wheel events (mouse scroll)
+  // Handle wheel events (mouse scroll) - without unnecessary state updates
   const handleWheel = useCallback(
     (event: React.WheelEvent) => {
       if (event.ctrlKey || event.metaKey) {
@@ -65,37 +55,40 @@ export function useViewportManager(
       // Determine if we should pan or zoom based on wheelMode
       if (wheelMode === "pan" && reactFlowInstance) {
         event.preventDefault();
+        const currentViewport = reactFlowInstance.getViewport();
         reactFlowInstance.setViewport({
-          x: reactFlowInstance.getViewport().x - event.deltaX,
-          y: reactFlowInstance.getViewport().y - event.deltaY,
-          zoom: reactFlowInstance.getViewport().zoom,
+          x: currentViewport.x - event.deltaX,
+          y: currentViewport.y - event.deltaY,
+          zoom: currentViewport.zoom,
         });
       }
     },
     [wheelMode, reactFlowInstance]
   );
 
-  // Get the current viewport state
+  // Get the current viewport state directly from ReactFlow
   const getViewport = useCallback((): Viewport => {
     if (reactFlowInstance) {
-      const { x, y, zoom } = reactFlowInstance.getViewport();
-      return { x, y, zoom };
+      return reactFlowInstance.getViewport();
     }
-    return viewport;
-  }, [reactFlowInstance, viewport]);
+    return {
+      x: 0,
+      y: 0,
+      zoom: VIEWPORT_CONSTRAINTS.DEFAULT_ZOOM,
+    };
+  }, [reactFlowInstance]);
 
-  // Set the viewport state
+  // Set the viewport state directly in ReactFlow without local state updates
   const setViewport = useCallback(
     (newViewport: Viewport, options?: { duration?: number }) => {
       if (reactFlowInstance) {
         reactFlowInstance.setViewport(newViewport, options);
-        setViewportState(newViewport);
       }
     },
     [reactFlowInstance]
   );
 
-  // Zoom in
+  // Zoom in (direct pass-through to ReactFlow)
   const zoomIn = useCallback(
     (options?: { duration?: number }) => {
       if (reactFlowInstance) {
@@ -105,7 +98,7 @@ export function useViewportManager(
     [reactFlowInstance]
   );
 
-  // Zoom out
+  // Zoom out (direct pass-through to ReactFlow)
   const zoomOut = useCallback(
     (options?: { duration?: number }) => {
       if (reactFlowInstance) {
@@ -115,7 +108,7 @@ export function useViewportManager(
     [reactFlowInstance]
   );
 
-  // Fit all nodes to view
+  // Fit all nodes to view (direct pass-through to ReactFlow)
   const fitView = useCallback(
     (options?: {
       padding?: number;
@@ -129,7 +122,7 @@ export function useViewportManager(
     [reactFlowInstance]
   );
 
-  // Center view on a specific node
+  // Center view on a specific node without triggering local state updates
   const centerOnNode = useCallback(
     (
       node: Node,
@@ -152,7 +145,6 @@ export function useViewportManager(
           flowWrapper?.current?.getBoundingClientRect() || {};
 
         // Calculate viewport position to center the node
-        // Taking into account the current zoom level
         const nodeWidth = node.width || 200;
         const nodeHeight = node.height || 100;
 
@@ -161,9 +153,6 @@ export function useViewportManager(
 
         // Smoothly transition to the new viewport
         reactFlowInstance.setViewport({ x, y, zoom }, { duration });
-
-        // Update local state to match
-        setViewportState({ x, y, zoom });
 
         // Reset the centering flag after animation completes
         if (duration > 0) {
@@ -210,17 +199,11 @@ export function useViewportManager(
     [reactFlowInstance, centerOnNode]
   );
 
-  // Listen for viewport changes using useOnViewportChange hook
-  useOnViewportChange({
-    onChange: (viewport) => {
-      if (!centeringInProgress.current) {
-        setViewportState(viewport);
-      }
-    },
-  });
-
   return {
-    viewport,
+    // Return the current viewport directly from ReactFlow to avoid staleness
+    get viewport() {
+      return getViewport();
+    },
     handleWheel,
     wheelMode,
     setWheelMode,

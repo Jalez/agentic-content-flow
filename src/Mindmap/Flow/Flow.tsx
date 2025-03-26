@@ -1,5 +1,5 @@
 import { MarkerType, ReactFlow, SelectionMode } from "@xyflow/react";
-import { memo, useEffect, useMemo, useCallback } from "react";
+import { memo, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNodeState } from "./hooks/useNodeState";
 import { useEdgeState } from "./hooks/useEdgeState";
 import useNodeSelection from "./hooks/useNodeSelect";
@@ -20,27 +20,31 @@ const defaultEdgeOptions = {
 };
 
 function Flow({ children }: { children?: React.ReactNode }) {
-  const { edges, onEdgesChange, getVisibleEdges } = useEdgeState();
+  const { onEdgesChange, getVisibleEdges } = useEdgeState();
   const {
-    displayedNodes,
     onNodesChange,
     onNodeDragStart,
     onNodeDragStop,
     getVisibleNodes,
     isDragging,
   } = useNodeState();
+
+  // Add ref for tracking panning performance
+  const isPanning = useRef(false);
+  const lastPanTime = useRef(0);
+
   const { onConnect, onConnectEnd } = useConnectionOperations();
   const {
     handleSelectionDragStart,
     DetermineNodeClickFunction,
     handleSelectionEnd,
   } = useNodeSelection({
-    nodes: displayedNodes,
+    nodes: getVisibleNodes(),
     isDragging,
   });
   const { DetermineEdgeClickFunction } = useEdgeSelect({
-    nodes: displayedNodes,
-    edges,
+    nodes: getVisibleNodes(),
+    edges: getVisibleEdges(),
   });
 
   // Initialize the layout manager
@@ -55,17 +59,19 @@ function Flow({ children }: { children?: React.ReactNode }) {
   // Use the improved node type registry hook
   const { nodeTypes } = useNodeTypeRegistry();
 
-  // Re-enable memoization to prevent re-renders during panning
+  // Use memo for visible nodes and edges
   const visibleNodes = useMemo(() => getVisibleNodes(), [getVisibleNodes]);
   const visibleEdges = useMemo(() => getVisibleEdges(), [getVisibleEdges]);
 
-  // Memoize event handlers that don't need to be recreated on every render
-  const handleSelectionDrag = useCallback(() => {
-    // Remove console.log for performance
+  // Optimize pan start/end handling
+  const handlePanStart = useCallback(() => {
+    console.log("Pan started");
+    isPanning.current = true;
+    lastPanTime.current = Date.now();
   }, []);
 
-  const handleSelectionChange = useCallback((nodes) => {
-    // Remove console.log for performance
+  const handlePanEnd = useCallback(() => {
+    isPanning.current = false;
   }, []);
 
   return (
@@ -92,24 +98,17 @@ function Flow({ children }: { children?: React.ReactNode }) {
       selectionMode={SelectionMode.Partial}
       selectNodesOnDrag={true}
       onSelectionStart={handleSelectionDragStart}
-      onSelectionDrag={handleSelectionDrag}
-      onSelectionChange={handleSelectionChange}
       onSelectionEnd={handleSelectionEnd}
-      // Remove or comment out these debug logs that can cause lag
-      // onDragStart={() => console.log("drag start")}
-      // onDragEnd={() => console.log("drag end")}
-      // onDragOverCapture={() => console.log("drag over")}
-      // onDragEnter={() => console.log("drag enter")}
-      // multiSelectionKeyCode="Shift"
-      //Lets change the multiSelectionKeyCode to be "Control" instead of "Shift"
-      // selectionKeyCode="Control"
-      // multiSelectionKeyCode="Control"
+      selectionKeyCode="Control"
+      multiSelectionKeyCode="Control"
       fitView
       zoomOnScroll={true}
       zoomOnPinch={true}
       minZoom={VIEWPORT_CONSTRAINTS.MIN_ZOOM}
       maxZoom={VIEWPORT_CONSTRAINTS.MAX_ZOOM}
       panOnDrag={!layoutInProgress}
+      onMoveStart={handlePanStart}
+      onMoveEnd={handlePanEnd}
       panOnScroll={false}
     >
       {children}

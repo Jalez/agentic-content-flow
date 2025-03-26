@@ -17,6 +17,7 @@ export const useNodeState = () => {
   // Remove unnecessary console.log calls for better performance
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
+      // return;
       if (
         changes.some((change) => change.type === "position") &&
         isDraggingRef.current
@@ -65,6 +66,7 @@ export const useNodeState = () => {
 
   const handleNodeEdit = useCallback(
     (nodeId: string, label: string, details: string) => {
+      console.log("Node edit triggered");
       // Remove console.log for better performance
       const updatedNodes = nodes.map((node) =>
         node.id === nodeId
