@@ -1,0 +1,33 @@
+name: Simple Project Automation
+
+on:
+  issues:
+    types: [labeled, unlabeled]
+
+jobs:
+  update_issue_status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check labels and set status
+        env:
+          GH_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          # Install GitHub CLI
+          if ! command -v gh &> /dev/null; then
+            echo "Installing GitHub CLI"
+            sudo apt-get update
+            sudo apt-get install -y gh
+          fi
+          
+          # Set the status based on labels
+          if [[ "${{ contains(github.event.issue.labels.*.name, 'in-progress') }}" == "true" ]]; then
+            echo "Setting issue $ISSUE_NUMBER status to In Progress"
+            gh issue edit $ISSUE_NUMBER --project "Mindmap Kanban Board=In Progress"
+          elif [[ "${{ contains(github.event.issue.labels.*.name, 'done') }}" == "true" ]]; then
+            echo "Setting issue $ISSUE_NUMBER status to Done"
+            gh issue edit $ISSUE_NUMBER --project "Mindmap Kanban Board=Done"  
+          else
+            echo "Setting issue $ISSUE_NUMBER status to Todo"
+            gh issue edit $ISSUE_NUMBER --project "Mindmap Kanban Board=Todo"
+          fi
