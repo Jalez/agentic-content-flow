@@ -46,6 +46,11 @@ jobs:
           
           status_field_data=$(echo $project_data | jq -r '.fields.nodes[] | select(.name == "Status")')
           echo "STATUS_FIELD_ID=$(echo $status_field_data | jq -r '.id')" >> $GITHUB_ENV
+          
+          # Get option IDs for each status
+          echo "TODO_OPTION_ID=$(echo $status_field_data | jq -r '.options[] | select(.name == "Todo") | .id')" >> $GITHUB_ENV
+          echo "IN_PROGRESS_OPTION_ID=$(echo $status_field_data | jq -r '.options[] | select(.name == "In Progress") | .id')" >> $GITHUB_ENV
+          echo "DONE_OPTION_ID=$(echo $status_field_data | jq -r '.options[] | select(.name == "Done") | .id')" >> $GITHUB_ENV
 
       # Update issue status based on labels
       - name: Update issue status
@@ -54,13 +59,13 @@ jobs:
           GH_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
           ISSUE_NODE_ID: ${{ github.event.issue.node_id }}
         run: |
-          status_value=""
+          option_id=""
           if [[ "${{ contains(github.event.issue.labels.*.name, 'in-progress') }}" == "true" ]]; then
-            status_value="In Progress"
+            option_id="$IN_PROGRESS_OPTION_ID"
           elif [[ "${{ contains(github.event.issue.labels.*.name, 'done') }}" == "true" ]]; then
-            status_value="Done"
+            option_id="$DONE_OPTION_ID"
           else
-            status_value="Todo"
+            option_id="$TODO_OPTION_ID"
           fi
 
           gh api graphql -f query='
@@ -68,13 +73,13 @@ jobs:
               $project_id: ID!
               $item_id: ID!
               $field_id: ID!
-              $value: String!
+              $option_id: String!
             ) {
               updateProjectV2ItemFieldValue(input: {
                 projectId: $project_id
                 itemId: $item_id
                 fieldId: $field_id
-                value: $value
+                value: { singleSelectOptionId: $option_id }
               }) {
                 projectV2Item {
                   id
@@ -84,4 +89,4 @@ jobs:
             -f project_id="$PROJECT_ID" \
             -f item_id="$ISSUE_NODE_ID" \
             -f field_id="$STATUS_FIELD_ID" \
-            -f value="$status_value"
+            -f option_id="$option_id"
