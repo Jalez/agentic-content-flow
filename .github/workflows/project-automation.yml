@@ -15,24 +15,18 @@ jobs:
           project-url: https://github.com/users/jalez/projects/1
           github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
       
-      # Update issue status based on labels
+      # Get Project and Field IDs
       - name: Get project data
         env:
-          GITHUB_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
-          ORGANIZATION: jalez
-          PROJECT_NUMBER: 1
+          GH_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
         run: |
-          gh api graphql -f query='
-            query($org: String!, $number: Int!) {
-              user(login: $org){
-                projectV2(number: $number) {
+          project_data=$(gh api graphql -f query='
+            query{
+              viewer {
+                projectV2(number: 1) {
                   id
-                  fields(first:20) {
+                  fields(first: 20) {
                     nodes {
-                      ... on ProjectV2Field {
-                        id
-                        name
-                      }
                       ... on ProjectV2SingleSelectField {
                         id
                         name
@@ -45,17 +39,49 @@ jobs:
                   }
                 }
               }
-            }' -f org=$ORGANIZATION -f number=$PROJECT_NUMBER > project_data.json
+            }
+          ' --jq '.data.viewer.projectV2')
 
-      - uses: leonsteinhaeuser/project-beta-automations@v2.1.0
-        with:
-          github_token: ${{ secrets.ADD_TO_PROJECT_PAT }}
-          organization: jalez
-          project_id: 1
-          resource_node_id: ${{ github.event.issue.node_id }}
-          status_field: "Status"
-          status_value: ${{ 
-            contains(github.event.issue.labels.*.name, 'in-progress') && 'In Progress' ||
-            contains(github.event.issue.labels.*.name, 'done') && 'Done' ||
-            'Todo'
-          }}
+          echo "PROJECT_ID=$(echo $project_data | jq -r '.id')" >> $GITHUB_ENV
+          
+          status_field_data=$(echo $project_data | jq -r '.fields.nodes[] | select(.name == "Status")')
+          echo "STATUS_FIELD_ID=$(echo $status_field_data | jq -r '.id')" >> $GITHUB_ENV
+
+      # Update issue status based on labels
+      - name: Update issue status
+        if: github.event.action == 'labeled' || github.event.action == 'unlabeled'
+        env:
+          GH_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
+          ISSUE_NODE_ID: ${{ github.event.issue.node_id }}
+        run: |
+          status_value=""
+          if [[ "${{ contains(github.event.issue.labels.*.name, 'in-progress') }}" == "true" ]]; then
+            status_value="In Progress"
+          elif [[ "${{ contains(github.event.issue.labels.*.name, 'done') }}" == "true" ]]; then
+            status_value="Done"
+          else
+            status_value="Todo"
+          fi
+
+          gh api graphql -f query='
+            mutation (
+              $project_id: ID!
+              $item_id: ID!
+              $field_id: ID!
+              $value: String!
+            ) {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: $project_id
+                itemId: $item_id
+                fieldId: $field_id
+                value: $value
+              }) {
+                projectV2Item {
+                  id
+                }
+              }
+            }' \
+            -f project_id="$PROJECT_ID" \
+            -f item_id="$ISSUE_NODE_ID" \
+            -f field_id="$STATUS_FIELD_ID" \
+            -f value="$status_value"
