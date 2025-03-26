@@ -14,7 +14,7 @@ jobs:
         with:
           project-url: https://github.com/users/jalez/projects/1
           github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
-      
+
       # Get Project and Field IDs
       - name: Get project data
         env:
@@ -43,10 +43,10 @@ jobs:
           ' --jq '.data.viewer.projectV2')
 
           echo "PROJECT_ID=$(echo $project_data | jq -r '.id')" >> $GITHUB_ENV
-          
+
           status_field_data=$(echo $project_data | jq -r '.fields.nodes[] | select(.name == "Status")')
           echo "STATUS_FIELD_ID=$(echo $status_field_data | jq -r '.id')" >> $GITHUB_ENV
-          
+
           # Get option IDs for each status
           echo "TODO_OPTION_ID=$(echo $status_field_data | jq -r '.options[] | select(.name == "Todo") | .id')" >> $GITHUB_ENV
           echo "IN_PROGRESS_OPTION_ID=$(echo $status_field_data | jq -r '.options[] | select(.name == "In Progress") | .id')" >> $GITHUB_ENV
