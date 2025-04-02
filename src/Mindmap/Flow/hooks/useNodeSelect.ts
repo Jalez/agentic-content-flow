@@ -4,6 +4,7 @@ import { Node, useReactFlow } from "@xyflow/react";
 import { NodeData } from "../../types";
 import { useNodeStore } from "../../stores";
 import { useSelect } from "../../Select/contexts/SelectContext";
+import { useTrackableState } from "@jalez/react-state-history";
 
 interface UseNodeSelectionProps {
   nodes: Node<NodeData>[];
@@ -17,7 +18,13 @@ const useNodeSelection = ({ nodes, isDragging }: UseNodeSelectionProps) => {
   const { fitView, getNodes } = useReactFlow();
   const updateNodes = useNodeStore((state) => state.updateNodes);
   const nodeMap = useNodeStore((state) => state.nodeMap);
+  const setNodes = useNodeStore((state) => state.setNodes);
   const nodeParentMap = useNodeStore((state) => state.nodeParentMap);
+  const trackUpdateNodes = useTrackableState(
+    "useNodeSelection/UpdateNodes",
+    updateNodes,
+    setNodes
+  );
   const [previousSelectionBox, setPreviousSelectionBox] =
     useState<DOMRect | null>(null);
 
@@ -30,26 +37,27 @@ const useNodeSelection = ({ nodes, isDragging }: UseNodeSelectionProps) => {
     (parentId: string, selected: boolean) => {
       const parentNode = nodeMap.get(parentId);
       if (parentNode) {
-        updateNodes(
+        trackUpdateNodes(
           nodeParentMap.get(parentId)?.map((node) => ({
             ...node,
             selected: selected,
-          })) || []
+          })) || [],
+          nodes
         );
       }
     },
-    [nodeMap, nodeParentMap, updateNodes]
+    [nodeMap, nodeParentMap, trackUpdateNodes, nodes]
   );
 
   const handleSelectionDragStart = useCallback(
-    (event: React.MouseEvent) => {
+    (_: React.MouseEvent) => {
       console.log("Selection started, removing all node parents");
       //Set all nodeParents selectable properties to false
       nodeParentMap.forEach((_, parentId) => {
         changeParentSelectState(parentId, false);
       });
     },
-    [nodeParentMap, nodeMap, updateNodes]
+    [nodeParentMap, nodeMap, changeParentSelectState]
   );
 
   /**
@@ -73,9 +81,9 @@ const useNodeSelection = ({ nodes, isDragging }: UseNodeSelectionProps) => {
       }));
 
       // Update nodes through the store
-      updateNodes(updatedNodes);
+      trackUpdateNodes(updatedNodes, nodes);
     },
-    [nodes, isDragging, updateNodes]
+    [nodes, isDragging, trackUpdateNodes]
   );
 
   /**
@@ -149,18 +157,19 @@ const useNodeSelection = ({ nodes, isDragging }: UseNodeSelectionProps) => {
 
       // Update selection to exclude container nodes
       if (nonContainerNodes.length !== selectedNodes.length) {
-        updateNodes(
+        trackUpdateNodes(
           getNodes().map((node) => ({
             ...node,
             selected: nonContainerNodes.some((n) => n.id === node.id),
-          }))
+          })),
+          getNodes()
         );
       }
     }
 
     // Reset selection box state when selection ends
     setPreviousSelectionBox(null);
-  }, [getNodes, updateNodes, setPreviousSelectionBox]);
+  }, [getNodes, nodeParentMap, changeParentSelectState, trackUpdateNodes]);
 
   return {
     handleNodeClick,

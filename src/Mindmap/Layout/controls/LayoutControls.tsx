@@ -19,7 +19,7 @@ import AlgorithmControls from "./components/AlgorithmControls";
 import SpacingControls from "./components/SpacingControls";
 import AutoLayoutToggle from "./components/AutoLayoutToggle";
 import { useSelect } from "../../Select/contexts/SelectContext";
-import ELK from "elkjs/lib/elk.bundled.js";
+import { useTrackableState } from "@jalez/react-state-history";
 
 const LayoutControls: React.FC = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -44,11 +44,15 @@ const LayoutControls: React.FC = () => {
     getElkOptions,
   } = useLayoutStore();
 
-  const { nodes, nodeParentMap, setNodes, updateNodes } = useNodeStore();
+  const { nodes, nodeParentMap, updateNodes } = useNodeStore();
   const { edges, setEdges, edgeSourceMap } = useEdgeStore();
+  const trackUpdateNodes = useTrackableState(
+    "LayoutControls/UpdateNodes",
+    updateNodes
+  );
 
   const onLayout = useCallback(
-    async (direction: LayoutDirection, ns: Node[], es: Edge[]) => {
+    async (_: LayoutDirection, ns: Node[], es: Edge[]) => {
       return applyLayout(ns, es, getElkOptions());
     },
     []
@@ -72,14 +76,16 @@ const LayoutControls: React.FC = () => {
     try {
       setLayoutInProgress(true);
 
-      if (selectedNodes.length < 0) {
-        console.log("No nodes selected for layout");
-        return;
+      let nodesToLayout: Node[] = [];
+      if (selectedNodes.length < 1) {
+        //Then we should be applying the layout to the nodes that have no parent
+        nodesToLayout = nodeParentMap?.get("no-parent") || [];
+      } else {
+        // Determine which nodes to layout
+        let nodesToApplyLayout = selectedNodes;
+        // Get nodes from parent map
+        nodesToLayout = nodeParentMap?.get(nodesToApplyLayout[0].id) || [];
       }
-      // Determine which nodes to layout
-      let nodesToApplyLayout = selectedNodes;
-      // Get nodes from parent map
-      const nodesToLayout = nodeParentMap?.get(nodesToApplyLayout[0].id) || [];
       // Additional check to prevent layout on empty array
       if (nodesToLayout.length === 0) {
         console.warn("No nodes found in parent map for selected node");
@@ -98,14 +104,7 @@ const LayoutControls: React.FC = () => {
       const result = await onLayout(direction, nodesToLayout, relevantEdges);
 
       if (result && result.nodes) {
-        //Can we remove the width and height from the nodes so that they are not changed?
-        // as in, remove the keys from the result.nodes entirely
-        for (const node of result.nodes) {
-          // delete node.width;
-          // delete node.height;
-        }
-        // const { width, height, ...rest } = result.nodes[0];
-        updateNodes(result.nodes);
+        trackUpdateNodes(result.nodes, nodesToLayout);
       } else {
         console.warn("Layout result did not contain nodes");
       }
@@ -121,7 +120,6 @@ const LayoutControls: React.FC = () => {
     layoutInProgress,
     getElkOptions,
     setLayoutInProgress,
-    setNodes,
     setEdges,
   ]);
 

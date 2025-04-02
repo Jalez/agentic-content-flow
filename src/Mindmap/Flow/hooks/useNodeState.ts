@@ -3,6 +3,7 @@ import { useCallback, useState, useRef, useMemo } from "react";
 import { NodeChange, applyNodeChanges, Node } from "@xyflow/react";
 import { NodeData } from "../../types";
 import { useNodeStore } from "../../stores";
+import { useTrackableState } from "@jalez/react-state-history";
 
 export const useNodeState = () => {
   const nodes = useNodeStore((state) => state.nodes);
@@ -14,7 +15,13 @@ export const useNodeState = () => {
   const [localNodes, setLocalNodes] = useState<Node<NodeData>[]>([]);
   const isDraggingRef = useRef(false);
 
-  // Remove unnecessary console.log calls for better performance
+  const trackUpdateNodes = useTrackableState(
+    "useNodeState/UpdateNodes",
+    updateNodes,
+    setNodes
+  );
+  const trackSetNodes = useTrackableState("useNodeState/SetNodes", setNodes);
+
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
       // return;
@@ -38,10 +45,10 @@ export const useNodeState = () => {
         ) as Node<NodeData>[];
 
         // Remove console.log for better performance
-        updateNodes(updatedNodes);
+        trackUpdateNodes(updatedNodes, nodes);
       }
     },
-    [nodes, updateNodes]
+    [nodes, trackUpdateNodes, setLocalNodes]
   );
 
   const onNodeDragStart = useCallback(() => {
@@ -57,8 +64,7 @@ export const useNodeState = () => {
 
     // Only update the store when dragging is complete
     if (localNodes.length > 0) {
-      // Remove console.log for better performance
-      updateNodes(localNodes);
+      trackUpdateNodes(localNodes, nodes);
       // Clear local nodes to avoid stale state
       setLocalNodes([]);
     }
@@ -66,8 +72,6 @@ export const useNodeState = () => {
 
   const handleNodeEdit = useCallback(
     (nodeId: string, label: string, details: string) => {
-      console.log("Node edit triggered");
-      // Remove console.log for better performance
       const updatedNodes = nodes.map((node) =>
         node.id === nodeId
           ? {
@@ -80,13 +84,12 @@ export const useNodeState = () => {
             }
           : node
       );
-      updateNodes(updatedNodes);
+      trackUpdateNodes(updatedNodes, nodes);
     },
-    [nodes, updateNodes]
+    [nodes, trackUpdateNodes]
   );
 
   const getVisibleNodes = useCallback(() => {
-    // Remove console.log for better performance
     // Return local nodes during drag, otherwise return store nodes
     return isDraggingRef.current && localNodes.length > 0 ? localNodes : nodes;
   }, [nodes, localNodes]);
@@ -94,10 +97,17 @@ export const useNodeState = () => {
   // Memoize the displayed nodes to prevent unnecessary recalculations
   const displayedNodes = useMemo(() => getVisibleNodes(), [getVisibleNodes]);
 
+  const handleSetNodes = useCallback(
+    (newNodes: Node<NodeData>[]) => {
+      // Update the local state and store
+      trackSetNodes(newNodes, nodes);
+    },
+    [trackSetNodes, nodes]
+  );
   return {
     displayedNodes,
     nodes: displayedNodes, // Return the same memoized value
-    setNodes,
+    setNodes: handleSetNodes,
     onNodesChange,
     handleNodeEdit,
     getVisibleNodes,

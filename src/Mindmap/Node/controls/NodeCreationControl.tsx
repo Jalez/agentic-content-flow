@@ -7,6 +7,7 @@ import { createNodeFromTemplate } from "../registry/nodeTypeRegistry";
 import { useNodeStore } from "../store/useNodeStore";
 import { useSelect } from "../../Select/contexts/SelectContext";
 import { useEdgeStore } from "../../stores";
+import { useTrackableState, useTransaction } from "@jalez/react-state-history";
 
 interface NodeCreationControlProps {
   availableNodeTypes: string[];
@@ -16,10 +17,22 @@ const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
   availableNodeTypes,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const { addNodeToStore } = useNodeStore();
-  const { addEdgeToStore } = useEdgeStore();
+  const { addNodeToStore, removeNode } = useNodeStore();
+  const { addEdgeToStore, setEdges, edges } = useEdgeStore();
   const { screenToFlowPosition } = useReactFlow();
   const { selectedNodes } = useSelect();
+  const { withTransaction } = useTransaction();
+
+  const trackAddNodeToStore = useTrackableState(
+    "NodeCreationControl/AddNode",
+    addNodeToStore,
+    removeNode
+  );
+  const trackAddEdgeToStore = useTrackableState(
+    "NodeCreationControl/AddEdge",
+    addEdgeToStore,
+    setEdges
+  );
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -50,21 +63,23 @@ const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
     //       source: connectionState.fromNode.id,
     //       target: newNodeId,
     //     };
-    for (const selectedNode of selectedNodes) {
-      if (!selectedNode.data.isContainer) {
-        const newEdge = {
-          id: `e-${selectedNode.id}-${newNodeId}`,
-          source: selectedNode.id,
-          target: newNodeId,
-        };
-        addEdgeToStore(newEdge);
+    withTransaction(() => {
+      for (const selectedNode of selectedNodes) {
+        if (!selectedNode.data.isContainer) {
+          const newEdge = {
+            id: `e-${selectedNode.id}-${newNodeId}`,
+            source: selectedNode.id,
+            target: newNodeId,
+          };
+          trackAddEdgeToStore(newEdge, edges);
+        }
       }
-    }
 
-    if (newNode) {
-      console.log("newNode", newNode);
-      addNodeToStore(newNode);
-    }
+      if (newNode) {
+        console.log("newNode", newNode);
+        trackAddNodeToStore(newNode, newNode.id);
+      }
+    }, "NodeCreationControl/Add");
 
     handleClose();
   };

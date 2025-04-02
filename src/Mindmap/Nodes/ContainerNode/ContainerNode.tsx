@@ -1,9 +1,8 @@
-import { HTMLAttributes, useEffect } from "react";
+import { HTMLAttributes } from "react";
 import {
   NodeProps,
   NodeResizer,
   Node,
-  useReactFlow,
   ResizeDragEvent,
   ResizeParams,
 } from "@xyflow/react";
@@ -11,11 +10,7 @@ import { Box, Typography } from "@mui/material";
 import { BaseNodeContainer, StyledHandle } from "../common/NodeStyles";
 import { useLayoutManager } from "../../Layout/hooks/useLayoutManager";
 import { useNodeStore } from "../../stores";
-import {
-  LAYOUT_CONSTANTS,
-  adjustNodePositionForHeader,
-  getContentStartY,
-} from "../../Layout/utils/layoutUtils";
+import { LAYOUT_CONSTANTS } from "../../Layout/utils/layoutUtils";
 import {
   NodeHeader,
   NodeHeaderTitle,
@@ -62,7 +57,7 @@ NodeLabel.displayName = "NodeLabel";
 
 export const ContainerNode = (node: NodeProps<Node<UnifiedNodeData>>) => {
   const { sourcePosition, targetPosition } = useLayoutManager();
-  const { nodeParentMap, updateNode, nodeMap } = useNodeStore();
+  const { updateNode, nodeMap } = useNodeStore();
 
   const nodeInStore = nodeMap.get(node.id);
 
@@ -88,31 +83,7 @@ export const ContainerNode = (node: NodeProps<Node<UnifiedNodeData>>) => {
     ? "primary.main"
     : getNodeColor(node.data.nodeLevel);
 
-  // Get child nodes directly from the nodeParentMap
-  const childNodes = nodeParentMap.get(node.id) || [];
-
-  // Adjust child nodes that are in the header area
-  // useEffect(() => {
-  //   if (!childNodes.length) return;
-
-  //   // Check if any children are in the header area
-  //   const hasChildrenInHeader = childNodes.some((child) => {
-  //     const minY = getContentStartY(child.position.y);
-  //     return child.position.y < minY;
-  //   });
-
-  //   if (hasChildrenInHeader) {
-  //     setNodes((nodes) =>
-  //       nodes.map((n) => {
-  //         if (n.parentId === node.id) {
-  //           return adjustNodePositionForHeader(n, n.position.y);
-  //         }
-  //         return n;
-  //       })
-  //     );
-  //   }
-  // }, [node.id, childNodes, setNodes]);
-  const handleResize = (event: ResizeDragEvent, data: ResizeParams) => {
+  const handleResize = (_: ResizeDragEvent, data: ResizeParams) => {
     if (!nodeInStore) {
       console.error(`Node with id ${node.id} not found in store.`);
       return;

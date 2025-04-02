@@ -5,14 +5,33 @@ import { withErrorHandler } from "../../utils/withErrorHandler";
 import { createNodeFromTemplate } from "../registry/nodeTypeRegistry";
 import { useNodeStore } from "../store/useNodeStore";
 import { useEdgeStore } from "../../stores";
+import { useTrackableState, useTransaction } from "@jalez/react-state-history";
 
 // type useConnectionOperationsProps = {};
 
 export const useConnectionOperations = () => {
-  const { addNodeToStore, nodeMap, updateNode, nodeParentMap } = useNodeStore();
-  const { addEdgeToStore, edgeMap } = useEdgeStore();
+  const { addNodeToStore, nodeMap, updateNode, nodeParentMap, removeNode } =
+    useNodeStore();
+  const { edges, addEdgeToStore, setEdges, edgeMap } = useEdgeStore();
   const { screenToFlowPosition } = useReactFlow();
+  const { withTransaction } = useTransaction();
   const reactFlowInstance = useReactFlow();
+  const trackAddNodeToStore = useTrackableState(
+    "useConnectionOperations/AddSourceNode",
+    addNodeToStore,
+    removeNode
+  );
+
+  const trackAddEdgeToStore = useTrackableState(
+    "useConnectionOperations/AddEdgeToStore",
+    addEdgeToStore,
+    setEdges
+  );
+
+  const trackUpdateNodeToStore = useTrackableState(
+    "useConnectionOperations/UpdateNodeToStore",
+    updateNode
+  );
 
   const addSourceNode = (childNode: Node<NodeData>) => {
     console.log("Adding parent node to child node", childNode);
@@ -58,19 +77,35 @@ export const useConnectionOperations = () => {
         parent: newNodeId,
       },
     };
-    console.log("ADDING NEW PARENT NODE TO STORE", newParentNode);
-    updateNode(updatedChildNode);
-    addNodeToStore(newParentNode);
-    addEdgeToStore(newEdge);
+
+    // updateNode(updatedChildNode);
+    withTransaction(
+      () => {
+        trackUpdateNodeToStore(
+          updatedChildNode,
+          realChildNode,
+          `Update Child Node to ${newParentNode.id}`
+        );
+        trackAddNodeToStore(
+          newParentNode,
+          newParentNode.id,
+          `Add Parent Node to ${childNode.id}`
+        );
+        trackAddEdgeToStore(
+          newEdge,
+          edges,
+          `Add Edge from ${newParentNode.id} to ${realChildNode.id}`
+        );
+      },
+      "addSourceNodeTransaction" // Transaction name
+    );
 
     // Focus view on both nodes
-    // setTimeout(() => {
     reactFlowInstance.fitView({
       nodes: [newParentNode, updatedChildNode],
       duration: 500,
       padding: 0.2,
     });
-    // }, 100);
   };
 
   const addTargetNode = (eventNode: Node<NodeData>) => {
@@ -147,15 +182,32 @@ export const useConnectionOperations = () => {
     };
     console.log("ADDING NEW CHILD NODE TO STORE", newChildNode);
     console.log("ADDING NEW EDGE TO STORE", newEdge);
-    addNodeToStore(newChildNode);
-    addEdgeToStore(newEdge);
+    withTransaction(
+      () => {
+        trackAddNodeToStore(
+          newChildNode,
+          newChildNode.id,
+          `Add Child Node to ${eventNode.id}`
+        );
+        trackAddEdgeToStore(
+          newEdge,
+          edges,
+          `Add Edge from ${eventNode.id} to ${newChildNode.id}`
+        );
+      },
+      "addTargetNodeTransaction" // Transaction name
+    );
   };
 
   const onConnect = useCallback(
     withErrorHandler("onConnect", (params: Connection) => {
-      addEdgeToStore(params);
+      trackAddEdgeToStore(
+        params,
+        edges,
+        `Add Edge from ${params.source} to ${params.target}`
+      );
     }),
-    [edgeMap, addEdgeToStore]
+    [edgeMap, edges, trackAddEdgeToStore]
   );
 
   const getCumulativeParentOffset = (
@@ -236,11 +288,24 @@ export const useConnectionOperations = () => {
         };
         console.log("ON CONNECT END NEW NODE", newNode);
         console.log("ON CONNECT END NEW EDGE", newEdge);
-        addNodeToStore(newNode);
-        addEdgeToStore(newEdge);
+        withTransaction(
+          () => {
+            trackAddNodeToStore(
+              newNode,
+              newNode.id,
+              `Add New Node from ${connectionState.fromNode.id}`
+            );
+            trackAddEdgeToStore(
+              newEdge,
+              edges,
+              `Add Edge from ${connectionState.fromNode.id} to ${newNodeId}`
+            );
+          },
+          "onConnectEndTransaction" // Transaction name
+        );
       }
     },
-    [screenToFlowPosition, addNodeToStore, addEdgeToStore, nodeMap]
+    [screenToFlowPosition, addNodeToStore, addEdgeToStore, nodeMap, edges]
   );
 
   return {

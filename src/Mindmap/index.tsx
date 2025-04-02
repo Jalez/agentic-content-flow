@@ -7,7 +7,7 @@ import {
 } from "@xyflow/react";
 import { SelectProvider } from "./Select/contexts/SelectContext";
 import { useTheme } from "@mui/material";
-import { useCallback, useRef, useEffect } from "react";
+import { useCallback, useRef } from "react";
 import { useViewPreferencesStore } from "./stores";
 import { useViewportManager } from "./Flow/hooks/useViewportManager";
 import { GRID_SETTINGS, VIEWPORT_CONSTRAINTS } from "./constants";
@@ -22,6 +22,7 @@ import { ensureNodeTypesRegistered } from "./Nodes/registerBasicNodeTypes";
 
 //  Please import '@xyflow/react/dist/style.css'
 import "@xyflow/react/dist/style.css"; // Ensure to import the styles for React Flow
+import ReactStateHistory from "./History/ReactStateHistory";
 
 // Register node types before any rendering occurs
 ensureNodeTypesRegistered();
@@ -45,32 +46,33 @@ export function MindmapContent() {
   }, [reactFlowInstance]);
 
   return (
-    <FlowContainer ref={flowWrapper} onWheel={handleWheel}>
-      <Flow>
-        <UnifiedControls
-          onFitView={fitView}
-          onToggleFullscreen={() => {
-            if (!document.fullscreenElement) {
-              flowWrapper.current?.requestFullscreen();
-            } else {
-              document.exitFullscreen();
-            }
-          }}
-        />
-        {showGrid && (
-          <Background
-            variant={BackgroundVariant.Lines}
-            gap={GRID_SETTINGS.BACKGROUND_GAP}
-            size={GRID_SETTINGS.BACKGROUND_SIZE}
-            color={theme.palette.divider}
+    <ReactStateHistory>
+      <FlowContainer ref={flowWrapper} onWheel={handleWheel}>
+        <Flow>
+          <UnifiedControls
+            onFitView={fitView}
+            onToggleFullscreen={() => {
+              if (!document.fullscreenElement) {
+                flowWrapper.current?.requestFullscreen();
+              } else {
+                document.exitFullscreen();
+              }
+            }}
           />
-        )}
-        <SelectLogic />
-        <Minimap />
-        {/* Register our controls */}
-        <TestControlsRegistration />
-        <LayoutControlsRegistration />
-        {/* {editNode && (
+          {showGrid && (
+            <Background
+              variant={BackgroundVariant.Lines}
+              gap={GRID_SETTINGS.BACKGROUND_GAP}
+              size={GRID_SETTINGS.BACKGROUND_SIZE}
+              color={theme.palette.divider}
+            />
+          )}
+          <SelectLogic />
+          <Minimap />
+          {/* Register our controls */}
+          <TestControlsRegistration />
+          <LayoutControlsRegistration />
+          {/* {editNode && (
         <EditNodeDialog
         open={Boolean(editNode)}
         onClose={() => setEditNode(null)}
@@ -78,8 +80,9 @@ export function MindmapContent() {
         nodeData={editNode.data as NodeData}
         />
         )} */}
-      </Flow>
-    </FlowContainer>
+        </Flow>
+      </FlowContainer>
+    </ReactStateHistory>
   );
 }
 

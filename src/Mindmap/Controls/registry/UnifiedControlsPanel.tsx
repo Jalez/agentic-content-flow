@@ -59,6 +59,7 @@ const UnifiedControlsPanel: React.FC<UnifiedControlsPanelProps> = ({
             borderRadius: 1,
             backgroundColor: theme.palette.background.paper,
             overflow: "hidden",
+            mr: 4,
           }}
         >
           <Box sx={{ display: "flex", flexDirection: "row", gap: 2, p: 1 }}>
