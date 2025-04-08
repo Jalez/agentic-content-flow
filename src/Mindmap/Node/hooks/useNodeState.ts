@@ -9,6 +9,9 @@ export const useNodeState = () => {
   const nodes = useNodeStore((state) => state.nodes);
   const setNodes = useNodeStore((state) => state.setNodes);
   const updateNodes = useNodeStore((state) => state.updateNodes);
+  const nodeMap = useNodeStore((state) => state.nodeMap);
+  const nodeParentMap = useNodeStore((state) => state.nodeParentMap);
+
   const [isDragging, setIsDragging] = useState(false);
 
   // Local state for tracking node positions during drag
@@ -51,6 +54,12 @@ export const useNodeState = () => {
     [nodes, trackUpdateNodes, setLocalNodes]
   );
 
+  const handleUpdateNodes = useCallback(
+    (updatedNodes: Node[]) => {
+trackUpdateNodes(updatedNodes, nodes);
+    },
+    [trackUpdateNodes, nodes]
+  );
   const onNodeDragStart = useCallback(() => {
     setIsDragging(true);
     isDraggingRef.current = true;
@@ -107,7 +116,11 @@ export const useNodeState = () => {
   return {
     displayedNodes,
     nodes: displayedNodes, // Return the same memoized value
+    nodeMap,
+    nodeParentMap,
     setNodes: handleSetNodes,
+    updateNodes: trackUpdateNodes,
+    handleUpdateNodes,
     onNodesChange,
     handleNodeEdit,
     getVisibleNodes,

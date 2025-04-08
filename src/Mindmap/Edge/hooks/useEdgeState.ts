@@ -28,6 +28,16 @@ export const useEdgeState = () => {
     [edges, updateEdges]
   );
 
+  const handleUpdateEdges = useCallback(
+    withErrorHandler("handleUpdateEdges", (newEdges: Edge[]) => {
+      if (!Array.isArray(newEdges)) {
+        throw new Error("New edges is not an array:" + newEdges);
+      }
+      trackUpdateEdges(newEdges, edges); // Use updateEdges for consistency
+    }),
+    [updateEdges]
+  );
+
   const getVisibleEdges = useCallback(() => {
     return Array.isArray(edges) ? edges : [];
   }, [edges]);
@@ -47,5 +57,6 @@ export const useEdgeState = () => {
     setEdges: handleSetEdges,
     onEdgesChange,
     getVisibleEdges,
+    handleUpdateEdges,
   };
 };

@@ -20,9 +20,11 @@ import TestControlsRegistration from "./test/TestControlsRegistration";
 import LayoutControlsRegistration from "./Layout/LayoutControlsRegistration";
 import { ensureNodeTypesRegistered } from "./Nodes/registerBasicNodeTypes";
 
-//  Please import '@xyflow/react/dist/style.css'
 import "@xyflow/react/dist/style.css"; // Ensure to import the styles for React Flow
 import ReactStateHistory from "./History/ReactStateHistory";
+import { LayoutProvider } from "@jalez/react-flow-automated-layout";
+import { useNodeState } from "./Node/hooks/useNodeState";
+import { useEdgeState } from "./Edge/hooks/useEdgeState";
 
 // Register node types before any rendering occurs
 ensureNodeTypesRegistered();
@@ -32,6 +34,15 @@ export function MindmapContent() {
   const flowWrapper = useRef<HTMLDivElement>(null);
   const { showGrid } = useViewPreferencesStore();
   const reactFlowInstance = useReactFlow();
+
+
+  const {
+    handleUpdateNodes,
+    nodeMap,
+    nodeParentMap,
+  }= useNodeState();
+
+  const { handleUpdateEdges } = useEdgeState();
 
   // Use custom hooks for functionality
   const { handleWheel } = useViewportManager(flowWrapper);
@@ -46,7 +57,25 @@ export function MindmapContent() {
   }, [reactFlowInstance]);
 
   return (
-    <ReactStateHistory>
+    <LayoutProvider
+    initialDirection="DOWN"
+    initialAutoLayout={true}
+    initialPadding={50}
+    initialSpacing={{ node: 50, layer: 50 }}
+    initialParentResizingOptions={{
+      padding: {
+        horizontal: 50,
+        vertical: 40,
+      },
+      minWidth: 150,
+      minHeight: 150,
+    }}
+    updateNodes={handleUpdateNodes}
+    updateEdges={handleUpdateEdges}
+    parentIdWithNodes={nodeParentMap}
+    nodeIdWithNode={nodeMap}
+    >
+
       <FlowContainer ref={flowWrapper} onWheel={handleWheel}>
         <Flow>
           <UnifiedControls
@@ -58,38 +87,36 @@ export function MindmapContent() {
                 document.exitFullscreen();
               }
             }}
-          />
+            />
           {showGrid && (
             <Background
-              variant={BackgroundVariant.Lines}
-              gap={GRID_SETTINGS.BACKGROUND_GAP}
-              size={GRID_SETTINGS.BACKGROUND_SIZE}
-              color={theme.palette.divider}
+            variant={BackgroundVariant.Lines}
+            gap={GRID_SETTINGS.BACKGROUND_GAP}
+            size={GRID_SETTINGS.BACKGROUND_SIZE}
+            color={theme.palette.divider}
             />
           )}
           <SelectLogic />
           <Minimap />
-          {/* Register our controls */}
+          {/* Register available controls here */}
           <TestControlsRegistration />
           <LayoutControlsRegistration />
-          {/* {editNode && (
-        <EditNodeDialog
-        open={Boolean(editNode)}
-        onClose={() => setEditNode(null)}
-        onSave={handleSaveNodeEdit}
-        nodeData={editNode.data as NodeData}
-        />
-        )} */}
+
         </Flow>
       </FlowContainer>
-    </ReactStateHistory>
+        </LayoutProvider>
   );
 }
+
 
 const Mindmap = () => (
   <ReactFlowProvider>
     <SelectProvider>
+    <ReactStateHistory>
+
+      
       <MindmapContent />
+    </ReactStateHistory>
     </SelectProvider>
   </ReactFlowProvider>
 );

@@ -1,16 +1,14 @@
 import { MarkerType, ReactFlow, SelectionMode } from "@xyflow/react";
 import { memo, useEffect, useMemo, useCallback, useRef } from "react";
-import { useNodeState } from "./hooks/useNodeState";
-import { useEdgeState } from "./hooks/useEdgeState";
-import useNodeSelection from "./hooks/useNodeSelect";
-import { useEdgeSelect } from "./hooks/useEdgeSelect";
+import { useNodeState } from "../Node/hooks/useNodeState";
+import { useEdgeState } from "../Edge/hooks/useEdgeState";
+import useNodeSelection from "../Node/hooks/useNodeSelect";
+import { useEdgeSelect } from "../Edge/hooks/useEdgeSelect";
 import { VIEWPORT_CONSTRAINTS } from "../constants";
 import { useConnectionOperations } from "../Node/hooks/useConnectionOperations";
 import { useNodeTypeRegistry } from "../Node/registry/nodeTypeRegistry";
 import { ensureNodeTypesRegistered } from "../Nodes/registerBasicNodeTypes";
 
-import { useLayoutManager } from "../Layout/hooks/useLayoutManager";
-import { useLayoutStore } from "../stores";
 
 const defaultEdgeOptions = {
   zIndex: 1,
@@ -47,9 +45,6 @@ function Flow({ children }: { children?: React.ReactNode }) {
     edges: getVisibleEdges(),
   });
 
-  // Initialize the layout manager
-  const { layoutInProgress } = useLayoutManager();
-  const { autoLayout } = useLayoutStore((state) => state);
 
   // Ensure node types are registered on component mount
   useEffect(() => {
@@ -93,7 +88,6 @@ function Flow({ children }: { children?: React.ReactNode }) {
       // Enable node functionality
       nodesFocusable={true}
       nodesConnectable={true}
-      nodesDraggable={!layoutInProgress && !autoLayout}
       elementsSelectable={true}
       selectionMode={SelectionMode.Partial}
       selectNodesOnDrag={true}
@@ -106,7 +100,6 @@ function Flow({ children }: { children?: React.ReactNode }) {
       zoomOnPinch={true}
       minZoom={VIEWPORT_CONSTRAINTS.MIN_ZOOM}
       maxZoom={VIEWPORT_CONSTRAINTS.MAX_ZOOM}
-      panOnDrag={!layoutInProgress}
       onMoveStart={handlePanStart}
       onMoveEnd={handlePanEnd}
       panOnScroll={false}

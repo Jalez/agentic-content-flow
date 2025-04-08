@@ -5,10 +5,10 @@ import {
   Node,
   ResizeDragEvent,
   ResizeParams,
+  Position,
 } from "@xyflow/react";
 import { Box, Typography } from "@mui/material";
 import { BaseNodeContainer, StyledHandle } from "../common/NodeStyles";
-import { useLayoutManager } from "../../Layout/hooks/useLayoutManager";
 import { useNodeStore } from "../../stores";
 import { LAYOUT_CONSTANTS } from "../../Layout/utils/layoutUtils";
 import {
@@ -56,7 +56,6 @@ const NodeLabel = ({ children }: NodeLabelProps) => {
 NodeLabel.displayName = "NodeLabel";
 
 export const ContainerNode = (node: NodeProps<Node<UnifiedNodeData>>) => {
-  const { sourcePosition, targetPosition } = useLayoutManager();
   const { updateNode, nodeMap } = useNodeStore();
 
   const nodeInStore = nodeMap.get(node.id);
@@ -128,7 +127,7 @@ export const ContainerNode = (node: NodeProps<Node<UnifiedNodeData>>) => {
       >
         <StyledHandle
           type="target"
-          position={targetPosition}
+          position={node?.targetPosition || Position.Top}
           color={
             isCourse ? (node.selected ? "primary.main" : "grey.400") : nodeColor
           }
@@ -154,7 +153,7 @@ export const ContainerNode = (node: NodeProps<Node<UnifiedNodeData>>) => {
 
         <StyledHandle
           type="source"
-          position={sourcePosition}
+          position={node?.sourcePosition || Position.Bottom}
           color={
             isCourse ? (node.selected ? "primary.main" : "grey.400") : nodeColor
           }

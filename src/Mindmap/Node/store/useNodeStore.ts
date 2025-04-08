@@ -22,9 +22,11 @@ export interface NodeStoreState {
 // Helper to rebuild lookup maps from a nodes array.
 const rebuildMaps = (nodes: Node<any>[]) => {
   const nodeMap = new Map<string, Node<any>>();
+  //Map where key is parentId and value is an array of child nodes
   const nodeParentMap = new Map<string, Node<any>[]>();
   // Ensure "no-parent" category exists.
   nodeParentMap.set("no-parent", []);
+
 
   nodes.forEach((node) => {
     nodeMap.set(node.id, node);

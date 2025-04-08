@@ -1,6 +1,6 @@
 /** @format */
 import { useState, memo, useEffect } from "react";
-import { useReactFlow, Node } from "@xyflow/react";
+import { useReactFlow, Node, Position } from "@xyflow/react";
 import { useTheme } from "@mui/material/styles";
 import { Box } from "@mui/material";
 import { AccordionSummary } from "@mui/material";
@@ -15,7 +15,6 @@ import {
   SubjectIcon,
 } from "./CellNodeStyles";
 import { StyledCellHandle } from "./CellNodeHandleStyles";
-import { useLayoutManager } from "../../Layout/hooks/useLayoutManager";
 
 const CellComponent = (node: Node<CourseNodeData>) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -23,7 +22,6 @@ const CellComponent = (node: Node<CourseNodeData>) => {
     useState<HTMLElement | null>(null);
   const reactFlowInstance = useReactFlow();
   const theme = useTheme();
-  const { sourcePosition, targetPosition } = useLayoutManager();
 
   const subject = node.data.subject || "COMP.CS";
   const config = subjectConfig[subject] || subjectConfig["COMP.CS"];
@@ -59,7 +57,7 @@ const CellComponent = (node: Node<CourseNodeData>) => {
         <StyledCellHandle
           type="target"
           id="target-handle"
-          position={targetPosition}
+          position={node?.targetPosition || Position.Top}
           className="target-handle"
           color={courseColor}
         />
@@ -137,7 +135,7 @@ const CellComponent = (node: Node<CourseNodeData>) => {
         <StyledCellHandle
           type="source"
           id="source-handle"
-          position={sourcePosition}
+          position={node?.sourcePosition || Position.Bottom}
           className="source-handle"
           color={courseColor}
         />

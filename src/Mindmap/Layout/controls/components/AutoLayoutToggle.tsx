@@ -1,27 +1,25 @@
-import React from "react";
-import { Box, FormControlLabel, Switch } from "@mui/material";
+import React, { useCallback } from "react";
+import { IconButton, Tooltip } from "@mui/material";
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import { useLayoutContext } from "@jalez/react-flow-automated-layout";
 
-interface AutoLayoutToggleProps {
-  autoLayout: boolean;
-  onAutoLayoutToggle: (event: React.ChangeEvent<HTMLInputElement>) => void;
-}
+const AutoLayoutToggle: React.FC = () => {
+  const { autoLayout, setAutoLayout } = useLayoutContext();
+  
+  const handleAutoLayoutToggle = useCallback(() => {
+    setAutoLayout(!autoLayout);
+  }, [autoLayout, setAutoLayout]);
 
-const AutoLayoutToggle: React.FC<AutoLayoutToggleProps> = ({
-  autoLayout,
-  onAutoLayoutToggle,
-}) => (
-  <Box sx={{ px: 2, py: 1 }}>
-    <FormControlLabel
-      control={
-        <Switch
-          checked={autoLayout}
-          onChange={onAutoLayoutToggle}
-          color="primary"
-        />
-      }
-      label="Auto-Layout"
-    />
-  </Box>
-);
+  return (
+    <Tooltip title={autoLayout ? "Disable Auto Layout" : "Enable Auto Layout"}>
+      <IconButton
+        onClick={handleAutoLayoutToggle}
+        color={autoLayout ? "primary" : "inherit"}
+      >
+        <AutorenewIcon />
+      </IconButton>
+    </Tooltip>
+  );
+};
 
 export default AutoLayoutToggle;
