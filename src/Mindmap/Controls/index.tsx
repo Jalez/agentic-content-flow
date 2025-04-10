@@ -1,5 +1,5 @@
 /** @format */
-import React from "react";
+import React, { memo, useCallback, useMemo } from "react";
 import { ControlsProvider, useControls } from "./context/ControlsContext";
 import { registerControl } from "./registry/controlsRegistry";
 
@@ -20,23 +20,24 @@ interface UnifiedControlsProps {
  * Inner component that handles the registration of controls
  * This component is wrapped by ControlsProvider, so it has access to the context
  */
-const ControlsRegistration: React.FC<UnifiedControlsProps> = ({
+const ControlsRegistration = memo<UnifiedControlsProps>(({
   onFitView,
   onToggleFullscreen,
 }) => {
   const { showShortcuts, toggleShortcuts } = useControls();
 
+  // Memoize the navigation controls component creation
+  const NavControlsWithProps = useCallback(() => (
+    <NavigationControls
+      onFitView={onFitView}
+      onToggleFullscreen={onToggleFullscreen}
+      showShortcuts={showShortcuts}
+      onToggleShortcuts={toggleShortcuts}
+    />
+  ), [onFitView, onToggleFullscreen, showShortcuts, toggleShortcuts]);
+
   // Register the default navigation controls
   React.useEffect(() => {
-    const NavControlsWithProps = () => (
-      <NavigationControls
-        onFitView={onFitView}
-        onToggleFullscreen={onToggleFullscreen}
-        showShortcuts={showShortcuts}
-        onToggleShortcuts={toggleShortcuts}
-      />
-    );
-
     // Register the navigation controls
     registerControl(
       CONTROL_TYPES.NAVIGATION,
@@ -51,9 +52,9 @@ const ControlsRegistration: React.FC<UnifiedControlsProps> = ({
     return () => {
       // No need to unregister as the component is unmounting
     };
-  }, [onFitView, onToggleFullscreen, showShortcuts, toggleShortcuts]);
+  }, [NavControlsWithProps]); // Only depend on the memoized component creator
 
-  // Register view settings controls
+  // Register view settings controls - only once
   React.useEffect(() => {
     // The ViewSettingsControl will receive its props from the ControlsContext
     registerControl(
@@ -69,10 +70,15 @@ const ControlsRegistration: React.FC<UnifiedControlsProps> = ({
     return () => {
       // No need to unregister as the component is unmounting
     };
-  }, []);
+  }, []); // Empty dependency array = only run once
 
-  return <UnifiedControlsPanel />;
-};
+  // Memoize the UnifiedControlsPanel to prevent unnecessary re-renders
+  const memoizedPanel = useMemo(() => <UnifiedControlsPanel />, []);
+  
+  return memoizedPanel;
+});
+
+ControlsRegistration.displayName = 'ControlsRegistration';
 
 /**
  * UnifiedControls Component
@@ -82,22 +88,33 @@ const ControlsRegistration: React.FC<UnifiedControlsProps> = ({
  * An improved version of the mindmap controls using the registry system.
  * Registers the default controls and provides the context for all controls.
  */
-const UnifiedControls: React.FC<UnifiedControlsProps> = ({
+const UnifiedControls = memo<UnifiedControlsProps>(({
   onFitView,
   onToggleFullscreen,
 }) => {
+  // Memoize the callback functions to ensure stable references
+  const memoizedFitView = useCallback(() => {
+    onFitView();
+  }, [onFitView]);
+  
+  const memoizedToggleFullscreen = useCallback(() => {
+    onToggleFullscreen();
+  }, [onToggleFullscreen]);
+  
   return (
     <ControlsProvider
-      onFitView={onFitView}
-      onToggleFullscreen={onToggleFullscreen}
+      onFitView={memoizedFitView}
+      onToggleFullscreen={memoizedToggleFullscreen}
     >
       <ControlsRegistration
-        onFitView={onFitView}
-        onToggleFullscreen={onToggleFullscreen}
+        onFitView={memoizedFitView}
+        onToggleFullscreen={memoizedToggleFullscreen}
       />
     </ControlsProvider>
   );
-};
+});
+
+UnifiedControls.displayName = 'UnifiedControls';
 
 export default UnifiedControls;
 

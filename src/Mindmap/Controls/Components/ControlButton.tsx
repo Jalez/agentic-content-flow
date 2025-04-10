@@ -16,8 +16,10 @@ const ControlButton: React.FC<ControlButtonProps> = ({
   icon,
   disabled = false,
   active = false,
-}) => (
-  <Tooltip title={tooltip}>
+}) => {
+  // This fixes the MUI warning: "You are providing a disabled `button` child to the Tooltip component"
+  // By wrapping the disabled button in a span, the tooltip can listen to events on the span
+  const buttonElement = (
     <IconButton
       size="small"
       onClick={onClick}
@@ -26,7 +28,13 @@ const ControlButton: React.FC<ControlButtonProps> = ({
     >
       {icon}
     </IconButton>
-  </Tooltip>
-);
+  );
+
+  return (
+    <Tooltip title={tooltip} arrow>
+      {disabled ? <span>{buttonElement}</span> : buttonElement}
+    </Tooltip>
+  );
+};
 
 export default ControlButton;

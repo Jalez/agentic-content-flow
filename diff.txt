@@ -1,0 +1,1466 @@
+diff --git a/src/Mindmap/Controls/Components/ControlButton.tsx b/src/Mindmap/Controls/Components/ControlButton.tsx
+index 5bc736a..8da1d84 100644
+--- a/src/Mindmap/Controls/Components/ControlButton.tsx
++++ b/src/Mindmap/Controls/Components/ControlButton.tsx
+@@ -16,8 +16,10 @@ const ControlButton: React.FC<ControlButtonProps> = ({
+   icon,
+   disabled = false,
+   active = false,
+-}) => (
+-  <Tooltip title={tooltip}>
++}) => {
++  // This fixes the MUI warning: "You are providing a disabled `button` child to the Tooltip component"
++  // By wrapping the disabled button in a span, the tooltip can listen to events on the span
++  const buttonElement = (
+     <IconButton
+       size="small"
+       onClick={onClick}
+@@ -26,7 +28,13 @@ const ControlButton: React.FC<ControlButtonProps> = ({
+     >
+       {icon}
+     </IconButton>
+-  </Tooltip>
+-);
++  );
++
++  return (
++    <Tooltip title={tooltip} arrow>
++      {disabled ? <span>{buttonElement}</span> : buttonElement}
++    </Tooltip>
++  );
++};
+ 
+ export default ControlButton;
+diff --git a/src/Mindmap/Controls/index.tsx b/src/Mindmap/Controls/index.tsx
+index bedc0ee..ca3a8aa 100644
+--- a/src/Mindmap/Controls/index.tsx
++++ b/src/Mindmap/Controls/index.tsx
+@@ -1,5 +1,5 @@
+ /** @format */
+-import React from "react";
++import React, { memo, useCallback, useMemo } from "react";
+ import { ControlsProvider, useControls } from "./context/ControlsContext";
+ import { registerControl } from "./registry/controlsRegistry";
+ 
+@@ -20,23 +20,24 @@ interface UnifiedControlsProps {
+  * Inner component that handles the registration of controls
+  * This component is wrapped by ControlsProvider, so it has access to the context
+  */
+-const ControlsRegistration: React.FC<UnifiedControlsProps> = ({
++const ControlsRegistration = memo<UnifiedControlsProps>(({
+   onFitView,
+   onToggleFullscreen,
+ }) => {
+   const { showShortcuts, toggleShortcuts } = useControls();
+ 
++  // Memoize the navigation controls component creation
++  const NavControlsWithProps = useCallback(() => (
++    <NavigationControls
++      onFitView={onFitView}
++      onToggleFullscreen={onToggleFullscreen}
++      showShortcuts={showShortcuts}
++      onToggleShortcuts={toggleShortcuts}
++    />
++  ), [onFitView, onToggleFullscreen, showShortcuts, toggleShortcuts]);
++
+   // Register the default navigation controls
+   React.useEffect(() => {
+-    const NavControlsWithProps = () => (
+-      <NavigationControls
+-        onFitView={onFitView}
+-        onToggleFullscreen={onToggleFullscreen}
+-        showShortcuts={showShortcuts}
+-        onToggleShortcuts={toggleShortcuts}
+-      />
+-    );
+-
+     // Register the navigation controls
+     registerControl(
+       CONTROL_TYPES.NAVIGATION,
+@@ -51,9 +52,9 @@ const ControlsRegistration: React.FC<UnifiedControlsProps> = ({
+     return () => {
+       // No need to unregister as the component is unmounting
+     };
+-  }, [onFitView, onToggleFullscreen, showShortcuts, toggleShortcuts]);
++  }, [NavControlsWithProps]); // Only depend on the memoized component creator
+ 
+-  // Register view settings controls
++  // Register view settings controls - only once
+   React.useEffect(() => {
+     // The ViewSettingsControl will receive its props from the ControlsContext
+     registerControl(
+@@ -69,10 +70,15 @@ const ControlsRegistration: React.FC<UnifiedControlsProps> = ({
+     return () => {
+       // No need to unregister as the component is unmounting
+     };
+-  }, []);
++  }, []); // Empty dependency array = only run once
++
++  // Memoize the UnifiedControlsPanel to prevent unnecessary re-renders
++  const memoizedPanel = useMemo(() => <UnifiedControlsPanel />, []);
++  
++  return memoizedPanel;
++});
+ 
+-  return <UnifiedControlsPanel />;
+-};
++ControlsRegistration.displayName = 'ControlsRegistration';
+ 
+ /**
+  * UnifiedControls Component
+@@ -82,22 +88,33 @@ const ControlsRegistration: React.FC<UnifiedControlsProps> = ({
+  * An improved version of the mindmap controls using the registry system.
+  * Registers the default controls and provides the context for all controls.
+  */
+-const UnifiedControls: React.FC<UnifiedControlsProps> = ({
++const UnifiedControls = memo<UnifiedControlsProps>(({
+   onFitView,
+   onToggleFullscreen,
+ }) => {
++  // Memoize the callback functions to ensure stable references
++  const memoizedFitView = useCallback(() => {
++    onFitView();
++  }, [onFitView]);
++  
++  const memoizedToggleFullscreen = useCallback(() => {
++    onToggleFullscreen();
++  }, [onToggleFullscreen]);
++  
+   return (
+     <ControlsProvider
+-      onFitView={onFitView}
+-      onToggleFullscreen={onToggleFullscreen}
++      onFitView={memoizedFitView}
++      onToggleFullscreen={memoizedToggleFullscreen}
+     >
+       <ControlsRegistration
+-        onFitView={onFitView}
+-        onToggleFullscreen={onToggleFullscreen}
++        onFitView={memoizedFitView}
++        onToggleFullscreen={memoizedToggleFullscreen}
+       />
+     </ControlsProvider>
+   );
+-};
++});
++
++UnifiedControls.displayName = 'UnifiedControls';
+ 
+ export default UnifiedControls;
+ 
+diff --git a/src/Mindmap/Controls/registry/RegisteredControls.tsx b/src/Mindmap/Controls/registry/RegisteredControls.tsx
+index 964317d..925d287 100644
+--- a/src/Mindmap/Controls/registry/RegisteredControls.tsx
++++ b/src/Mindmap/Controls/registry/RegisteredControls.tsx
+@@ -1,5 +1,5 @@
+ /** @format */
+-import React, { useMemo } from "react";
++import React, { useMemo, memo } from "react";
+ import { Box } from "@mui/material";
+ import {
+   useControlsRegistry,
+@@ -34,7 +34,7 @@ interface RegisteredControlsProps {
+  * />
+  * ```
+  */
+-const RegisteredControls: React.FC<RegisteredControlsProps> = ({
++const RegisteredControls: React.FC<RegisteredControlsProps> = memo(({
+   type,
+   context,
+   containerSx = { display: "flex", gap: 1 },
+@@ -45,25 +45,32 @@ const RegisteredControls: React.FC<RegisteredControlsProps> = ({
+   // Get controls for the specified type and context
+   const controls = useMemo(
+     () => getControls(type, context),
+-    [getControls, type, context]
++    [getControls, type, context, version] // Include version in dependencies
+   );
+ 
+-  if (!controls.length) return null;
++  // Memoize the rendered controls
++  const renderedControls = useMemo(() => {
++    if (!controls.length) return null;
++    
++    return (
++      <Box sx={containerSx}>
++        {controls.map((entry: ControlEntry, index) => {
++          const { Component, props } = entry;
++          // Render with props if available, otherwise render without props
++          return (
++            <Component
++              key={`${type}-${context}-${entry.name || index}-${version}`}
++              {...(props || {})}
++            />
++          );
++        })}
++      </Box>
++    );
++  }, [controls, containerSx, type, context, version]);
+ 
+-  return (
+-    <Box sx={containerSx}>
+-      {controls.map((entry: ControlEntry, index) => {
+-        const { Component, props } = entry;
+-        // Render with props if available, otherwise render without props
+-        return (
+-          <Component
+-            key={`${type}-${context}-${entry.name || index}-${version}`}
+-            {...(props || {})}
+-          />
+-        );
+-      })}
+-    </Box>
+-  );
+-};
++  return renderedControls;
++});
++
++RegisteredControls.displayName = 'RegisteredControls';
+ 
+ export default RegisteredControls;
+diff --git a/src/Mindmap/Controls/registry/UnifiedControlsPanel.tsx b/src/Mindmap/Controls/registry/UnifiedControlsPanel.tsx
+index b7ae4f3..fa1e4e0 100644
+--- a/src/Mindmap/Controls/registry/UnifiedControlsPanel.tsx
++++ b/src/Mindmap/Controls/registry/UnifiedControlsPanel.tsx
+@@ -1,12 +1,13 @@
+ /** @format */
+-import React from "react";
+-import { Box, Divider, Paper, useTheme, SxProps, Theme } from "@mui/material";
++import { Fragment, useMemo, memo } from "react";
++import { Box, Paper, useTheme, SxProps, Theme, Divider } from "@mui/material";
+ import { Panel, PanelPosition } from "@xyflow/react";
+ 
+ import RegisteredControls from "./RegisteredControls";
+ import KeyboardShortcutPanel from "../../KeyboardShortCuts";
+ import { useControls } from "../context/ControlsContext";
+ import { CONTROL_TYPES } from "../../constants";
++import { useControlsRegistry } from "./controlsRegistry";
+ 
+ interface UnifiedControlsPanelProps {
+   context?: string;
+@@ -16,10 +17,11 @@ interface UnifiedControlsPanelProps {
+ /**
+  * UnifiedControlsPanel Component
+  *
+- * @version 1.0.0
++ * @version 2.0.0
+  *
+  * A panel component that displays registered controls of different types.
+  * Uses the controls registry system to dynamically render controls.
++ * Now supports dynamically registered control types.
+  *
+  * @example
+  * ```tsx
+@@ -33,13 +35,15 @@ interface UnifiedControlsPanelProps {
+  * <UnifiedControlsPanel position="bottom-left" />
+  * ```
+  */
+-const UnifiedControlsPanel: React.FC<UnifiedControlsPanelProps> = ({
++const UnifiedControlsPanel: React.FC<UnifiedControlsPanelProps> = memo(({
+   position = "top-right",
++  context = CONTROL_TYPES.MINDMAP,
+ }) => {
+   const theme = useTheme();
+   const { showShortcuts } = useControls();
++  const { getControlTypes } = useControlsRegistry();
+ 
+-  const dividerSectionStyle: SxProps<Theme> = {
++  const dividerSectionStyle: SxProps<Theme> = useMemo(() => ({
+     display: "flex",
+     gap: 1,
+     "&:not(:empty)::before": {
+@@ -48,54 +52,52 @@ const UnifiedControlsPanel: React.FC<UnifiedControlsPanelProps> = ({
+       marginLeft: 1,
+       marginRight: 1,
+     },
+-  };
++  }), [theme.palette.divider]);
+ 
+-  return (
+-    <>
+-      <Panel position={position}>
+-        <Paper
+-          elevation={3}
+-          sx={{
+-            borderRadius: 1,
+-            backgroundColor: theme.palette.background.paper,
+-            overflow: "hidden",
+-            mr: 4,
+-          }}
+-        >
+-          <Box sx={{ display: "flex", flexDirection: "row", gap: 2, p: 1 }}>
+-            <RegisteredControls
+-              type="navigation"
+-              context={CONTROL_TYPES.MINDMAP}
+-            />
+-
+-            <Divider orientation="vertical" flexItem />
+-
+-            <RegisteredControls
+-              type="viewSettings"
+-              context={CONTROL_TYPES.MINDMAP}
+-            />
++  // Get all registered control types for this context
++  const controlTypes = useMemo(() => getControlTypes(context), [getControlTypes, context]);
+ 
+-            {/* Only add tools section if there are registered tools */}
+-            <RegisteredControls
+-              type="tools"
+-              context={CONTROL_TYPES.MINDMAP}
+-              containerSx={dividerSectionStyle}
+-            />
++  // Only log in development
++  if (process.env.NODE_ENV === 'development') {
++    console.log("UnifiedControlsPanel - control types:", controlTypes);
++  }
+ 
+-            {/* Only add custom section if there are registered custom controls */}
+-            <RegisteredControls
+-              type="custom"
+-              context={CONTROL_TYPES.MINDMAP}
+-              containerSx={dividerSectionStyle}
+-            />
+-          </Box>
+-        </Paper>
+-      </Panel>
++  // Memoize the entire controls panel structure
++  const controlsPanel = useMemo(() => (
++    <Panel position={position}>
++      <Paper
++        elevation={3}
++        sx={{
++          borderRadius: 1,
++          backgroundColor: theme.palette.background.paper,
++          overflow: "hidden",
++          mr: 4,
++        }}
++      >
++        <Box sx={{ display: "flex", flexDirection: "row", gap: 2, p: 1 }}>
++          {controlTypes.map((type, index) => (
++            <Fragment key={`control-type-${type}`}>
++              {index > 0 && <Divider orientation="vertical" flexItem sx={dividerSectionStyle} />}
++              <RegisteredControls
++                type={type}
++                context={context}
++              />
++            </Fragment>
++          ))}
++        </Box>
++      </Paper>
++    </Panel>
++  ), [position, theme.palette.background.paper, controlTypes, context, dividerSectionStyle]);
+ 
++  return (
++    <>
++      {controlsPanel}
+       {/* Keyboard Shortcuts Panel */}
+       {showShortcuts && <KeyboardShortcutPanel />}
+     </>
+   );
+-};
++});
++
++UnifiedControlsPanel.displayName = 'UnifiedControlsPanel';
+ 
+ export default UnifiedControlsPanel;
+diff --git a/src/Mindmap/Controls/registry/controlsRegistry.ts b/src/Mindmap/Controls/registry/controlsRegistry.ts
+index babbc85..ac12504 100644
+--- a/src/Mindmap/Controls/registry/controlsRegistry.ts
++++ b/src/Mindmap/Controls/registry/controlsRegistry.ts
+@@ -6,7 +6,7 @@ import { useShallow } from "zustand/react/shallow";
+ /**
+  * Controls Registry System
+  *
+- * @version 1.1.0
++ * @version 1.2.0
+  *
+  * A flexible system for registering and managing different types of controls in the mindmap.
+  * Supports dynamic registration, unregistration, and automatic re-rendering.
+@@ -29,8 +29,16 @@ import { useShallow } from "zustand/react/shallow";
+  * ```
+  */
+ 
+-// Control types - add more as needed
+-export type ControlType = "navigation" | "viewSettings" | "tools" | "custom";
++// Control types - now supports any string value for dynamic control types
++export type ControlType = string;
++
++// Default built-in control types
++export const DEFAULT_CONTROL_TYPES = {
++  NAVIGATION: "navigation",
++  VIEW_SETTINGS: "viewSettings",
++  TOOLS: "tools",
++  CUSTOM: "custom",
++} as const;
+ 
+ /**
+  * Control entry containing the component, name, and optional props
+@@ -47,16 +55,16 @@ export interface ControlEntry {
+  */
+ interface ControlsRegistryStore {
+   version: number;
+-  controls: Record<ControlType, Record<string, ControlEntry[]>>;
++  controls: Record<string, Record<string, ControlEntry[]>>;
+   incrementVersion: () => void;
+   setControls: (
+-    controls: Record<ControlType, Record<string, ControlEntry[]>>
++    controls: Record<string, Record<string, ControlEntry[]>>
+   ) => void;
+ }
+ 
+ // Separate registries for different control types, using Map<ControlType, Map<context, Map<name, ControlEntry>>>
+ const controlsRegistry = new Map<
+-  ControlType,
++  string,
+   Map<string, Map<string, ControlEntry>>
+ >();
+ 
+@@ -64,10 +72,10 @@ const controlsRegistry = new Map<
+ const useControlsRegistryStoreRaw = create<ControlsRegistryStore>((set) => ({
+   version: 0,
+   controls: {
+-    navigation: {},
+-    viewSettings: {},
+-    tools: {},
+-    custom: {},
++    [DEFAULT_CONTROL_TYPES.NAVIGATION]: {},
++    [DEFAULT_CONTROL_TYPES.VIEW_SETTINGS]: {},
++    [DEFAULT_CONTROL_TYPES.TOOLS]: {},
++    [DEFAULT_CONTROL_TYPES.CUSTOM]: {},
+   },
+   incrementVersion: () => set((state) => ({ version: state.version + 1 })),
+   setControls: (controls) => set({ controls }),
+@@ -94,15 +102,19 @@ const initContext = (
+ 
+ // Process the registry and update store
+ const updateRegistry = () => {
+-  const controlsState: Record<ControlType, Record<string, ControlEntry[]>> = {
+-    navigation: {},
+-    viewSettings: {},
+-    tools: {},
+-    custom: {},
+-  };
++  const controlsState: Record<string, Record<string, ControlEntry[]>> = {};
++
++  // Initialize with default types
++  Object.values(DEFAULT_CONTROL_TYPES).forEach(type => {
++    controlsState[type] = {};
++  });
+ 
+   // Convert the Map structure to the store structure
+   controlsRegistry.forEach((contextMap, type) => {
++    if (!controlsState[type]) {
++      controlsState[type] = {};
++    }
++    
+     contextMap.forEach((controlMap, context) => {
+       // Convert Map values to array and sort by order
+       const entries = Array.from(controlMap.values());
+@@ -204,6 +216,25 @@ export function getControls(
+   return storeState.controls[type]?.[context] || [];
+ }
+ 
++/**
++ * Get all registered control types for a specific context.
++ * 
++ * @param context - The context identifier to get the control types for
++ * @returns An array of control types that have registered controls for this context
++ */
++export function getControlTypes(context: string): string[] {
++  const storeState = useControlsRegistryStoreRaw.getState();
++  const types: string[] = [];
++  
++  Object.entries(storeState.controls).forEach(([type, contexts]) => {
++    if (contexts[context] && contexts[context].length > 0) {
++      types.push(type);
++    }
++  });
++  
++  return types;
++}
++
+ /**
+  * Clear all registered controls for a specific context and type.
+  *
+@@ -272,6 +303,15 @@ export function useControlsRegistry() {
+       controls: cachedControls,
+       getControls: (type: ControlType, context: string) =>
+         cachedControls[type]?.[context] || [],
++      getControlTypes: (context: string) => {
++        const types: string[] = [];
++        Object.entries(cachedControls).forEach(([type, contexts]) => {
++          if (contexts[context] && contexts[context].length > 0) {
++            types.push(type);
++          }
++        });
++        return types;
++      }
+     }),
+     [cachedControls, version]
+   );
+diff --git a/src/Mindmap/Edge/hooks/useEdgeState.ts b/src/Mindmap/Edge/hooks/useEdgeState.ts
+index 70a186f..ad230eb 100644
+--- a/src/Mindmap/Edge/hooks/useEdgeState.ts
++++ b/src/Mindmap/Edge/hooks/useEdgeState.ts
+@@ -25,7 +25,7 @@ export const useEdgeState = () => {
+       const newEdges = applyEdgeChanges(changes, edges);
+       trackUpdateEdges(newEdges, edges); // Use updateEdges instead of setEdges for consistency
+     }),
+-    [edges, updateEdges]
++    [edges, setEdges, trackUpdateEdges]
+   );
+ 
+   const handleUpdateEdges = useCallback(
+@@ -35,7 +35,7 @@ export const useEdgeState = () => {
+       }
+       trackUpdateEdges(newEdges, edges); // Use updateEdges for consistency
+     }),
+-    [updateEdges]
++    [updateEdges, edges, trackUpdateEdges]
+   );
+ 
+   const getVisibleEdges = useCallback(() => {
+@@ -49,7 +49,7 @@ export const useEdgeState = () => {
+       }
+       trackSetEdges(newEdges, edges); // Use setEdges for consistency
+     }),
+-    [setEdges]
++    [setEdges, edges, trackSetEdges]
+   );
+ 
+   return {
+diff --git a/src/Mindmap/Flow/FlowContainer.tsx b/src/Mindmap/Flow/FlowContainer.tsx
+index fcae085..437beab 100644
+--- a/src/Mindmap/Flow/FlowContainer.tsx
++++ b/src/Mindmap/Flow/FlowContainer.tsx
+@@ -60,7 +60,14 @@ export const FlowContainer = forwardRef<HTMLDivElement, FlowContainerProps>(
+               strokeWidth: 3,
+               filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))",
+             },
+-            zIndex: 1000,
++            //zIndex: 1000,
++          },
++          ".selected": {
++            zIndex: 0 +"!important",
++            //react-flow__node that is a child of a selected react-flow__node should also have its zIndex set to 0
++            "& .react-flow__node": {
++              zIndex: 0 + "!important",
++            },
+           },
+           // Add specific styling for selected edges
+           "& .react-flow__edge.selected .react-flow__edge-path": {
+@@ -69,9 +76,10 @@ export const FlowContainer = forwardRef<HTMLDivElement, FlowContainerProps>(
+             filter: `drop-shadow(0 0 5px ${theme.palette.primary.main})`,
+           },
+           "& .react-flow__node": {
++            zIndex: 0 + "!important",
+             borderRadius: 10,
+             "&.dragging": {
+-              zIndex: 1000,
++              //zIndex: 1001,
+               cursor: "grabbing",
+               // transform: "translate3d(0,0,0)",
+             },
+diff --git a/src/Mindmap/History/ReactStateHistory.tsx b/src/Mindmap/History/ReactStateHistory.tsx
+index 28356d7..5eaf1bb 100644
+--- a/src/Mindmap/History/ReactStateHistory.tsx
++++ b/src/Mindmap/History/ReactStateHistory.tsx
+@@ -78,7 +78,7 @@ export default function ReactStateHistory({
+   //Register <ReactStateHistoryControls /> to the controls panel
+   useEffect(() => {
+     registerControl(
+-      "tools", // Use the tools section
++      "history", // Use the tools section
+       CONTROL_TYPES.MINDMAP,
+       "REACT_STATE_HISTORY_CONTROLS",
+       ReactStateHistoryControls,
+@@ -89,7 +89,7 @@ export default function ReactStateHistory({
+     // Cleanup when unmounted
+     return () => {
+       unregisterControl(
+-        "tools",
++        "history",
+         CONTROL_TYPES.MINDMAP,
+         "REACT_STATE_HISTORY_CONTROLS"
+       );
+diff --git a/src/Mindmap/Layout/LayoutControlsRegistration.tsx b/src/Mindmap/Layout/LayoutControlsRegistration.tsx
+index 5195af6..7ae27f9 100644
+--- a/src/Mindmap/Layout/LayoutControlsRegistration.tsx
++++ b/src/Mindmap/Layout/LayoutControlsRegistration.tsx
+@@ -15,17 +15,17 @@ const LayoutControlsRegistration = () => {
+   useEffect(() => {
+     // Register the layout controls in the tools section
+     registerControl(
+-      "tools", // Use the tools section of the controls panel
++      "layout", // Create a new layout section
+       CONTROL_TYPES.MINDMAP,
+       "LAYOUT_CONTROLS",
+-      LayoutControls,
++      LayoutControls, 
+       {}, // No props needed as component uses hooks internally
+       20 // Priority - lower than test data switcher
+     );
+ 
+     // Cleanup when unmounted
+     return () => {
+-      unregisterControl("tools", CONTROL_TYPES.MINDMAP, "LAYOUT_CONTROLS");
++      unregisterControl("layout", CONTROL_TYPES.MINDMAP, "LAYOUT_CONTROLS");
+     };
+   }, []); // Empty dependency array ensures this runs only once
+ 
+diff --git a/src/Mindmap/Layout/controls/components/SpacingControls.tsx b/src/Mindmap/Layout/controls/components/SpacingControls.tsx
+index e306413..f51525c 100644
+--- a/src/Mindmap/Layout/controls/components/SpacingControls.tsx
++++ b/src/Mindmap/Layout/controls/components/SpacingControls.tsx
+@@ -1,11 +1,15 @@
+-import React, { useState, useCallback } from "react";
++import React, { useState, useCallback, useEffect } from "react";
+ import { 
+   IconButton, 
+   Tooltip, 
+-  Menu, 
+   Box, 
+   Typography,
+-  Slider
++  Slider,
++  Dialog,
++  DialogTitle,
++  DialogContent,
++  DialogActions,
++  Button
+ } from "@mui/material";
+ import SpaceBarIcon from '@mui/icons-material/SpaceBar';
+ import { useLayoutContext } from "@jalez/react-flow-automated-layout";
+@@ -20,95 +24,131 @@ const SpacingControls: React.FC = () => {
+     applyLayout
+   } = useLayoutContext();
+ 
+-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+-  const open = Boolean(anchorEl);
++  const [open, setOpen] = useState(false);
++  
++  // Keep local state that only updates the context when applied
++  const [localNodeSpacing, setLocalNodeSpacing] = useState(nodeSpacing);
++  const [localLayerSpacing, setLocalLayerSpacing] = useState(layerSpacing);
+ 
+-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+-    setAnchorEl(event.currentTarget);
+-  };
+-
+-  const handleClose = () => {
+-    setAnchorEl(null);
+-  };
++  // Update local state when context values change or dialog opens
++  useEffect(() => {
++    if (open) {
++      setLocalNodeSpacing(nodeSpacing);
++      setLocalLayerSpacing(layerSpacing);
++    }
++  }, [open, nodeSpacing, layerSpacing]);
+ 
+-  const handleNodeSpacingChange = useCallback((event: any, value: number | number[]) => {
+-    setNodeSpacing(value as number);
+-  }, [setNodeSpacing]);
++  const handleOpen = useCallback(() => {
++    setOpen(true);
++  }, []);
+ 
+-  const handleLayerSpacingChange = useCallback((event: any, value: number | number[]) => {
+-    setLayerSpacing(value as number);
+-  }, [setLayerSpacing]);
++  const handleClose = useCallback(() => {
++    setOpen(false);
++  }, []);
+ 
+-  const handleSpacingChangeCommitted = useCallback(() => {
++  const handleApply = useCallback(() => {
++    // Apply changes to the layout context
++    setNodeSpacing(localNodeSpacing);
++    setLayerSpacing(localLayerSpacing);
++    
+     if (algorithm !== "mrtree") {
+       applyLayout();
+     }
+-  }, [algorithm, applyLayout]);
++    
++    // Keep the dialog open
++  }, [localNodeSpacing, localLayerSpacing, algorithm, setNodeSpacing, setLayerSpacing, applyLayout]);
++
++  const handleDone = useCallback(() => {
++    // Apply changes
++    handleApply();
++    // Close dialog
++    handleClose();
++  }, [handleApply, handleClose]);
++
++  const handleNodeSpacingChange = useCallback((event: Event, value: number | number[]) => {
++    setLocalNodeSpacing(value as number);
++  }, []);
++
++  const handleLayerSpacingChange = useCallback((event: Event, value: number | number[]) => {
++    setLocalLayerSpacing(value as number);
++  }, []);
+ 
+   return (
+     <>
+-      <Tooltip title="Node Spacing">
+-        <IconButton 
+-          onClick={handleClick}
+-          color="inherit"
+-          aria-controls={open ? "spacing-menu" : undefined}
+-          aria-haspopup="true"
+-          aria-expanded={open ? "true" : undefined}
+-        >
+-          <SpaceBarIcon />
+-        </IconButton>
++      <Tooltip 
++        title="Node Spacing" 
++        arrow
++        placement="bottom"
++      >
++        <span>
++          <IconButton 
++            onClick={handleOpen}
++            color="inherit"
++          >
++            <SpaceBarIcon />
++          </IconButton>
++        </span>
+       </Tooltip>
+       
+-      <Menu
+-        id="spacing-menu"
+-        anchorEl={anchorEl}
++      <Dialog
+         open={open}
+         onClose={handleClose}
+-        MenuListProps={{
+-          "aria-labelledby": "spacing-button",
++        maxWidth="xs"
++        fullWidth={false}
++        PaperProps={{
++          style: { width: '300px' }
+         }}
+       >
+-        <Box sx={{ px: 2, py: 1, width: 240 }}>
+-          <Typography id="node-spacing-slider" gutterBottom variant="body2">
+-            Node Spacing: {nodeSpacing}px
+-          </Typography>
+-          <Slider
+-            aria-labelledby="node-spacing-slider"
+-            value={nodeSpacing}
+-            onChange={handleNodeSpacingChange}
+-            onChangeCommitted={handleSpacingChangeCommitted}
+-            min={50}
+-            max={300}
+-            step={10}
+-            valueLabelDisplay="auto"
+-          />
++        <DialogTitle>Adjust Spacing</DialogTitle>
++        <DialogContent>
++          <Box sx={{ my: 2 }}>
++            <Typography id="node-spacing-slider" gutterBottom variant="body2">
++              Node Spacing: {localNodeSpacing}px
++            </Typography>
++            <Slider
++              aria-labelledby="node-spacing-slider"
++              value={localNodeSpacing}
++              onChange={handleNodeSpacingChange}
++              min={50}
++              max={300}
++              step={10}
++              valueLabelDisplay="auto"
++              sx={{ mb: 3 }}
++            />
+ 
+-          {algorithm !== "mrtree" && (
+-            <>
+-              <Typography
+-                id="layer-spacing-slider"
+-                gutterBottom
+-                variant="body2"
+-                sx={{ mt: 2 }}
+-              >
+-                Layer Spacing: {layerSpacing}px
+-              </Typography>
+-              <Slider
+-                aria-labelledby="layer-spacing-slider"
+-                value={layerSpacing}
+-                onChange={handleLayerSpacingChange}
+-                onChangeCommitted={handleSpacingChangeCommitted}
+-                min={50}
+-                max={300}
+-                step={10}
+-                valueLabelDisplay="auto"
+-              />
+-            </>
+-          )}
+-        </Box>
+-      </Menu>
++            {algorithm !== "mrtree" && (
++              <>
++                <Typography
++                  id="layer-spacing-slider"
++                  gutterBottom
++                  variant="body2"
++                >
++                  Layer Spacing: {localLayerSpacing}px
++                </Typography>
++                <Slider
++                  aria-labelledby="layer-spacing-slider"
++                  value={localLayerSpacing}
++                  onChange={handleLayerSpacingChange}
++                  min={50}
++                  max={300}
++                  step={10}
++                  valueLabelDisplay="auto"
++                />
++              </>
++            )}
++          </Box>
++        </DialogContent>
++        <DialogActions>
++          <Button onClick={handleApply} color="primary">
++            Apply
++          </Button>
++          <Button onClick={handleDone} color="primary">
++            Done
++          </Button>
++        </DialogActions>
++      </Dialog>
+     </>
+   );
+ };
+ 
+-export default SpacingControls;
++export default React.memo(SpacingControls);
+diff --git a/src/Mindmap/Node/hooks/useNodeState.ts b/src/Mindmap/Node/hooks/useNodeState.ts
+index 6be48ae..6820349 100644
+--- a/src/Mindmap/Node/hooks/useNodeState.ts
++++ b/src/Mindmap/Node/hooks/useNodeState.ts
+@@ -8,9 +8,14 @@ import { useTrackableState } from "@jalez/react-state-history";
+ export const useNodeState = () => {
+   const nodes = useNodeStore((state) => state.nodes);
+   const setNodes = useNodeStore((state) => state.setNodes);
++  const updateNode = useNodeStore((state) => state.updateNode);
+   const updateNodes = useNodeStore((state) => state.updateNodes);
+   const nodeMap = useNodeStore((state) => state.nodeMap);
+   const nodeParentMap = useNodeStore((state) => state.nodeParentMap);
++  const expandedNodes = useNodeStore((state) => state.expandedNodes);
++  const toggleNodeExpansion = useNodeStore(
++    (state) => state.toggleNodeExpansion
++  );
+ 
+   const [isDragging, setIsDragging] = useState(false);
+ 
+@@ -18,13 +23,97 @@ export const useNodeState = () => {
+   const [localNodes, setLocalNodes] = useState<Node<NodeData>[]>([]);
+   const isDraggingRef = useRef(false);
+ 
++  const trackUpdateNode = useTrackableState(
++    "useNodeState/UpdateNode",
++    updateNode,
++    setNodes
++  );
++
+   const trackUpdateNodes = useTrackableState(
+     "useNodeState/UpdateNodes",
+     updateNodes,
+     setNodes
+   );
++
++
+   const trackSetNodes = useTrackableState("useNodeState/SetNodes", setNodes);
+ 
++  // Function to check if a node should be hidden based on its ancestors' collapsed state
++  const shouldNodeBeHidden = useCallback(
++    (nodeId: string, checkedNodes = new Set<string>()): boolean => {
++      // Prevent infinite recursion
++      if (checkedNodes.has(nodeId)) return false;
++      checkedNodes.add(nodeId);
++
++      // Get the node's data
++      const node = nodeMap.get(nodeId);
++      if (!node) return false;
++
++      // If the node has no parent, it's always visible
++      if (!node.parentId) return false;
++
++      // If the parent is collapsed, this node should be hidden
++      if (expandedNodes[node.parentId] === false) return true;
++
++      // Check if any ancestor is collapsed
++      return shouldNodeBeHidden(node.parentId, checkedNodes);
++    },
++    [nodeMap, expandedNodes]
++  );
++
++  // Apply hidden property to nodes based on their parents' collapse state
++  const applyCollapsedState = useCallback(
++    (nodesToProcess: Node<NodeData>[]): Node<NodeData>[] => {
++      return nodesToProcess.map((node) => {
++        const hidden = shouldNodeBeHidden(node.id);
++        return {
++          ...node,
++          hidden
++        };
++      });
++    },
++    [shouldNodeBeHidden]
++  );
++
++  // Create a filtered parent-child map that only includes visible children
++  const getVisibleNodeParentMap = useCallback(() => {
++    const visibleNodeParentMap = new Map<string, Node<any>[]>();
++    
++    // Initialize with "no-parent" key
++    visibleNodeParentMap.set("no-parent", []);
++    
++    // Iterate through the original parent-child map
++    nodeParentMap.forEach((children, parentId) => {
++      // Filter out hidden children
++      const visibleChildren = children.filter(child => !shouldNodeBeHidden(child.id));
++      
++      // Only add entries with visible children
++      if (visibleChildren.length > 0) {
++        visibleNodeParentMap.set(parentId, visibleChildren);
++      } else if (parentId === "no-parent") {
++        // Ensure "no-parent" category always exists even if empty
++        visibleNodeParentMap.set(parentId, []);
++      }
++    });
++
++    console.log("Visible Node Parent Map:", visibleNodeParentMap);
++    
++    return visibleNodeParentMap;
++  }, [nodeParentMap, shouldNodeBeHidden]);
++
++  const getVisibleNodeMap = useCallback(() => {
++    const visibleNodeMap = new Map<string, Node<any>>();
++    nodes.forEach((node) => {
++      // Check if the node is visible
++      if (!shouldNodeBeHidden(node.id)) {
++        visibleNodeMap.set(node.id, node);
++      }
++    }
++    );
++    return visibleNodeMap;
++  }
++  , [nodes]);
++
+   const onNodesChange = useCallback(
+     (changes: NodeChange[]) => {
+       // return;
+@@ -56,10 +145,12 @@ export const useNodeState = () => {
+ 
+   const handleUpdateNodes = useCallback(
+     (updatedNodes: Node[]) => {
+-trackUpdateNodes(updatedNodes, nodes);
++      console.log("Updating nodes:", updatedNodes);
++      trackUpdateNodes(updatedNodes, nodes);
+     },
+     [trackUpdateNodes, nodes]
+   );
++  
+   const onNodeDragStart = useCallback(() => {
+     setIsDragging(true);
+     isDraggingRef.current = true;
+@@ -77,7 +168,7 @@ trackUpdateNodes(updatedNodes, nodes);
+       // Clear local nodes to avoid stale state
+       setLocalNodes([]);
+     }
+-  }, [localNodes, updateNodes]);
++  }, [localNodes, trackUpdateNodes, nodes]);
+ 
+   const handleNodeEdit = useCallback(
+     (nodeId: string, label: string, details: string) => {
+@@ -100,11 +191,19 @@ trackUpdateNodes(updatedNodes, nodes);
+ 
+   const getVisibleNodes = useCallback(() => {
+     // Return local nodes during drag, otherwise return store nodes
+-    return isDraggingRef.current && localNodes.length > 0 ? localNodes : nodes;
+-  }, [nodes, localNodes]);
++    const nodesToProcess = isDraggingRef.current && localNodes.length > 0 ? localNodes : nodes;
++    return applyCollapsedState(nodesToProcess);
++  }, [nodes, localNodes, applyCollapsedState]);
+ 
+   // Memoize the displayed nodes to prevent unnecessary recalculations
+-  const displayedNodes = useMemo(() => getVisibleNodes(), [getVisibleNodes]);
++  const displayedNodes = useMemo(() => getVisibleNodes(), [getVisibleNodes, expandedNodes, nodes]);
++  
++  // Memoize the visible parent-child map to prevent unnecessary recalculations
++  const visibleNodeParentMap = useMemo(() => getVisibleNodeParentMap(), [getVisibleNodeParentMap, expandedNodes, nodes]);
++
++  // Memoize the visible node map to prevent unnecessary recalculations
++  const visibleNodeMap = useMemo(() => getVisibleNodeMap(), [getVisibleNodeMap, expandedNodes, nodes]);
++
+ 
+   const handleSetNodes = useCallback(
+     (newNodes: Node<NodeData>[]) => {
+@@ -113,13 +212,30 @@ trackUpdateNodes(updatedNodes, nodes);
+     },
+     [trackSetNodes, nodes]
+   );
++
++  
++
++
++  const handleUpdateNode = useCallback(
++    (updatedNode: Node) => {
++      console.log("Updating node:", updatedNode);
++      trackUpdateNode(updatedNode, nodes);
++    },
++    [nodes, trackUpdateNodes]
++  );
++  
+   return {
+     displayedNodes,
+     nodes: displayedNodes, // Return the same memoized value
+     nodeMap,
+     nodeParentMap,
++    expandedNodes,
++    toggleNodeExpansion,
++    visibleNodeMap, // New filtered map for layout calculations
++    visibleNodeParentMap, // New filtered map for layout calculations
+     setNodes: handleSetNodes,
+     updateNodes: trackUpdateNodes,
++    updateNode: handleUpdateNode,
+     handleUpdateNodes,
+     onNodesChange,
+     handleNodeEdit,
+diff --git a/src/Mindmap/Nodes/CellNode/CellNode.tsx b/src/Mindmap/Nodes/CellNode/CellNode.tsx
+index a22268e..ef7aaaa 100644
+--- a/src/Mindmap/Nodes/CellNode/CellNode.tsx
++++ b/src/Mindmap/Nodes/CellNode/CellNode.tsx
+@@ -32,7 +32,7 @@ const CellComponent = (node: Node<CourseNodeData>) => {
+   useEffect(() => {
+     if (isExpanded) {
+       reactFlowInstance.setNodes((nodes) =>
+-        nodes.map((n) => (n.id === node.id ? { ...n, zIndex: 1000 } : n))
++        nodes.map((n) => (n.id === node.id ? { ...n } : n))
+       );
+     }
+   }, [isExpanded, node.id, reactFlowInstance]);
+diff --git a/src/Mindmap/Nodes/CellNode/CellNodeStyles.tsx b/src/Mindmap/Nodes/CellNode/CellNodeStyles.tsx
+index 7328d94..f2a0226 100644
+--- a/src/Mindmap/Nodes/CellNode/CellNodeStyles.tsx
++++ b/src/Mindmap/Nodes/CellNode/CellNodeStyles.tsx
+@@ -6,7 +6,8 @@ export const StyledNodeCard = styled(Card, {
+ })<{ courseColor: string; selected: boolean }>(
+   ({ theme, courseColor, selected }) => ({
+     display: "inline-block",
+-    width: "fit-content",
++    // width: "fit-content",
++    width: 172,
+     backgroundColor: theme.palette.background.paper,
+     borderLeft: `4px solid ${courseColor}`,
+     overflow: "hidden",
+diff --git a/src/Mindmap/Nodes/ContainerNode/ContainerNode.tsx b/src/Mindmap/Nodes/ContainerNode/ContainerNode.tsx
+index 32471ba..4496b9b 100644
+--- a/src/Mindmap/Nodes/ContainerNode/ContainerNode.tsx
++++ b/src/Mindmap/Nodes/ContainerNode/ContainerNode.tsx
+@@ -1,15 +1,13 @@
+-import { HTMLAttributes } from "react";
+ import {
+   NodeProps,
+   NodeResizer,
+-  Node,
+   ResizeDragEvent,
+   ResizeParams,
+   Position,
++  useReactFlow,
++  useUpdateNodeInternals,
+ } from "@xyflow/react";
+-import { Box, Typography } from "@mui/material";
+ import { BaseNodeContainer, StyledHandle } from "../common/NodeStyles";
+-import { useNodeStore } from "../../stores";
+ import { LAYOUT_CONSTANTS } from "../../Layout/utils/layoutUtils";
+ import {
+   NodeHeader,
+@@ -18,124 +16,108 @@ import {
+   NodeHeaderMenuAction,
+   NodeHeaderDeleteAction,
+ } from "../common/NodeHeader";
++import { useNodeState } from "../../Node/hooks/useNodeState";
++import ExpandCollapseButton from "../common/ExpandCollapseButton";
++import NodeContent from "../common/NodeContent";
++import { NodeStyleHelper } from "../common/NodeStyleHelper";
++import { UnifiedNodeData, isCourseNode } from "./types";
+ 
+ /**
+  * ContainerNode component
+  * Represents a container node in the mind map
+- *
+- * @param {NodeProps} props - Props for the node
+- * @returns {JSX.Element} - Rendered node component
+- *
+- * @typedef {Object} UnifiedNodeData
+- *
+- * @public
+  */
+-interface UnifiedNodeData {
+-  label: string;
+-  details?: string;
+-  nodeLevel?: "basic" | "intermediate" | "advanced";
+-  level: number;
+-  parent?: string;
+-  courseCode?: string;
+-  subject?: string;
+-  nodeType?: "course" | "module";
+-  position: { x: number; y: number };
+-  [key: string]: unknown;
+-}
+-
+-export type NodeLabelProps = HTMLAttributes<HTMLDivElement>;
+-
+-const NodeLabel = ({ children }: NodeLabelProps) => {
+-  return (
+-    <Box sx={{ width: "100%" }}>
+-      <Typography>{children}</Typography>
+-    </Box>
+-  );
+-};
+-
+-NodeLabel.displayName = "NodeLabel";
+-
+-export const ContainerNode = (node: NodeProps<Node<UnifiedNodeData>>) => {
+-  const { updateNode, nodeMap } = useNodeStore();
+-
+-  const nodeInStore = nodeMap.get(node.id);
+-
+-  const nodeType =
+-    node.data.nodeType || (node.data.courseCode ? "course" : "module");
+-  const isCourse = nodeType === "course";
+-
+-  const getNodeColor = (nodeLevel: UnifiedNodeData["nodeLevel"]) => {
+-    const level = nodeLevel || "intermediate";
+-    switch (level) {
+-      case "basic":
+-        return "#1976d2"; // blue
+-      case "intermediate":
+-        return "#9c27b0"; // purple
+-      case "advanced":
+-        return "#dc004e"; // red
+-      default:
+-        return "#1976d2"; // default blue
+-    }
+-  };
+-
+-  const nodeColor = isCourse
+-    ? "primary.main"
+-    : getNodeColor(node.data.nodeLevel);
+-
+-  const handleResize = (_: ResizeDragEvent, data: ResizeParams) => {
+-    if (!nodeInStore) {
+-      console.error(`Node with id ${node.id} not found in store.`);
+-      return;
+-    }
+-    // const reactFlowInstance = useReactFlow();
+-
+-    const { width, height } = data;
++export const ContainerNode = ({
++  id,
++  data,
++  selected,
++  targetPosition,
++  sourcePosition,
++}: NodeProps) => {
++  const { updateNode, nodeParentMap, expandedNodes, toggleNodeExpansion } = useNodeState();
++  const updateNodeInternals = useUpdateNodeInternals();
++  const { getNode } = useReactFlow();
++
++  const nodeInStore = getNode(id);
++  const isExpanded = expandedNodes[id] !== false; // Default to expanded if not explicitly collapsed
++  
++  // Safely cast data to our expected type
++  const nodeData = data as UnifiedNodeData;
++  const isCourse = isCourseNode(nodeData);
++  
++  // Calculate styling
++  const nodeColor = NodeStyleHelper.getNodeColor({
++    nodeLevel: nodeData.nodeLevel,
++    isCourse
++  });
++
++  const handleResize = (_: ResizeDragEvent, params: ResizeParams) => {
++    if (!nodeInStore) return;
++    
+     updateNode({
+       ...nodeInStore,
+-      width: width,
+-      height: height,
++      style: {
++        ...nodeInStore.style,
++        width: params.width,
++        height: params.height,
++      },
++      measured: undefined,
++      width: undefined,
++      height: undefined,
+     });
+   };
+ 
++  const childNodes = nodeParentMap.get(id) || [];
++  const childCount = childNodes.length;
++
+   if (!nodeInStore) {
+-    console.error(`Node with id ${node.id} not found in store.`);
++    console.error(`Node with id ${id} not found in store.`);
+     return null;
+   }
++
+   return (
+     <>
+-      {node.selected && (
++      {selected && (
+         <NodeResizer
+-          minWidth={LAYOUT_CONSTANTS.NODE_DEFAULT_WIDTH * 2}
+-          minHeight={LAYOUT_CONSTANTS.NODE_DEFAULT_HEIGHT * 3}
++          minHeight={LAYOUT_CONSTANTS.NODE_DEFAULT_HEIGHT}
++          minWidth={LAYOUT_CONSTANTS.NODE_DEFAULT_WIDTH}
+           onResize={handleResize}
+         />
+       )}
+       <BaseNodeContainer
+-        selected={node.selected}
++        onTransitionEnd={() => updateNodeInternals(id)}
++        selected={!!selected}
+         color={nodeColor}
+         sx={{
+-          width: nodeInStore.width || "100%",
+-          height: nodeInStore.height || "100%",
++          width: nodeInStore.width,
++          height: nodeInStore.height,
++          backgroundColor: "background.default",
+           display: "flex",
+           flexDirection: "column",
+           userSelect: "none",
++          transition: "width 0.2s ease, height 0.2s ease",
+           ...(isCourse && {
+             border: "0.5em solid",
+-            borderColor: node.selected ? "primary.main" : "divider",
++            borderColor: selected ? "primary.main" : "divider",
+           }),
+         }}
+       >
+         <StyledHandle
+           type="target"
+-          position={node?.targetPosition || Position.Top}
+-          color={
+-            isCourse ? (node.selected ? "primary.main" : "grey.400") : nodeColor
+-          }
++          position={targetPosition || Position.Top}
++          color="grey.400"
+         />
+ 
+         <NodeHeader className="dragHandle">
+-          <NodeHeaderTitle>{node.data.label}</NodeHeaderTitle>
++          <NodeHeaderTitle>{nodeData.label}</NodeHeaderTitle>
+           <NodeHeaderActions>
++            <ExpandCollapseButton
++              nodeInStore={nodeInStore}
++              nodeId={id}
++              isExpanded={isExpanded}
++              childCount={childCount}
++              updateNode={updateNode}
++              toggleNodeExpansion={toggleNodeExpansion}
++            />
+             <NodeHeaderMenuAction label="Container Options">
+               {/* Add menu items here if needed */}
+             </NodeHeaderMenuAction>
+@@ -143,20 +125,15 @@ export const ContainerNode = (node: NodeProps<Node<UnifiedNodeData>>) => {
+           </NodeHeaderActions>
+         </NodeHeader>
+ 
+-        {!isCourse && node.data.details && (
+-          <Box sx={{ flex: 1, p: 1.25 }}>
+-            <Typography variant="body2" color="text.secondary">
+-              {node.data.details}
+-            </Typography>
+-          </Box>
+-        )}
++        <NodeContent 
++          isCourse={isCourse}
++          details={nodeData.details}
++        />
+ 
+         <StyledHandle
+           type="source"
+-          position={node?.sourcePosition || Position.Bottom}
+-          color={
+-            isCourse ? (node.selected ? "primary.main" : "grey.400") : nodeColor
+-          }
++          position={sourcePosition || Position.Bottom}
++          color="grey.400"
+         />
+       </BaseNodeContainer>
+     </>
+diff --git a/src/Mindmap/Nodes/registerBasicNodeTypes.ts b/src/Mindmap/Nodes/registerBasicNodeTypes.ts
+index 98c1f45..13a6338 100644
+--- a/src/Mindmap/Nodes/registerBasicNodeTypes.ts
++++ b/src/Mindmap/Nodes/registerBasicNodeTypes.ts
+@@ -11,26 +11,6 @@ import { createContainerNodeTemplate } from "./ContainerNode/createContainerNode
+ // Track initialization state
+ let registered = false;
+ 
+-/**
+- * Initialize the node type registry with default node types
+- *
+- * Initialize the node type registry with default node types
+- *
+- * This function should be called once when the application starts
+- */
+-export function initializeNodeTypeRegistry(): void {
+-  // Register the custom node type
+-  registerNodeType("cellnode", CellNode, createCellNodeTemplate);
+-
+-  // Register the group node type
+-  registerNodeType("coursenode", ContainerNode, createContainerNodeTemplate);
+-
+-  // Register the module node type
+-  registerNodeType("modulenode", ContainerNode, createContainerNodeTemplate);
+-
+-  // Additional node types can be registered here
+-}
+-
+ /**
+  * Call this function to ensure node types are registered
+  */
+diff --git a/src/Mindmap/index.tsx b/src/Mindmap/index.tsx
+index b3f7537..5947ad8 100644
+--- a/src/Mindmap/index.tsx
++++ b/src/Mindmap/index.tsx
+@@ -2,6 +2,7 @@
+ import {
+   Background,
+   BackgroundVariant,
++  Node,
+   ReactFlowProvider,
+   useReactFlow,
+ } from "@xyflow/react";
+@@ -35,12 +36,13 @@ export function MindmapContent() {
+   const { showGrid } = useViewPreferencesStore();
+   const reactFlowInstance = useReactFlow();
+ 
+-
+   const {
+     handleUpdateNodes,
+     nodeMap,
+     nodeParentMap,
+-  }= useNodeState();
++    visibleNodeMap,
++    visibleNodeParentMap,
++  } = useNodeState();
+ 
+   const { handleUpdateEdges } = useEdgeState();
+ 
+@@ -56,44 +58,53 @@ export function MindmapContent() {
+     });
+   }, [reactFlowInstance]);
+ 
++  const handleToggleFullscreen = useCallback(() => {
++    if (!document.fullscreenElement) {
++      flowWrapper.current?.requestFullscreen();
++    } else {
++      document.exitFullscreen();
++    }
++  }, [flowWrapper]);
++const testCallNodes = useCallback((nodes: Node[]) => {
++  console.log("testCallNodes:", nodes);
++  handleUpdateNodes(nodes);
++  console.log("testCallNodes - visibleNodeMap:", visibleNodeMap);
++}, [handleUpdateNodes, visibleNodeMap]);
++  
++  console.log("Node Parent Map:", visibleNodeParentMap);
++  console.log("VISIBLE Node Map:", visibleNodeMap);
+   return (
+     <LayoutProvider
+-    initialDirection="DOWN"
+-    initialAutoLayout={true}
+-    initialPadding={50}
+-    initialSpacing={{ node: 50, layer: 50 }}
+-    initialParentResizingOptions={{
+-      padding: {
+-        horizontal: 50,
+-        vertical: 40,
+-      },
+-      minWidth: 150,
+-      minHeight: 150,
+-    }}
+-    updateNodes={handleUpdateNodes}
+-    updateEdges={handleUpdateEdges}
+-    parentIdWithNodes={nodeParentMap}
+-    nodeIdWithNode={nodeMap}
++      initialDirection="DOWN"
++      initialAutoLayout={true}
++      initialPadding={100}
++      initialSpacing={{ node: 50, layer: 50 }}
++      initialParentResizingOptions={{
++        padding: {
++          horizontal: 120,
++          vertical: 100,
++        },
++        minWidth: 150,
++        minHeight: 150,
++      }}
++      //updateNodes={handleUpdateNodes}
++      updateNodes={testCallNodes}
++      updateEdges={handleUpdateEdges}
++      parentIdWithNodes={visibleNodeParentMap}
++      nodeIdWithNode={visibleNodeMap}
+     >
+-
+       <FlowContainer ref={flowWrapper} onWheel={handleWheel}>
+         <Flow>
+           <UnifiedControls
+             onFitView={fitView}
+-            onToggleFullscreen={() => {
+-              if (!document.fullscreenElement) {
+-                flowWrapper.current?.requestFullscreen();
+-              } else {
+-                document.exitFullscreen();
+-              }
+-            }}
+-            />
++            onToggleFullscreen={handleToggleFullscreen}
++          />
+           {showGrid && (
+             <Background
+-            variant={BackgroundVariant.Lines}
+-            gap={GRID_SETTINGS.BACKGROUND_GAP}
+-            size={GRID_SETTINGS.BACKGROUND_SIZE}
+-            color={theme.palette.divider}
++              variant={BackgroundVariant.Lines}
++              gap={GRID_SETTINGS.BACKGROUND_GAP}
++              size={GRID_SETTINGS.BACKGROUND_SIZE}
++              color={theme.palette.divider}
+             />
+           )}
+           <SelectLogic />
+@@ -101,22 +112,18 @@ export function MindmapContent() {
+           {/* Register available controls here */}
+           <TestControlsRegistration />
+           <LayoutControlsRegistration />
+-
+         </Flow>
+       </FlowContainer>
+-        </LayoutProvider>
++    </LayoutProvider>
+   );
+ }
+ 
+-
+ const Mindmap = () => (
+   <ReactFlowProvider>
+     <SelectProvider>
+-    <ReactStateHistory>
+-
+-      
+-      <MindmapContent />
+-    </ReactStateHistory>
++      <ReactStateHistory>
++        <MindmapContent />
++      </ReactStateHistory>
+     </SelectProvider>
+   </ReactFlowProvider>
+ );

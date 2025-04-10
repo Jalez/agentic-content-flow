@@ -1,12 +1,13 @@
 /** @format */
-import React from "react";
-import { Box, Divider, Paper, useTheme, SxProps, Theme } from "@mui/material";
+import { Fragment, useMemo, memo } from "react";
+import { Box, Paper, useTheme, SxProps, Theme, Divider } from "@mui/material";
 import { Panel, PanelPosition } from "@xyflow/react";
 
 import RegisteredControls from "./RegisteredControls";
 import KeyboardShortcutPanel from "../../KeyboardShortCuts";
 import { useControls } from "../context/ControlsContext";
 import { CONTROL_TYPES } from "../../constants";
+import { useControlsRegistry } from "./controlsRegistry";
 
 interface UnifiedControlsPanelProps {
   context?: string;
@@ -16,10 +17,11 @@ interface UnifiedControlsPanelProps {
 /**
  * UnifiedControlsPanel Component
  *
- * @version 1.0.0
+ * @version 2.0.0
  *
  * A panel component that displays registered controls of different types.
  * Uses the controls registry system to dynamically render controls.
+ * Now supports dynamically registered control types.
  *
  * @example
  * ```tsx
@@ -33,13 +35,15 @@ interface UnifiedControlsPanelProps {
  * <UnifiedControlsPanel position="bottom-left" />
  * ```
  */
-const UnifiedControlsPanel: React.FC<UnifiedControlsPanelProps> = ({
+const UnifiedControlsPanel: React.FC<UnifiedControlsPanelProps> = memo(({
   position = "top-right",
+  context = CONTROL_TYPES.MINDMAP,
 }) => {
   const theme = useTheme();
   const { showShortcuts } = useControls();
+  const { getControlTypes } = useControlsRegistry();
 
-  const dividerSectionStyle: SxProps<Theme> = {
+  const dividerSectionStyle: SxProps<Theme> = useMemo(() => ({
     display: "flex",
     gap: 1,
     "&:not(:empty)::before": {
@@ -48,54 +52,52 @@ const UnifiedControlsPanel: React.FC<UnifiedControlsPanelProps> = ({
       marginLeft: 1,
       marginRight: 1,
     },
-  };
+  }), [theme.palette.divider]);
+
+  // Get all registered control types for this context
+  const controlTypes = useMemo(() => getControlTypes(context), [getControlTypes, context]);
+
+  // Only log in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log("UnifiedControlsPanel - control types:", controlTypes);
+  }
+
+  // Memoize the entire controls panel structure
+  const controlsPanel = useMemo(() => (
+    <Panel position={position}>
+      <Paper
+        elevation={3}
+        sx={{
+          borderRadius: 1,
+          backgroundColor: theme.palette.background.paper,
+          overflow: "hidden",
+          mr: 4,
+        }}
+      >
+        <Box sx={{ display: "flex", flexDirection: "row", gap: 2, p: 1 }}>
+          {controlTypes.map((type, index) => (
+            <Fragment key={`control-type-${type}`}>
+              {index > 0 && <Divider orientation="vertical" flexItem sx={dividerSectionStyle} />}
+              <RegisteredControls
+                type={type}
+                context={context}
+              />
+            </Fragment>
+          ))}
+        </Box>
+      </Paper>
+    </Panel>
+  ), [position, theme.palette.background.paper, controlTypes, context, dividerSectionStyle]);
 
   return (
     <>
-      <Panel position={position}>
-        <Paper
-          elevation={3}
-          sx={{
-            borderRadius: 1,
-            backgroundColor: theme.palette.background.paper,
-            overflow: "hidden",
-            mr: 4,
-          }}
-        >
-          <Box sx={{ display: "flex", flexDirection: "row", gap: 2, p: 1 }}>
-            <RegisteredControls
-              type="navigation"
-              context={CONTROL_TYPES.MINDMAP}
-            />
-
-            <Divider orientation="vertical" flexItem />
-
-            <RegisteredControls
-              type="viewSettings"
-              context={CONTROL_TYPES.MINDMAP}
-            />
-
-            {/* Only add tools section if there are registered tools */}
-            <RegisteredControls
-              type="tools"
-              context={CONTROL_TYPES.MINDMAP}
-              containerSx={dividerSectionStyle}
-            />
-
-            {/* Only add custom section if there are registered custom controls */}
-            <RegisteredControls
-              type="custom"
-              context={CONTROL_TYPES.MINDMAP}
-              containerSx={dividerSectionStyle}
-            />
-          </Box>
-        </Paper>
-      </Panel>
-
+      {controlsPanel}
       {/* Keyboard Shortcuts Panel */}
       {showShortcuts && <KeyboardShortcutPanel />}
     </>
   );
-};
+});
+
+UnifiedControlsPanel.displayName = 'UnifiedControlsPanel';
 
 export default UnifiedControlsPanel;

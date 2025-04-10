@@ -60,7 +60,14 @@ export const FlowContainer = forwardRef<HTMLDivElement, FlowContainerProps>(
               strokeWidth: 3,
               filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))",
             },
-            zIndex: 1000,
+            //zIndex: 1000,
+          },
+          ".selected": {
+            zIndex: 0 +"!important",
+            //react-flow__node that is a child of a selected react-flow__node should also have its zIndex set to 0
+            "& .react-flow__node": {
+              zIndex: 0 + "!important",
+            },
           },
           // Add specific styling for selected edges
           "& .react-flow__edge.selected .react-flow__edge-path": {
@@ -69,9 +76,10 @@ export const FlowContainer = forwardRef<HTMLDivElement, FlowContainerProps>(
             filter: `drop-shadow(0 0 5px ${theme.palette.primary.main})`,
           },
           "& .react-flow__node": {
+            zIndex: 0 + "!important",
             borderRadius: 10,
             "&.dragging": {
-              zIndex: 1000,
+              //zIndex: 1001,
               cursor: "grabbing",
               // transform: "translate3d(0,0,0)",
             },

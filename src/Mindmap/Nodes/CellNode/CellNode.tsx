@@ -32,7 +32,7 @@ const CellComponent = (node: Node<CourseNodeData>) => {
   useEffect(() => {
     if (isExpanded) {
       reactFlowInstance.setNodes((nodes) =>
-        nodes.map((n) => (n.id === node.id ? { ...n, zIndex: 1000 } : n))
+        nodes.map((n) => (n.id === node.id ? { ...n } : n))
       );
     }
   }, [isExpanded, node.id, reactFlowInstance]);

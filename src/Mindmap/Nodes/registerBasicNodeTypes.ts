@@ -12,26 +12,6 @@ import { createContainerNodeTemplate } from "./ContainerNode/createContainerNode
 let registered = false;
 
 /**
- * Initialize the node type registry with default node types
- *
- * Initialize the node type registry with default node types
- *
- * This function should be called once when the application starts
- */
-export function initializeNodeTypeRegistry(): void {
-  // Register the custom node type
-  registerNodeType("cellnode", CellNode, createCellNodeTemplate);
-
-  // Register the group node type
-  registerNodeType("coursenode", ContainerNode, createContainerNodeTemplate);
-
-  // Register the module node type
-  registerNodeType("modulenode", ContainerNode, createContainerNodeTemplate);
-
-  // Additional node types can be registered here
-}
-
-/**
  * Call this function to ensure node types are registered
  */
 export function ensureNodeTypesRegistered(): void {

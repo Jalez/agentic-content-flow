@@ -78,7 +78,7 @@ export default function ReactStateHistory({
   //Register <ReactStateHistoryControls /> to the controls panel
   useEffect(() => {
     registerControl(
-      "tools", // Use the tools section
+      "history", // Use the tools section
       CONTROL_TYPES.MINDMAP,
       "REACT_STATE_HISTORY_CONTROLS",
       ReactStateHistoryControls,
@@ -89,7 +89,7 @@ export default function ReactStateHistory({
     // Cleanup when unmounted
     return () => {
       unregisterControl(
-        "tools",
+        "history",
         CONTROL_TYPES.MINDMAP,
         "REACT_STATE_HISTORY_CONTROLS"
       );

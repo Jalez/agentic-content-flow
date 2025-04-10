@@ -15,17 +15,17 @@ const LayoutControlsRegistration = () => {
   useEffect(() => {
     // Register the layout controls in the tools section
     registerControl(
-      "tools", // Use the tools section of the controls panel
+      "layout", // Create a new layout section
       CONTROL_TYPES.MINDMAP,
       "LAYOUT_CONTROLS",
-      LayoutControls,
+      LayoutControls, 
       {}, // No props needed as component uses hooks internally
       20 // Priority - lower than test data switcher
     );
 
     // Cleanup when unmounted
     return () => {
-      unregisterControl("tools", CONTROL_TYPES.MINDMAP, "LAYOUT_CONTROLS");
+      unregisterControl("layout", CONTROL_TYPES.MINDMAP, "LAYOUT_CONTROLS");
     };
   }, []); // Empty dependency array ensures this runs only once
 

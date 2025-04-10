@@ -2,6 +2,7 @@
 import {
   Background,
   BackgroundVariant,
+  Node,
   ReactFlowProvider,
   useReactFlow,
 } from "@xyflow/react";
@@ -35,12 +36,13 @@ export function MindmapContent() {
   const { showGrid } = useViewPreferencesStore();
   const reactFlowInstance = useReactFlow();
 
-
   const {
     handleUpdateNodes,
     nodeMap,
     nodeParentMap,
-  }= useNodeState();
+    visibleNodeMap,
+    visibleNodeParentMap,
+  } = useNodeState();
 
   const { handleUpdateEdges } = useEdgeState();
 
@@ -56,44 +58,53 @@ export function MindmapContent() {
     });
   }, [reactFlowInstance]);
 
+  const handleToggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      flowWrapper.current?.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  }, [flowWrapper]);
+const testCallNodes = useCallback((nodes: Node[]) => {
+  console.log("testCallNodes:", nodes);
+  handleUpdateNodes(nodes);
+  console.log("testCallNodes - visibleNodeMap:", visibleNodeMap);
+}, [handleUpdateNodes, visibleNodeMap]);
+  
+  console.log("Node Parent Map:", visibleNodeParentMap);
+  console.log("VISIBLE Node Map:", visibleNodeMap);
   return (
     <LayoutProvider
-    initialDirection="DOWN"
-    initialAutoLayout={true}
-    initialPadding={50}
-    initialSpacing={{ node: 50, layer: 50 }}
-    initialParentResizingOptions={{
-      padding: {
-        horizontal: 50,
-        vertical: 40,
-      },
-      minWidth: 150,
-      minHeight: 150,
-    }}
-    updateNodes={handleUpdateNodes}
-    updateEdges={handleUpdateEdges}
-    parentIdWithNodes={nodeParentMap}
-    nodeIdWithNode={nodeMap}
+      initialDirection="DOWN"
+      initialAutoLayout={true}
+      initialPadding={100}
+      initialSpacing={{ node: 50, layer: 50 }}
+      initialParentResizingOptions={{
+        padding: {
+          horizontal: 120,
+          vertical: 100,
+        },
+        minWidth: 150,
+        minHeight: 150,
+      }}
+      //updateNodes={handleUpdateNodes}
+      updateNodes={testCallNodes}
+      updateEdges={handleUpdateEdges}
+      parentIdWithNodes={visibleNodeParentMap}
+      nodeIdWithNode={visibleNodeMap}
     >
-
       <FlowContainer ref={flowWrapper} onWheel={handleWheel}>
         <Flow>
           <UnifiedControls
             onFitView={fitView}
-            onToggleFullscreen={() => {
-              if (!document.fullscreenElement) {
-                flowWrapper.current?.requestFullscreen();
-              } else {
-                document.exitFullscreen();
-              }
-            }}
-            />
+            onToggleFullscreen={handleToggleFullscreen}
+          />
           {showGrid && (
             <Background
-            variant={BackgroundVariant.Lines}
-            gap={GRID_SETTINGS.BACKGROUND_GAP}
-            size={GRID_SETTINGS.BACKGROUND_SIZE}
-            color={theme.palette.divider}
+              variant={BackgroundVariant.Lines}
+              gap={GRID_SETTINGS.BACKGROUND_GAP}
+              size={GRID_SETTINGS.BACKGROUND_SIZE}
+              color={theme.palette.divider}
             />
           )}
           <SelectLogic />
@@ -101,22 +112,18 @@ export function MindmapContent() {
           {/* Register available controls here */}
           <TestControlsRegistration />
           <LayoutControlsRegistration />
-
         </Flow>
       </FlowContainer>
-        </LayoutProvider>
+    </LayoutProvider>
   );
 }
-
 
 const Mindmap = () => (
   <ReactFlowProvider>
     <SelectProvider>
-    <ReactStateHistory>
-
-      
-      <MindmapContent />
-    </ReactStateHistory>
+      <ReactStateHistory>
+        <MindmapContent />
+      </ReactStateHistory>
     </SelectProvider>
   </ReactFlowProvider>
 );

@@ -25,7 +25,7 @@ export const useEdgeState = () => {
       const newEdges = applyEdgeChanges(changes, edges);
       trackUpdateEdges(newEdges, edges); // Use updateEdges instead of setEdges for consistency
     }),
-    [edges, updateEdges]
+    [edges, setEdges, trackUpdateEdges]
   );
 
   const handleUpdateEdges = useCallback(
@@ -35,7 +35,7 @@ export const useEdgeState = () => {
       }
       trackUpdateEdges(newEdges, edges); // Use updateEdges for consistency
     }),
-    [updateEdges]
+    [updateEdges, edges, trackUpdateEdges]
   );
 
   const getVisibleEdges = useCallback(() => {
@@ -49,7 +49,7 @@ export const useEdgeState = () => {
       }
       trackSetEdges(newEdges, edges); // Use setEdges for consistency
     }),
-    [setEdges]
+    [setEdges, edges, trackSetEdges]
   );
 
   return {

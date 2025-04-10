@@ -1,5 +1,5 @@
 /** @format */
-import React, { useMemo } from "react";
+import React, { useMemo, memo } from "react";
 import { Box } from "@mui/material";
 import {
   useControlsRegistry,
@@ -34,7 +34,7 @@ interface RegisteredControlsProps {
  * />
  * ```
  */
-const RegisteredControls: React.FC<RegisteredControlsProps> = ({
+const RegisteredControls: React.FC<RegisteredControlsProps> = memo(({
   type,
   context,
   containerSx = { display: "flex", gap: 1 },
@@ -45,25 +45,32 @@ const RegisteredControls: React.FC<RegisteredControlsProps> = ({
   // Get controls for the specified type and context
   const controls = useMemo(
     () => getControls(type, context),
-    [getControls, type, context]
+    [getControls, type, context, version] // Include version in dependencies
   );
 
-  if (!controls.length) return null;
+  // Memoize the rendered controls
+  const renderedControls = useMemo(() => {
+    if (!controls.length) return null;
+    
+    return (
+      <Box sx={containerSx}>
+        {controls.map((entry: ControlEntry, index) => {
+          const { Component, props } = entry;
+          // Render with props if available, otherwise render without props
+          return (
+            <Component
+              key={`${type}-${context}-${entry.name || index}-${version}`}
+              {...(props || {})}
+            />
+          );
+        })}
+      </Box>
+    );
+  }, [controls, containerSx, type, context, version]);
 
-  return (
-    <Box sx={containerSx}>
-      {controls.map((entry: ControlEntry, index) => {
-        const { Component, props } = entry;
-        // Render with props if available, otherwise render without props
-        return (
-          <Component
-            key={`${type}-${context}-${entry.name || index}-${version}`}
-            {...(props || {})}
-          />
-        );
-      })}
-    </Box>
-  );
-};
+  return renderedControls;
+});
+
+RegisteredControls.displayName = 'RegisteredControls';
 
 export default RegisteredControls;

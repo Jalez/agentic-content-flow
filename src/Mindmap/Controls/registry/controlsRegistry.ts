@@ -6,7 +6,7 @@ import { useShallow } from "zustand/react/shallow";
 /**
  * Controls Registry System
  *
- * @version 1.1.0
+ * @version 1.2.0
  *
  * A flexible system for registering and managing different types of controls in the mindmap.
  * Supports dynamic registration, unregistration, and automatic re-rendering.
@@ -29,8 +29,16 @@ import { useShallow } from "zustand/react/shallow";
  * ```
  */
 
-// Control types - add more as needed
-export type ControlType = "navigation" | "viewSettings" | "tools" | "custom";
+// Control types - now supports any string value for dynamic control types
+export type ControlType = string;
+
+// Default built-in control types
+export const DEFAULT_CONTROL_TYPES = {
+  NAVIGATION: "navigation",
+  VIEW_SETTINGS: "viewSettings",
+  TOOLS: "tools",
+  CUSTOM: "custom",
+} as const;
 
 /**
  * Control entry containing the component, name, and optional props
@@ -47,16 +55,16 @@ export interface ControlEntry {
  */
 interface ControlsRegistryStore {
   version: number;
-  controls: Record<ControlType, Record<string, ControlEntry[]>>;
+  controls: Record<string, Record<string, ControlEntry[]>>;
   incrementVersion: () => void;
   setControls: (
-    controls: Record<ControlType, Record<string, ControlEntry[]>>
+    controls: Record<string, Record<string, ControlEntry[]>>
   ) => void;
 }
 
 // Separate registries for different control types, using Map<ControlType, Map<context, Map<name, ControlEntry>>>
 const controlsRegistry = new Map<
-  ControlType,
+  string,
   Map<string, Map<string, ControlEntry>>
 >();
 
@@ -64,10 +72,10 @@ const controlsRegistry = new Map<
 const useControlsRegistryStoreRaw = create<ControlsRegistryStore>((set) => ({
   version: 0,
   controls: {
-    navigation: {},
-    viewSettings: {},
-    tools: {},
-    custom: {},
+    [DEFAULT_CONTROL_TYPES.NAVIGATION]: {},
+    [DEFAULT_CONTROL_TYPES.VIEW_SETTINGS]: {},
+    [DEFAULT_CONTROL_TYPES.TOOLS]: {},
+    [DEFAULT_CONTROL_TYPES.CUSTOM]: {},
   },
   incrementVersion: () => set((state) => ({ version: state.version + 1 })),
   setControls: (controls) => set({ controls }),
@@ -94,15 +102,19 @@ const initContext = (
 
 // Process the registry and update store
 const updateRegistry = () => {
-  const controlsState: Record<ControlType, Record<string, ControlEntry[]>> = {
-    navigation: {},
-    viewSettings: {},
-    tools: {},
-    custom: {},
-  };
+  const controlsState: Record<string, Record<string, ControlEntry[]>> = {};
+
+  // Initialize with default types
+  Object.values(DEFAULT_CONTROL_TYPES).forEach(type => {
+    controlsState[type] = {};
+  });
 
   // Convert the Map structure to the store structure
   controlsRegistry.forEach((contextMap, type) => {
+    if (!controlsState[type]) {
+      controlsState[type] = {};
+    }
+    
     contextMap.forEach((controlMap, context) => {
       // Convert Map values to array and sort by order
       const entries = Array.from(controlMap.values());
@@ -205,6 +217,25 @@ export function getControls(
 }
 
 /**
+ * Get all registered control types for a specific context.
+ * 
+ * @param context - The context identifier to get the control types for
+ * @returns An array of control types that have registered controls for this context
+ */
+export function getControlTypes(context: string): string[] {
+  const storeState = useControlsRegistryStoreRaw.getState();
+  const types: string[] = [];
+  
+  Object.entries(storeState.controls).forEach(([type, contexts]) => {
+    if (contexts[context] && contexts[context].length > 0) {
+      types.push(type);
+    }
+  });
+  
+  return types;
+}
+
+/**
  * Clear all registered controls for a specific context and type.
  *
  * @param type - The type of control (navigation, viewSettings, etc.)
@@ -272,6 +303,15 @@ export function useControlsRegistry() {
       controls: cachedControls,
       getControls: (type: ControlType, context: string) =>
         cachedControls[type]?.[context] || [],
+      getControlTypes: (context: string) => {
+        const types: string[] = [];
+        Object.entries(cachedControls).forEach(([type, contexts]) => {
+          if (contexts[context] && contexts[context].length > 0) {
+            types.push(type);
+          }
+        });
+        return types;
+      }
     }),
     [cachedControls, version]
   );

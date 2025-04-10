@@ -6,7 +6,8 @@ export const StyledNodeCard = styled(Card, {
 })<{ courseColor: string; selected: boolean }>(
   ({ theme, courseColor, selected }) => ({
     display: "inline-block",
-    width: "fit-content",
+    // width: "fit-content",
+    width: 172,
     backgroundColor: theme.palette.background.paper,
     borderLeft: `4px solid ${courseColor}`,
     overflow: "hidden",

@@ -1,15 +1,13 @@
-import { HTMLAttributes } from "react";
 import {
   NodeProps,
   NodeResizer,
-  Node,
   ResizeDragEvent,
   ResizeParams,
   Position,
+  useReactFlow,
+  useUpdateNodeInternals,
 } from "@xyflow/react";
-import { Box, Typography } from "@mui/material";
 import { BaseNodeContainer, StyledHandle } from "../common/NodeStyles";
-import { useNodeStore } from "../../stores";
 import { LAYOUT_CONSTANTS } from "../../Layout/utils/layoutUtils";
 import {
   NodeHeader,
@@ -18,124 +16,108 @@ import {
   NodeHeaderMenuAction,
   NodeHeaderDeleteAction,
 } from "../common/NodeHeader";
+import { useNodeState } from "../../Node/hooks/useNodeState";
+import ExpandCollapseButton from "../common/ExpandCollapseButton";
+import NodeContent from "../common/NodeContent";
+import { NodeStyleHelper } from "../common/NodeStyleHelper";
+import { UnifiedNodeData, isCourseNode } from "./types";
 
 /**
  * ContainerNode component
  * Represents a container node in the mind map
- *
- * @param {NodeProps} props - Props for the node
- * @returns {JSX.Element} - Rendered node component
- *
- * @typedef {Object} UnifiedNodeData
- *
- * @public
  */
-interface UnifiedNodeData {
-  label: string;
-  details?: string;
-  nodeLevel?: "basic" | "intermediate" | "advanced";
-  level: number;
-  parent?: string;
-  courseCode?: string;
-  subject?: string;
-  nodeType?: "course" | "module";
-  position: { x: number; y: number };
-  [key: string]: unknown;
-}
+export const ContainerNode = ({
+  id,
+  data,
+  selected,
+  targetPosition,
+  sourcePosition,
+}: NodeProps) => {
+  const { updateNode, nodeParentMap, expandedNodes, toggleNodeExpansion } = useNodeState();
+  const updateNodeInternals = useUpdateNodeInternals();
+  const { getNode } = useReactFlow();
 
-export type NodeLabelProps = HTMLAttributes<HTMLDivElement>;
+  const nodeInStore = getNode(id);
+  const isExpanded = expandedNodes[id] !== false; // Default to expanded if not explicitly collapsed
+  
+  // Safely cast data to our expected type
+  const nodeData = data as UnifiedNodeData;
+  const isCourse = isCourseNode(nodeData);
+  
+  // Calculate styling
+  const nodeColor = NodeStyleHelper.getNodeColor({
+    nodeLevel: nodeData.nodeLevel,
+    isCourse
+  });
 
-const NodeLabel = ({ children }: NodeLabelProps) => {
-  return (
-    <Box sx={{ width: "100%" }}>
-      <Typography>{children}</Typography>
-    </Box>
-  );
-};
-
-NodeLabel.displayName = "NodeLabel";
-
-export const ContainerNode = (node: NodeProps<Node<UnifiedNodeData>>) => {
-  const { updateNode, nodeMap } = useNodeStore();
-
-  const nodeInStore = nodeMap.get(node.id);
-
-  const nodeType =
-    node.data.nodeType || (node.data.courseCode ? "course" : "module");
-  const isCourse = nodeType === "course";
-
-  const getNodeColor = (nodeLevel: UnifiedNodeData["nodeLevel"]) => {
-    const level = nodeLevel || "intermediate";
-    switch (level) {
-      case "basic":
-        return "#1976d2"; // blue
-      case "intermediate":
-        return "#9c27b0"; // purple
-      case "advanced":
-        return "#dc004e"; // red
-      default:
-        return "#1976d2"; // default blue
-    }
-  };
-
-  const nodeColor = isCourse
-    ? "primary.main"
-    : getNodeColor(node.data.nodeLevel);
-
-  const handleResize = (_: ResizeDragEvent, data: ResizeParams) => {
-    if (!nodeInStore) {
-      console.error(`Node with id ${node.id} not found in store.`);
-      return;
-    }
-    // const reactFlowInstance = useReactFlow();
-
-    const { width, height } = data;
+  const handleResize = (_: ResizeDragEvent, params: ResizeParams) => {
+    if (!nodeInStore) return;
+    
     updateNode({
       ...nodeInStore,
-      width: width,
-      height: height,
+      style: {
+        ...nodeInStore.style,
+        width: params.width,
+        height: params.height,
+      },
+      measured: undefined,
+      width: undefined,
+      height: undefined,
     });
   };
 
+  const childNodes = nodeParentMap.get(id) || [];
+  const childCount = childNodes.length;
+
   if (!nodeInStore) {
-    console.error(`Node with id ${node.id} not found in store.`);
+    console.error(`Node with id ${id} not found in store.`);
     return null;
   }
+
   return (
     <>
-      {node.selected && (
+      {selected && (
         <NodeResizer
-          minWidth={LAYOUT_CONSTANTS.NODE_DEFAULT_WIDTH * 2}
-          minHeight={LAYOUT_CONSTANTS.NODE_DEFAULT_HEIGHT * 3}
+          minHeight={LAYOUT_CONSTANTS.NODE_DEFAULT_HEIGHT}
+          minWidth={LAYOUT_CONSTANTS.NODE_DEFAULT_WIDTH}
           onResize={handleResize}
         />
       )}
       <BaseNodeContainer
-        selected={node.selected}
+        onTransitionEnd={() => updateNodeInternals(id)}
+        selected={!!selected}
         color={nodeColor}
         sx={{
-          width: nodeInStore.width || "100%",
-          height: nodeInStore.height || "100%",
+          width: nodeInStore.width,
+          height: nodeInStore.height,
+          backgroundColor: "background.default",
           display: "flex",
           flexDirection: "column",
           userSelect: "none",
+          transition: "width 0.2s ease, height 0.2s ease",
           ...(isCourse && {
             border: "0.5em solid",
-            borderColor: node.selected ? "primary.main" : "divider",
+            borderColor: selected ? "primary.main" : "divider",
           }),
         }}
       >
         <StyledHandle
           type="target"
-          position={node?.targetPosition || Position.Top}
-          color={
-            isCourse ? (node.selected ? "primary.main" : "grey.400") : nodeColor
-          }
+          position={targetPosition || Position.Top}
+          color="grey.400"
         />
 
         <NodeHeader className="dragHandle">
-          <NodeHeaderTitle>{node.data.label}</NodeHeaderTitle>
+          <NodeHeaderTitle>{nodeData.label}</NodeHeaderTitle>
           <NodeHeaderActions>
+            <ExpandCollapseButton
+              nodeInStore={nodeInStore}
+              nodeId={id}
+              isExpanded={isExpanded}
+              childCount={childCount}
+              updateNode={updateNode}
+              toggleNodeExpansion={toggleNodeExpansion}
+            />
             <NodeHeaderMenuAction label="Container Options">
               {/* Add menu items here if needed */}
             </NodeHeaderMenuAction>
@@ -143,20 +125,15 @@ export const ContainerNode = (node: NodeProps<Node<UnifiedNodeData>>) => {
           </NodeHeaderActions>
         </NodeHeader>
 
-        {!isCourse && node.data.details && (
-          <Box sx={{ flex: 1, p: 1.25 }}>
-            <Typography variant="body2" color="text.secondary">
-              {node.data.details}
-            </Typography>
-          </Box>
-        )}
+        <NodeContent 
+          isCourse={isCourse}
+          details={nodeData.details}
+        />
 
         <StyledHandle
           type="source"
-          position={node?.sourcePosition || Position.Bottom}
-          color={
-            isCourse ? (node.selected ? "primary.main" : "grey.400") : nodeColor
-          }
+          position={sourcePosition || Position.Bottom}
+          color="grey.400"
         />
       </BaseNodeContainer>
     </>
