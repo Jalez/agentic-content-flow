@@ -66,13 +66,13 @@ export function MindmapContent() {
     }
   }, [flowWrapper]);
 const testCallNodes = useCallback((nodes: Node[]) => {
-  console.log("testCallNodes:", nodes);
+  // console.log("testCallNodes:", nodes);
   handleUpdateNodes(nodes);
-  console.log("testCallNodes - visibleNodeMap:", visibleNodeMap);
+  // console.log("testCallNodes - visibleNodeMap:", visibleNodeMap);
 }, [handleUpdateNodes, visibleNodeMap]);
   
-  console.log("Node Parent Map:", visibleNodeParentMap);
-  console.log("VISIBLE Node Map:", visibleNodeMap);
+  // console.log("Node Parent Map:", visibleNodeParentMap);
+  // console.log("VISIBLE Node Map:", visibleNodeMap);
   return (
     <LayoutProvider
       initialDirection="DOWN"

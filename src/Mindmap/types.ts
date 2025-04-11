@@ -23,6 +23,7 @@ export interface NodeData {
   label: string;
   subject?: string;
   details?: string;
+  highlighted?: boolean;
   [key: string]: unknown; // Add this line to include an index signature
 }
 

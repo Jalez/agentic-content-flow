@@ -33,7 +33,7 @@ export const ContainerNode = ({
   targetPosition,
   sourcePosition,
 }: NodeProps) => {
-  const { updateNode, nodeParentMap, expandedNodes, toggleNodeExpansion } = useNodeState();
+  const { updateNode, nodeParentMap, expandedNodes, toggleNodeExpansion, isDragging } = useNodeState();
   const updateNodeInternals = useUpdateNodeInternals();
   const { getNode } = useReactFlow();
 
@@ -73,7 +73,9 @@ export const ContainerNode = ({
     console.error(`Node with id ${id} not found in store.`);
     return null;
   }
-
+  // Use the most up-to-date data during dragging
+  const highlighted = isDragging ? data.highlighted : nodeInStore.data.highlighted;
+  
   return (
     <>
       {selected && (
@@ -97,7 +99,9 @@ export const ContainerNode = ({
           transition: "width 0.2s ease, height 0.2s ease",
           ...(isCourse && {
             border: "0.5em solid",
-            borderColor: selected ? "primary.main" : "divider",
+            borderColor: (selected || highlighted) ? "primary.main" 
+            :
+             "divider",
           }),
         }}
       >

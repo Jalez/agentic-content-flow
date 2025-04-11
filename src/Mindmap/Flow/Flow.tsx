@@ -22,6 +22,7 @@ function Flow({ children }: { children?: React.ReactNode }) {
   const {
     onNodesChange,
     onNodeDragStart,
+    onNodeDrag,
     onNodeDragStop,
     getVisibleNodes,
     isDragging,
@@ -76,6 +77,7 @@ function Flow({ children }: { children?: React.ReactNode }) {
       nodes={visibleNodes}
       onNodesChange={onNodesChange}
       onNodeDragStart={onNodeDragStart}
+      onNodeDrag={onNodeDrag}
       onNodeDragStop={onNodeDragStop}
       onNodeClick={DetermineNodeClickFunction}
       onNodeDoubleClick={DetermineNodeClickFunction}
