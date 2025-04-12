@@ -33,7 +33,7 @@ export const createContainerNodeTemplate = (
         params.label ||
         (isCourse
           ? `${courseCode || "COMP.CS.XXX"}: Course Title`
-          : `Module ${moduleNumber}: Module Title`),
+          : `Module ${moduleNumber}: Module Title`) ,
       level,
       parent: eventNode?.id,
       subject: eventNode?.data.subject || "COMP.CS",
@@ -42,6 +42,10 @@ export const createContainerNodeTemplate = (
         params.details ||
         (isCourse ? "Add course details" : "Module description and content."),
       ...(isCourse && { courseCode: courseCode || "COMP.CS.XXX" }),
+    },
+    style: {
+      width: 300,
+      height: 200,
     },
     position,
     parentId: eventNode?.parentId,
