@@ -18,11 +18,12 @@ export type NodeTemplateCreator = (
 ) => Node<NodeData>;
 
 /**
- * Node type entry containing both the component and template creator
+ * Node type entry containing the component, template creator, and parent status
  */
 export interface NodeTypeEntry {
   Component: ComponentType<any>;
   createTemplate: NodeTemplateCreator;
+  isParent: boolean;
 }
 
 /**
@@ -67,13 +68,18 @@ const debouncedUpdateRegistry = () => {
 
 /**
  * Register a new node type with its component and template creator
+ * @param type The unique type identifier for this node
+ * @param Component The React component to render for this node type
+ * @param createTemplate The function that creates the node template
+ * @param isParent Whether this node type can act as a parent (default: false)
  */
 export function registerNodeType(
   type: string,
   Component: ComponentType<any>,
-  createTemplate: NodeTemplateCreator
+  createTemplate: NodeTemplateCreator,
+  isParent: boolean = false
 ) {
-  nodeTypeRegistry.set(type, { Component, createTemplate });
+  nodeTypeRegistry.set(type, { Component, createTemplate, isParent });
   debouncedUpdateRegistry();
 }
 
@@ -102,6 +108,15 @@ export function getNodeTemplateCreator(
   type: string
 ): NodeTemplateCreator | undefined {
   return nodeTypeRegistry.get(type)?.createTemplate;
+}
+
+/**
+ * Get all information about a node type
+ * @param type The node type to get information for
+ * @returns The full NodeTypeEntry or undefined if not found
+ */
+export function getNodeTypeInfo(type: string): NodeTypeEntry | undefined {
+  return nodeTypeRegistry.get(type);
 }
 
 /**

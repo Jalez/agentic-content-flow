@@ -35,7 +35,7 @@ export const createContainerNodeTemplate = (
           ? `${courseCode || "COMP.CS.XXX"}: Course Title`
           : `Module ${moduleNumber}: Module Title`) ,
       level,
-      parent: eventNode?.id,
+      isParent: true, // Explicitly mark this node as a parent
       subject: eventNode?.data.subject || "COMP.CS",
       nodeLevel: params.nodeLevel || "basic",
       details:

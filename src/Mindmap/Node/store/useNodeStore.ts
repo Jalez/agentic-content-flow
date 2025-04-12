@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Node } from "@xyflow/react";
 import { nodesData } from "../../test/nodesData";
+import { getNodeTypeInfo } from "../registry/nodeTypeRegistry";
 
 export interface NodeStoreState {
   nodes: Node<any>[];
@@ -38,9 +39,23 @@ const rebuildMaps = (nodes: Node<any>[]) => {
     } else {
       nodeParentMap.get("no-parent")!.push(node);
     }
+    
+    // Also check if this node itself is a parent type and ensure it has an entry
+    // in the nodeParentMap (even if it has no children yet)
+    if (node.type && (node.data?.isParent || isParentNodeType(node.type))) {
+      if (!nodeParentMap.has(node.id)) {
+        nodeParentMap.set(node.id, []);
+      }
+    }
   });
 
   return { nodeMap, nodeParentMap };
+};
+
+// Helper to check if a node type is registered as a parent
+const isParentNodeType = (type: string): boolean => {
+  const nodeTypeInfo = getNodeTypeInfo(type);
+  return !!nodeTypeInfo?.isParent;
 };
 
 const initialNodes = nodesData;

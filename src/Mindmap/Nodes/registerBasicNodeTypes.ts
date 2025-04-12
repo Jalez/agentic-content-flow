@@ -20,8 +20,10 @@ export function ensureNodeTypesRegistered(): void {
 
   // Register basic node types
   registerNodeType("cellnode", CellNode, createCellNodeTemplate);
-  registerNodeType("coursenode", ContainerNode, createContainerNodeTemplate);
-  registerNodeType("modulenode", ContainerNode, createContainerNodeTemplate);
+  
+  // Register container nodes with isParent=true
+  registerNodeType("coursenode", ContainerNode, createContainerNodeTemplate, true);
+  registerNodeType("modulenode", ContainerNode, createContainerNodeTemplate, true);
 
   // Register the node creation control with all available node types
   registerControl(
