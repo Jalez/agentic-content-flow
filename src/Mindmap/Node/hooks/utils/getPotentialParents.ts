@@ -4,14 +4,25 @@ import { NodeData } from "../../../types";
 
 /**
  * Gets the most suitable potential parent from a list of candidates.
+ * Only nodes that are already parents (exist in parentIdWithChildren) or are the current parent of the node
+ * can be suggested as potential parents.
+ * 
  * Selection criteria (in order):
- * 1. Excludes any nodes that are children/grandchildren of the given node
- * 2. Prefers siblings over other relationships
- * 3. For nodes of equal relationship level (siblings or same-depth parents):
+ * 1. Excludes any nodes that are children/grandchildren of the given node to prevent cycles
+ * 2. Must be either an existing parent (has children) or be the current parent of the node
+ * 3. Prefers siblings that are parents over other relationships
+ * 4. Prefers current parent if it's among valid candidates
+ * 5. For other valid parent candidates:
  *    - Prefers nodes that overlap with the current node's position
  *    - If multiple nodes overlap, selects the one that contains more of the node's area
  *    - If no overlap, selects the closest node
- * 4. If all else is equal, prefers younger nodes (more recently created)
+ * 6. If all else is equal, prefers younger nodes (more recently created)
+ * 
+ * @param {Node<NodeData>} node - The node being dragged
+ * @param {Node[]} potentialParentCandidates - List of nodes that intersect with the dragged node
+ * @param {Map<string, Node<NodeData>[]>} parentIdWithChildren - Map of parent IDs to their children, defines which nodes can be parents
+ * @param {Map<string, Node<NodeData>>} poolOfAllNodes - Map of all nodes in the workspace for ancestry checks
+ * @returns {Node | undefined} The most suitable parent candidate, or undefined if no valid candidates found
  */
 export const getPotentialParent = (
     node: Node<NodeData>, 
@@ -25,16 +36,10 @@ export const getPotentialParent = (
         if (visited.has(potentialChildId)) return false;
         visited.add(potentialChildId);
 
-        // Check if the child is in the ancestor's children
-        const ancestorChildren = parentIdWithChildren.get(ancestorId) || [];
-        if (ancestorChildren.some(child => child.id === potentialChildId)) {
-            return true;
-        }
-
-        // Recursively check all children
-        return ancestorChildren.some((child: Node<NodeData>) => 
-            isDescendant(potentialChildId, child.id, visited)
-        );
+        const nodeParentId = poolOfAllNodes.get(potentialChildId)?.parentId;
+        if (!nodeParentId) return false;
+        
+        return isDescendant(nodeParentId, ancestorId, visited);
     };
 
     // Helper function to check if nodes are siblings
@@ -76,45 +81,70 @@ export const getPotentialParent = (
         );
     };
 
-    // Filter out descendants and self
+    // Filter out descendants and self, and only allow existing parents or current parent
     const validCandidates = potentialParentCandidates.filter(
-        candidate => !isDescendant(candidate.id, node.id) && candidate.id !== node.id
+        candidate => !isDescendant(candidate.id, node.id) && 
+                    candidate.id !== node.id &&
+                    (parentIdWithChildren.has(candidate.id) || // is already a parent
+                     candidate.id === node.parentId) // or is the current parent
     );
 
     if (validCandidates.length === 0) return undefined;
 
-    // Sort candidates by priority:
-    // 1. Siblings first
-    // 2. Overlapping area (more overlap = higher priority)
-    // 3. Distance (closer = higher priority)
-    // 4. Node age (younger = higher priority)
-    return validCandidates.sort((a, b) => {
-        // First priority: siblings
-        const aIsSibling = areSiblings(a, node);
-        const bIsSibling = areSiblings(b, node);
-        if (aIsSibling !== bIsSibling) {
-            return aIsSibling ? -1 : 1;
-        }
+    // First check for siblings
+    const siblings = validCandidates.filter(candidate => areSiblings(candidate, node));
+    if (siblings.length > 0) {
+        return siblings.sort((a, b) => {
+            // For siblings, prefer by overlap then distance then age
+            const aOverlap = getOverlapArea(node, a);
+            const bOverlap = getOverlapArea(node, b);
+            if (aOverlap !== bOverlap) {
+                return bOverlap - aOverlap;
+            }
 
-        // Second priority: overlap area
+            if (aOverlap === 0 && bOverlap === 0) {
+                const aDist = getDistance(node, a);
+                const bDist = getDistance(node, b);
+                if (Math.abs(aDist - bDist) > 0.001) {
+                    return aDist - bDist;
+                }
+            }
+
+            const aNum = parseInt(a.id.match(/\d+/)?.[0] || '0');
+            const bNum = parseInt(b.id.match(/\d+/)?.[0] || '0');
+            return bNum - aNum;
+        })[0];
+    }
+
+    // Then check if current parent is among valid candidates
+    if (node.parentId) {
+        const currentParentCandidate = validCandidates.find(
+            candidate => candidate.id === node.parentId
+        );
+        if (currentParentCandidate) {
+            return currentParentCandidate;
+        }
+    }
+
+    // If no siblings or current parent, sort remaining candidates by overlap/distance/age
+    return validCandidates.sort((a, b) => {
+        // Same sorting logic for remaining candidates
         const aOverlap = getOverlapArea(node, a);
         const bOverlap = getOverlapArea(node, b);
         if (aOverlap !== bOverlap) {
-            return bOverlap - aOverlap; // More overlap wins
+            return bOverlap - aOverlap;
         }
 
-        // Third priority: distance (only if no overlap)
         if (aOverlap === 0 && bOverlap === 0) {
             const aDist = getDistance(node, a);
             const bDist = getDistance(node, b);
-            if (Math.abs(aDist - bDist) > 0.001) { // Use small epsilon for float comparison
-                return aDist - bDist; // Closer wins
+            if (Math.abs(aDist - bDist) > 0.001) {
+                return aDist - bDist;
             }
         }
 
-        // Final tiebreaker: node age
         const aNum = parseInt(a.id.match(/\d+/)?.[0] || '0');
         const bNum = parseInt(b.id.match(/\d+/)?.[0] || '0');
-        return bNum - aNum; // Higher numbers (more recent) come first
+        return bNum - aNum;
     })[0];
 };
