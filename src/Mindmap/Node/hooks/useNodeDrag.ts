@@ -6,6 +6,29 @@ import { useNodeStore } from "../../stores";
 import { useTrackableState } from "@jalez/react-state-history";
 import { getPotentialParent } from "./utils/getPotentialParents";
 
+/**
+ * A custom hook for handling node dragging behavior in a mindmap.
+ * 
+ * This hook manages:
+ * - Node parenting: When a node is dragged over potential parent nodes
+ * - Visual feedback: Highlights potential parent nodes during drag
+ * - State tracking: Uses state history to track node position changes
+ * - Extent management: Temporarily allows nodes to be dragged anywhere during drag
+ * 
+ * The hook integrates with:
+ * - NodeStore: For persistent node state management
+ * - ReactFlow: For node intersection detection
+ * - StateHistory: For undo/redo functionality
+ * 
+ * @returns {Object} An object containing:
+ *   - isDragging: Boolean indicating if a drag operation is in progress
+ *   - isDraggingRef: Mutable ref tracking drag state for async operations
+ *   - localNodes: Temporary node state during drag operations
+ *   - setLocalNodes: Function to update temporary node state
+ *   - onNodeDragStart: Callback for drag start - removes node extent constraints
+ *   - onNodeDragStop: Callback for drag end - updates parent relationships
+ *   - onNodeDrag: Callback during drag - handles parent candidate highlighting
+ */
 export const useNodeDrag = () => {
   const updateNode = useNodeStore((state) => state.updateNode);
   const updateNodes = useNodeStore((state) => state.updateNodes);
@@ -27,29 +50,38 @@ export const useNodeDrag = () => {
     setNodes
   );
 
-  const onNodeDragStart = useCallback(() => {
+  const onNodeDragStart = useCallback((_: React.MouseEvent, __: Node<NodeData>, draggedNodes: Node<NodeData>[]) => {
     setIsDragging(true);
     isDraggingRef.current = true;
+    //Go through all the nodes and find the nodes that are currently being dragged and set their extend to [[-∞, -∞], [+∞, +∞]]
+    draggedNodes.forEach((node) => {
+        const nodeInStore = nodeMap.get(node.id);
+        if (nodeInStore) {
+          nodeInStore.extent = [[-Infinity, -Infinity], [Infinity, Infinity]];
+        }
+    }
+    );
+        
     setLocalNodes(nodes);
-  }, [nodes]);
+  }, [nodes, nodeMap]);
 
-  const onNodeDragStop = useCallback(() => {
+  const onNodeDragStop = useCallback((_: React.MouseEvent, node: Node<NodeData>) => {
     setIsDragging(false);
     isDraggingRef.current = false;
 
     if (currentParentCandidate) {
-      const updatedNode = {
-        ...currentParentCandidate,
-        data: {
-          ...currentParentCandidate.data,
-          highlighted: false
-        },
-      } as Node<NodeData>;
-      
+    
       localNodes.forEach((localNode) => {
-        if (localNode.id === updatedNode.id) {
+        if (localNode.id === currentParentCandidate.id) {
           localNode.data.highlighted = false;
         }
+        if(localNode.id === node.id) {
+            console.log("Planning on Setting ", currentParentCandidate.id, " as parentId for node:", localNode.id);
+            console.log("localNodes:", localNode);
+            //This currently causes an eternal loop somewhere
+          localNode.parentId = currentParentCandidate.id;
+          localNode.extent = "parent"
+        }   
       });
       setCurrentParentCandidate(null);
     }
@@ -65,6 +97,7 @@ export const useNodeDrag = () => {
       const intersectingNodes = getIntersectingNodes(node);
  
       if (intersectingNodes.length > 0 && node.id) {
+        console.log("nodeParentMap", nodeParentMap);
         const result = getPotentialParent(
           node,
           intersectingNodes,
@@ -83,7 +116,6 @@ export const useNodeDrag = () => {
                   highlighted: false
                 },
               } as Node<NodeData>;
-              updateNode(updatedNode);
               
               if (isDraggingRef.current) {
                 setLocalNodes(prev => 
@@ -100,7 +132,6 @@ export const useNodeDrag = () => {
               highlighted: true
             },
           } as Node<NodeData>;
-          updateNode(updatedResult);
           
           if (isDraggingRef.current) {
             setLocalNodes(prev => 
