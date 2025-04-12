@@ -31,7 +31,6 @@ const useNodeSelection = ({ nodes, isDragging }: UseNodeSelectionProps) => {
   const { selectedNodes } = useSelect();
 
   useEffect(() => {
-    console.log("Selected nodes from context:", selectedNodes);
   }, [selectedNodes]);
   const changeParentSelectState = useCallback(
     (parentId: string, selected: boolean) => {
@@ -119,7 +118,6 @@ const useNodeSelection = ({ nodes, isDragging }: UseNodeSelectionProps) => {
 
   const DetermineNodeClickFunction = useCallback(
     (event: React.MouseEvent, node: Node) => {
-      console.log("Node clicked:", node.id);
       event.stopPropagation();
 
       //If its a right button click, ignore it
@@ -138,7 +136,6 @@ const useNodeSelection = ({ nodes, isDragging }: UseNodeSelectionProps) => {
 
   // Handler for when selection operation ends (selection rect is released)
   const handleSelectionEnd = useCallback(() => {
-    console.log("Selection ended");
     //Let all node parents selectable properties to true
     nodeParentMap.forEach((_, parentId) => {
       changeParentSelectState(parentId, true);
@@ -146,7 +143,6 @@ const useNodeSelection = ({ nodes, isDragging }: UseNodeSelectionProps) => {
 
     // Get currently selected nodes
     const selectedNodes = getNodes().filter((node) => node.selected);
-    console.log("Selected nodes:", selectedNodes);
 
     // Check if we have a multi-selection (shift+drag)
     if (selectedNodes.length > 1) {
