@@ -53,7 +53,6 @@ const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
     const newNode = createNodeFromTemplate(nodeType, {
       id: newNodeId,
       position: center,
-      label: "New Concept",
       details: "Add details about this concept",
     });
     //If there are selected nodes and these nodes are not containers, connect the new node to the first selected node as a child

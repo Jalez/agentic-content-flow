@@ -49,12 +49,10 @@ export const useConnectionOperations = () => {
       y: realChildNode.position.y,
     };
 
-    // Use the node registry to create a parent node
+    // Use the node registry to create a source node
     const newParentNode = createNodeFromTemplate(realChildNode.type as string, {
       id: newNodeId,
       position: newPosition,
-      label: "New Concept",
-      details: "Add details about this concept",
       nodeLevel: realChildNode.data.nodeLevel,
       subject: realChildNode.data.subject,
     });
@@ -187,12 +185,12 @@ export const useConnectionOperations = () => {
         trackAddNodeToStore(
           newChildNode,
           newChildNode.id,
-          `Add Child Node to ${eventNode.id}`
+          `Create target Node of ${eventNode.id}`
         );
         trackAddEdgeToStore(
           newEdge,
           edges,
-          `Add Edge from ${eventNode.id} to ${newChildNode.id}`
+          `Create Edge from ${eventNode.id} to ${newChildNode.id}`
         );
       },
       "addTargetNodeTransaction" // Transaction name
@@ -267,7 +265,6 @@ export const useConnectionOperations = () => {
           id: newNodeId,
           position,
           eventNode: connectionState.fromNode,
-          label: "New Concept",
           details: "Add details about this concept",
         });
 

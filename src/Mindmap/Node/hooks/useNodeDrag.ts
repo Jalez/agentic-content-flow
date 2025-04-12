@@ -99,8 +99,6 @@ export const useNodeDrag = () => {
           }
           
           // Update store for persistence
-          nodeInStore.extent = [[-Infinity, -Infinity], [Infinity, Infinity]];
-          updateNode(nodeInStore);
           
           // Update local nodes for visual representation during drag
           if (!isLocalNodeInfinite) {
@@ -120,6 +118,7 @@ export const useNodeDrag = () => {
           nodeParentMap,
           nodeMap
         );
+        console.log("Potential parent:", potentialParent);
         
         // Update highlighted state for parent candidates
         if (potentialParent && currentParentCandidate?.id !== potentialParent.id) {
@@ -182,6 +181,7 @@ export const useNodeDrag = () => {
           localNode.data.highlighted = false;
         }
         if (localNode.id === node.id) {
+          console.log("Setting ", currentParentCandidate.id, " as parentId for node:", localNode.id);
           localNode.parentId = currentParentCandidate.id;
           localNode.extent = "parent";
         }   
