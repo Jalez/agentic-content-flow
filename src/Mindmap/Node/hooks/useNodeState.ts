@@ -94,16 +94,16 @@ export const useNodeState = () => {
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      if (changes.some((change) => change.type === "position") && isDraggingRef.current) {
+      if (isDraggingRef.current) {
         setLocalNodes(prev =>
           applyNodeChanges(changes, prev.length > 0 ? prev : nodes) as Node<NodeData>[]
         );
-      } else if (!isDraggingRef.current) {
+      } else {
         const updatedNodes = applyNodeChanges(changes, nodes) as Node<NodeData>[];
         trackUpdateNodes(updatedNodes, nodes);
       }
     },
-    [nodes, trackUpdateNodes, setLocalNodes, isDraggingRef]
+    [nodes, trackUpdateNodes, setLocalNodes, isDraggingRef, localNodes]
   );
 
   const handleUpdateNodes = useCallback(
@@ -139,11 +139,14 @@ export const useNodeState = () => {
           return localNode || node;
         })
       : nodes;
+      //console.log("getVisibleNodes called", nodesToProcess);
     return applyCollapsedState(nodesToProcess);
-  }, [nodes, localNodes, applyCollapsedState]);
+  }, [nodes, localNodes, applyCollapsedState, isDraggingRef])
+
+
 
   // Memoize the displayed nodes to prevent unnecessary recalculations
-  const displayedNodes = useMemo(() => getVisibleNodes(), [getVisibleNodes, expandedNodes, nodes]);
+  const displayedNodes = useMemo(() => getVisibleNodes(), [getVisibleNodes, expandedNodes, nodes, localNodes, isDraggingRef]);
   const visibleNodeParentMap = useMemo(() => getVisibleNodeParentMap(), [getVisibleNodeParentMap, expandedNodes, nodes]);
   const visibleNodeMap = useMemo(() => getVisibleNodeMap(), [getVisibleNodeMap, expandedNodes, nodes]);
 
