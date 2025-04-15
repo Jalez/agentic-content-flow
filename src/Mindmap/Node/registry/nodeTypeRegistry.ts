@@ -1,5 +1,5 @@
 /** @format */
-import { ComponentType, useMemo, useRef } from "react";
+import { ComponentType, useMemo, useRef, useEffect } from "react";
 import { create } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 import { Node } from "@xyflow/react";
@@ -175,8 +175,8 @@ export function useNodeTypeRegistry() {
   // Use initialization ref to ensure we only initialize once
   const initialized = useRef(false);
 
-  // Initialize the registry if needed
-  useMemo(() => {
+  // Initialize the registry if needed - moved to useEffect to avoid state updates during render
+  useEffect(() => {
     if (
       !initialized.current &&
       Object.keys(cachedTypes).length === 0 &&

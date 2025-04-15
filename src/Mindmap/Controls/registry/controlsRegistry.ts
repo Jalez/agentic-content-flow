@@ -1,5 +1,5 @@
 /** @format */
-import { ComponentType, useMemo, useRef } from "react";
+import { ComponentType, useMemo, useRef, useEffect } from "react";
 import { create } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 
@@ -288,8 +288,8 @@ export function useControlsRegistry() {
   // Use initialization ref to ensure we only initialize once
   const initialized = useRef(false);
 
-  // Initialize the registry if needed
-  useMemo(() => {
+  // Initialize the registry if needed - move to useEffect to avoid state updates during render
+  useEffect(() => {
     if (!initialized.current && controlsRegistry.size > 0) {
       initialized.current = true;
       updateRegistry();
