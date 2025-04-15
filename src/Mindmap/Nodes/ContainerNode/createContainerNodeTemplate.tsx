@@ -25,7 +25,7 @@ export const createContainerNodeTemplate = (
 
   const isCourse = Boolean(eventNode?.type);
 
-  return {
+  const newContainer = {
     id,
     type: type,
     data: {
@@ -50,6 +50,8 @@ export const createContainerNodeTemplate = (
     position,
     parentId: eventNode?.parentId,
     // Add extent property at the node level to match nodesData structure
-    extent: eventNode ? "parent" : undefined,
+    extent: eventNode?.parentId ? "parent" : undefined as any,
   };
+  
+  return newContainer;
 };

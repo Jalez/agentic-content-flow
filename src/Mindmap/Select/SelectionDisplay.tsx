@@ -1,9 +1,11 @@
-import { Edge, Node, useOnSelectionChange } from "@xyflow/react";
+import { Edge, Node, Panel, useOnSelectionChange } from "@xyflow/react";
 import { useCallback, useState } from "react";
+import { useNodeStore } from "../stores";
 
 function SelectionDisplay() {
   const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
   const [selectedEdges, setSelectedEdges] = useState<string[]>([]);
+  const { nodeParentMap } = useNodeStore();
 
   // the passed handler has to be memoized, otherwise the hook will not work correctly
   const onChange = useCallback(
@@ -18,11 +20,20 @@ function SelectionDisplay() {
     onChange,
   });
 
+  //Is parent
+  const isPotentialParent = (nodeId: string) => {
+    return nodeParentMap.has(nodeId)
+
+  };
+
   return (
-    <div>
+    <Panel position="bottom-left" style={{ padding: 10 }}>
       <p>Selected nodes: {selectedNodes.join(", ")}</p>
       <p>Selected edges: {selectedEdges.join(", ")}</p>
-    </div>
+      <p>
+        Is potential parent: {JSON.stringify(isPotentialParent(selectedNodes[0]))}
+      </p>
+    </Panel>
   );
 }
 

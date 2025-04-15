@@ -32,8 +32,9 @@ export const ContainerNode = ({
   selected,
   targetPosition,
   sourcePosition,
+  dragging,
 }: NodeProps) => {
-  const { updateNode, nodeParentMap, expandedNodes, toggleNodeExpansion, isDragging } = useNodeState();
+  const { updateNode, nodeParentMap, expandedNodes, toggleNodeExpansion } = useNodeState();
   const updateNodeInternals = useUpdateNodeInternals();
   const { getNode } = useReactFlow();
 
@@ -74,8 +75,10 @@ export const ContainerNode = ({
     return null;
   }
   // Use the most up-to-date data during dragging
-  const highlighted = isDragging ? data.highlighted : nodeInStore.data.highlighted;
-  
+  if(selected) {
+    console.log(`Node ${id} is selected`);
+  }
+
   return (
     <>
       {selected && (
@@ -87,7 +90,7 @@ export const ContainerNode = ({
       )}
       <BaseNodeContainer
         onTransitionEnd={() => updateNodeInternals(id)}
-        selected={!!selected}
+        selected={selected}
         color={nodeColor}
         sx={{
           width: nodeInStore.width,
@@ -99,7 +102,7 @@ export const ContainerNode = ({
           transition: "width 0.2s ease, height 0.2s ease",
           ...(isCourse && {
             border: "0.5em solid",
-            borderColor: (selected || highlighted) ? "primary.main" 
+            borderColor: (selected || data.highlighted) ? "primary.main" 
             :
              "divider",
           }),
