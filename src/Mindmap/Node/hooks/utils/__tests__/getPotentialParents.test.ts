@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { Node } from '@xyflow/react';
 import { NodeData } from '../../../../types';
-import { getPotentialParent } from '../getPotentialParents';
+import { getPotentialParentId } from '../getPotentialParents';
 
-describe('getPotentialParent', () => {
+describe('getPotentialParentId', () => {
     // Helper function to create test nodes with dimensions
     const createNode = (
         id: string, 
@@ -24,6 +24,8 @@ describe('getPotentialParent', () => {
         },
         parentId
     });
+
+    const ROOT_INDICATOR = "no-parent";
 
     it('should exclude children and grandchildren as potential parents', () => {
         const node = createNode('node-1000');
@@ -46,14 +48,15 @@ describe('getPotentialParent', () => {
             ['node-1004', unrelatedChild]
         ]);
 
-        const result = getPotentialParent(
+        const result = getPotentialParentId(
             node,
             [child, grandChild, unrelatedNode],
             parentIdWithChildren,
-            poolOfAllNodes
+            poolOfAllNodes,
+            ROOT_INDICATOR
         );
 
-        expect(result).toBe(unrelatedNode);
+        expect(result).toBe('node-1003');
     });
 
     it('should prefer younger nodes among equal depth candidates', () => {
@@ -80,14 +83,15 @@ describe('getPotentialParent', () => {
             ['node-1004', youngerSiblingChild]
         ]);
 
-        const result = getPotentialParent(
+        const result = getPotentialParentId(
             node,
             [olderSibling, youngerSibling],
             parentIdWithChildren,
-            poolOfAllNodes
+            poolOfAllNodes,
+            ROOT_INDICATOR
         );
 
-        expect(result).toBe(youngerSibling);
+        expect(result).toBe('node-1002');
     });
 
     it('should prefer siblings over parents', () => {
@@ -112,17 +116,18 @@ describe('getPotentialParent', () => {
             ['node-1002', siblingChild]
         ]);
 
-        const result = getPotentialParent(
+        const result = getPotentialParentId(
             node,
             [sibling, parent, grandParent],
             parentIdWithChildren,
-            poolOfAllNodes
+            poolOfAllNodes,
+            ROOT_INDICATOR
         );
 
-        expect(result).toBe(sibling);
+        expect(result).toBe('node-1001');
     });
 
-    it('should return undefined if no valid candidates are found', () => {
+    it('should return ROOT_INDICATOR if no valid candidates are found', () => {
         const node = createNode('node-1000');
         const child = createNode('node-1001', 'node-1000');
 
@@ -135,14 +140,15 @@ describe('getPotentialParent', () => {
             ['node-1001', child]
         ]);
 
-        const result = getPotentialParent(
+        const result = getPotentialParentId(
             node,
             [child], // Only candidate is a child
             parentIdWithChildren,
-            poolOfAllNodes
+            poolOfAllNodes,
+            ROOT_INDICATOR
         );
 
-        expect(result).toBeUndefined();
+        expect(result).toBe(ROOT_INDICATOR);
     });
 
     it('should prefer overlapping nodes over non-overlapping ones', () => {
@@ -166,14 +172,15 @@ describe('getPotentialParent', () => {
             ['node-1004', nonOverlappingNodeChild]
         ]);
 
-        const result = getPotentialParent(
+        const result = getPotentialParentId(
             node,
             [overlappingNode, nonOverlappingNode],
             parentIdWithChildren,
-            poolOfAllNodes
+            poolOfAllNodes,
+            ROOT_INDICATOR
         );
 
-        expect(result).toBe(overlappingNode);
+        expect(result).toBe('node-1001');
     });
 
     it('should prefer closer nodes when none overlap', () => {
@@ -197,14 +204,15 @@ describe('getPotentialParent', () => {
             ['node-1004', fartherNodeChild]
         ]);
 
-        const result = getPotentialParent(
+        const result = getPotentialParentId(
             node,
             [closerNode, fartherNode],
             parentIdWithChildren,
-            poolOfAllNodes
+            poolOfAllNodes,
+            ROOT_INDICATOR
         );
 
-        expect(result).toBe(closerNode);
+        expect(result).toBe('node-1001');
     });
 
     it('should prefer node with more overlap area', () => {
@@ -228,14 +236,15 @@ describe('getPotentialParent', () => {
             ['node-1004', lessOverlapChild]
         ]);
 
-        const result = getPotentialParent(
+        const result = getPotentialParentId(
             node,
             [moreOverlap, lessOverlap],
             parentIdWithChildren,
-            poolOfAllNodes
+            poolOfAllNodes,
+            ROOT_INDICATOR
         );
 
-        expect(result).toBe(moreOverlap);
+        expect(result).toBe('node-1001');
     });
 
     it('should prevent cycles by not allowing a node to become its own ancestor', () => {
@@ -261,31 +270,34 @@ describe('getPotentialParent', () => {
         ]);
 
         // Try to make the grandparent a child of its grandchild
-        const result1 = getPotentialParent(
+        const result1 = getPotentialParentId(
             grandparent,
             [grandChild],
             parentIdWithChildren,
-            poolOfAllNodes
+            poolOfAllNodes,
+            ROOT_INDICATOR
         );
-        expect(result1).toBeUndefined();
+        expect(result1).toBe(ROOT_INDICATOR);
 
         // Try to make the parent a child of its child
-        const result2 = getPotentialParent(
+        const result2 = getPotentialParentId(
             parent,
             [child],
             parentIdWithChildren,
-            poolOfAllNodes
+            poolOfAllNodes,
+            ROOT_INDICATOR
         );
-        expect(result2).toBeUndefined();
+        expect(result2).toBe(ROOT_INDICATOR);
 
         // Try to make a node a child of its great-grandchild
-        const result3 = getPotentialParent(
+        const result3 = getPotentialParentId(
             grandparent,
             [grandChild],
             parentIdWithChildren,
-            poolOfAllNodes
+            poolOfAllNodes,
+            ROOT_INDICATOR
         );
-        expect(result3).toBeUndefined();
+        expect(result3).toBe(ROOT_INDICATOR);
     });
 
     it('should prioritize current parent if it is among valid candidates', () => {
@@ -308,15 +320,16 @@ describe('getPotentialParent', () => {
             ['node-1002', otherCandidate]
         ]);
 
-        const result = getPotentialParent(
+        const result = getPotentialParentId(
             node,
             [parent, otherCandidate],
             parentIdWithChildren,
-            poolOfAllNodes
+            poolOfAllNodes,
+            ROOT_INDICATOR
         );
 
         // Should return current parent even though otherCandidate has more overlap
-        expect(result).toBe(parent);
+        expect(result).toBe('node-1000');
     });
 
     it('should only suggest nodes that are already parents or the current parent', () => {
@@ -346,36 +359,80 @@ describe('getPotentialParent', () => {
         ]);
 
         // Test with all nodes as candidates
-        const result = getPotentialParent(
+        const result = getPotentialParentId(
             node,
             [currentParent, existingParent, nonParent],
             parentIdWithChildren,
-            poolOfAllNodes
+            poolOfAllNodes,
+            ROOT_INDICATOR
         );
 
         // Should return current parent since it's the current parent
-        expect(result).toBe(currentParent);
+        expect(result).toBe('node-1000');
 
         // Test with current parent removed
-        const resultWithoutCurrentParent = getPotentialParent(
+        const resultWithoutCurrentParent = getPotentialParentId(
             node,
             [existingParent, nonParent],
             parentIdWithChildren,
-            poolOfAllNodes
+            poolOfAllNodes,
+            ROOT_INDICATOR
         );
 
         // Should return existingParent since it's in parentIdWithChildren
-        expect(resultWithoutCurrentParent).toBe(existingParent);
+        expect(resultWithoutCurrentParent).toBe('node-1002');
 
         // Test with only non-parent candidate
-        const resultOnlyNonParent = getPotentialParent(
+        const resultOnlyNonParent = getPotentialParentId(
             node,
             [nonParent],
             parentIdWithChildren,
-            poolOfAllNodes
+            poolOfAllNodes,
+            ROOT_INDICATOR
         );
 
-        // Should return undefined since nonParent is not in parentIdWithChildren
-        expect(resultOnlyNonParent).toBeUndefined();
+        // Should return ROOT_INDICATOR since nonParent is not in parentIdWithChildren
+        expect(resultOnlyNonParent).toBe(ROOT_INDICATOR);
+    });
+
+    it('should allow root nodes to become children of other root nodes', () => {
+        const rootNode1 = createNode('root-1');
+        const rootNode2 = createNode('root-2');
+        const child1 = createNode('child-1', 'root-1');
+        const child2 = createNode('child-2', 'root-2');
+
+        const parentIdWithChildren = new Map<string, Node<NodeData>[]>([
+            ['root-1', [child1]],
+            ['root-2', [child2]]
+        ]);
+
+        const poolOfAllNodes = new Map([
+            ['root-1', rootNode1],
+            ['root-2', rootNode2],
+            ['child-1', child1],
+            ['child-2', child2]
+        ]);
+
+        // Test that root-1 can become a child of root-2
+        const result1 = getPotentialParentId(
+            rootNode1,
+            [rootNode2],
+            parentIdWithChildren,
+            poolOfAllNodes,
+            ROOT_INDICATOR
+        );
+
+        expect(result1).toBe('root-2');
+
+        // Test that root-2 can become a child of root-1
+        const result2 = getPotentialParentId(
+            rootNode2,
+            [rootNode1],
+            parentIdWithChildren,
+            poolOfAllNodes,
+            ROOT_INDICATOR
+        );
+
+        expect(result2).toBe('root-1');
     });
 });

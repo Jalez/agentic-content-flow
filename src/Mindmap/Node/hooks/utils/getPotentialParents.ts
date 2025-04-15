@@ -1,9 +1,8 @@
 import { Node } from "@xyflow/react";
 import { NodeData } from "../../../types";
 
-
 /**
- * Gets the most suitable potential parent from a list of candidates.
+ * Gets the most suitable potential parent ID from a list of candidates.
  * Only nodes that are already parents (exist in parentIdWithChildren) or are the current parent of the node
  * can be suggested as potential parents.
  * 
@@ -17,19 +16,22 @@ import { NodeData } from "../../../types";
  *    - If multiple nodes overlap, selects the one that contains more of the node's area
  *    - If no overlap, selects the closest node
  * 6. If all else is equal, prefers younger nodes (more recently created)
+ * 7. Returns rootIndicator string if no valid candidates found, indicating node should become a root node
  * 
  * @param {Node<NodeData>} node - The node being dragged
  * @param {Node[]} potentialParentCandidates - List of nodes that intersect with the dragged node
  * @param {Map<string, Node<NodeData>[]>} parentIdWithChildren - Map of parent IDs to their children, defines which nodes can be parents
  * @param {Map<string, Node<NodeData>>} poolOfAllNodes - Map of all nodes in the workspace for ancestry checks
- * @returns {Node | undefined} The most suitable parent candidate, or undefined if no valid candidates found
+ * @param {string} rootIndicator - String to return when node should become a root node (no parent)
+ * @returns {string} The ID of the most suitable parent candidate, or rootIndicator if no valid candidates found
  */
-export const getPotentialParent = (
+export const getPotentialParentId = (
     node: Node<NodeData>, 
     potentialParentCandidates: Node[],
     parentIdWithChildren: Map<string, Node<NodeData>[]>, 
-    poolOfAllNodes: Map<string, Node<NodeData>>
-): Node| undefined => {
+    poolOfAllNodes: Map<string, Node<NodeData>>,
+    rootIndicator: string
+): string => {
     // Helper function to check if a node is a descendant
     const isDescendant = (potentialChildId: string, ancestorId: string, visited = new Set<string>()): boolean => {
         if (potentialChildId === ancestorId) return true;
@@ -89,7 +91,8 @@ export const getPotentialParent = (
                      candidate.id === node.parentId) // or is the current parent
     );
 
-    if (validCandidates.length === 0) return undefined;
+    // Only return rootIndicator when there are no valid candidates
+    if (validCandidates.length === 0) return rootIndicator;
 
     // First check for siblings
     const siblings = validCandidates.filter(candidate => areSiblings(candidate, node));
@@ -113,7 +116,7 @@ export const getPotentialParent = (
             const aNum = parseInt(a.id.match(/\d+/)?.[0] || '0');
             const bNum = parseInt(b.id.match(/\d+/)?.[0] || '0');
             return bNum - aNum;
-        })[0];
+        })[0].id;
     }
 
     // Then check if current parent is among valid candidates
@@ -122,7 +125,7 @@ export const getPotentialParent = (
             candidate => candidate.id === node.parentId
         );
         if (currentParentCandidate) {
-            return currentParentCandidate;
+            return currentParentCandidate.id;
         }
     }
 
@@ -146,5 +149,5 @@ export const getPotentialParent = (
         const aNum = parseInt(a.id.match(/\d+/)?.[0] || '0');
         const bNum = parseInt(b.id.match(/\d+/)?.[0] || '0');
         return bNum - aNum;
-    })[0];
+    })[0].id;
 };
