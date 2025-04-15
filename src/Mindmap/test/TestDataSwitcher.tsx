@@ -7,10 +7,12 @@ import { useEdgeStore } from "../Edge/store/useEdgeStore";
 import { useNodeStore } from "../Node/store/useNodeStore";
 
 // Import test data sets
-import { nodesData } from "./nodesData";
+import { childNodesData, parentNodesData } from "./nodesData";
 import { edgesData } from "./edgeData";
 import { initialSimpleNodes } from "./simple/nodesData";
 import { initialSimpleEdges } from "./simple/edgeData";
+
+const nodesData = [...parentNodesData, ...childNodesData];
 
 /**
  * TestDataSwitcher Component

@@ -1,33 +1,21 @@
-import { CoordinateExtent } from "@xyflow/react";
+import { CoordinateExtent, Node } from "@xyflow/react";
 import { CourseNodeData } from "../types";
 
-// Nodes for a course group with modules and topics
-export const nodesData: Array<{
-  id: string;
-  type?: string;
-  data: CourseNodeData;
-  position: { x: number; y: number };
-  style?: Record<string, any>;
-  parentId?: string;
-  extent?: "parent" | CoordinateExtent;
-}> = [
-  // Course Group (Level 0)
+
+
+export const parentNodesData: Array<Node> = [
   {
     id: "course-1",
     type: "coursenode",
     data: {
-      label: "COMP.CS.100: Software Testing Fundamentals",
+      label: "Course Group",
       details: "Course overview for Software Testing.",
       level: "advanced",
       subject: "COMP.CS",
       courseCode: "COMP.CS.100",
-
-      // handleId: "default", // for rendering a handle
     },
     position: { x: 50, y: 50 },
-  },
-  // Module 1 (Level 1) - Child of Course Group
-  {
+  },  {
     id: "module1",
     type: "modulenode",
 
@@ -42,7 +30,34 @@ export const nodesData: Array<{
     parentId: "course-1",
     extent: "parent",
   },
-  // Topics for Module 1 (Level 2) - Children of Module 1
+  {
+    id: "module2",
+    type: "modulenode",
+    data: {
+      label: "Module 2: Advanced Testing Techniques",
+
+      details: "Deep dive into advanced testing methods.",
+      level: "advanced",
+      subject: "COMP.CS",
+      // handleId: "default",
+    },
+    position: { x: 550, y: 100 },
+    parentId: "course-1",
+    extent: "parent",
+  },
+];
+
+// Nodes for a course group with modules and topics
+export const childNodesData: Array<{
+  id: string;
+  type?: string;
+  data: CourseNodeData;
+  position: { x: number; y: number };
+  style?: Record<string, any>;
+  parentId?: string;
+  extent?: "parent" | CoordinateExtent;
+}> = [
+
   {
     id: "module1-topic1",
     type: "cellnode",
@@ -86,21 +101,7 @@ export const nodesData: Array<{
     extent: "parent" as const,
   },
   // Module 2 (Level 1) - Child of Course Group
-  {
-    id: "module2",
-    type: "modulenode",
-    data: {
-      label: "Module 2: Advanced Testing Techniques",
 
-      details: "Deep dive into advanced testing methods.",
-      level: "advanced",
-      subject: "COMP.CS",
-      // handleId: "default",
-    },
-    position: { x: 550, y: 100 },
-    parentId: "course-1",
-    extent: "parent",
-  },
   // Topics for Module 2 (Level 2) - Children of Module 2
   {
     id: "module2-topic1",
