@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { Edge, EdgeChange, applyEdgeChanges } from "@xyflow/react";
 import { useEdgeStore } from "../../stores";
 import { withErrorHandler } from "../../utils/withErrorHandler";
@@ -52,8 +52,14 @@ export const useEdgeState = () => {
     [setEdges, edges, trackSetEdges]
   );
 
+  const visibleEdges = useMemo(() => {
+    return getVisibleEdges();
+  }
+  , [edges]); 
+
   return {
     edges,
+    visibleEdges,
     setEdges: handleSetEdges,
     onEdgesChange,
     getVisibleEdges,

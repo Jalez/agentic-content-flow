@@ -1,5 +1,5 @@
 import { MarkerType, ReactFlow, SelectionMode } from "@xyflow/react";
-import { memo, useEffect, useMemo, useCallback, useRef } from "react";
+import { memo, useEffect, useCallback, useRef } from "react";
 import { useNodeState } from "../Node/hooks/useNodeState";
 import { useEdgeState } from "../Edge/hooks/useEdgeState";
 import useNodeSelection from "../Node/hooks/useNodeSelect";
@@ -8,7 +8,7 @@ import { VIEWPORT_CONSTRAINTS } from "../constants";
 import { useConnectionOperations } from "../Node/hooks/useConnectionOperations";
 import { useNodeTypeRegistry } from "../Node/registry/nodeTypeRegistry";
 import { ensureNodeTypesRegistered } from "../Nodes/registerBasicNodeTypes";
-
+import { useSelect } from "../Select/contexts/SelectContext";
 
 const defaultEdgeOptions = {
   zIndex: 1,
@@ -18,13 +18,13 @@ const defaultEdgeOptions = {
 };
 
 function Flow({ children }: { children?: React.ReactNode }) {
-  const { onEdgesChange, getVisibleEdges } = useEdgeState();
+  const { visibleEdges, onEdgesChange } = useEdgeState();
   const {
+    displayedNodes,
     onNodesChange,
     onNodeDragStart,
     onNodeDrag,
     onNodeDragStop,
-    getVisibleNodes,
     isDragging,
   } = useNodeState();
 
@@ -38,14 +38,22 @@ function Flow({ children }: { children?: React.ReactNode }) {
     DetermineNodeClickFunction,
     handleSelectionEnd,
   } = useNodeSelection({
-    nodes: getVisibleNodes(),
+    nodes: displayedNodes,
     isDragging,
   });
   const { DetermineEdgeClickFunction } = useEdgeSelect({
-    nodes: getVisibleNodes(),
-    edges: getVisibleEdges(),
+    nodes: displayedNodes,
+    edges: visibleEdges,
   });
 
+  // Add this to get clearSelection
+  const { clearSelection } = useSelect();
+  const handleClearSelection = useCallback(() => {
+    console.log("Clearing selection");
+    clearSelection();
+  }
+  , [clearSelection]);
+  const { nodeTypes } = useNodeTypeRegistry();
 
   // Ensure node types are registered on component mount
   useEffect(() => {
@@ -53,11 +61,6 @@ function Flow({ children }: { children?: React.ReactNode }) {
   }, []);
 
   // Use the improved node type registry hook
-  const { nodeTypes } = useNodeTypeRegistry();
-
-  // Use memo for visible nodes and edges
-  const visibleNodes = useMemo(() => getVisibleNodes(), [getVisibleNodes]);
-  const visibleEdges = useMemo(() => getVisibleEdges(), [getVisibleEdges]);
 
   // Optimize pan start/end handling
   const handlePanStart = useCallback(() => {
@@ -70,11 +73,18 @@ function Flow({ children }: { children?: React.ReactNode }) {
     isPanning.current = false;
   }, []);
 
+const findSelectedFromNodes = () => {  
+  
+  const selectedNodes = displayedNodes.filter((node) => node.selected);
+  console.log("LOOK AT THIS VISIBLENODES is selected", selectedNodes);
+}
+findSelectedFromNodes();
+
   return (
     <ReactFlow
       nodeTypes={nodeTypes}
       defaultEdgeOptions={defaultEdgeOptions}
-      nodes={visibleNodes}
+      nodes={displayedNodes}
       onNodesChange={onNodesChange}
       onNodeDragStart={onNodeDragStart}
       onNodeDrag={onNodeDrag}
@@ -105,6 +115,8 @@ function Flow({ children }: { children?: React.ReactNode }) {
       onMoveStart={handlePanStart}
       onMoveEnd={handlePanEnd}
       panOnScroll={false}
+      // Add this handler:
+      onPaneClick={handleClearSelection}
     >
       {children}
     </ReactFlow>
