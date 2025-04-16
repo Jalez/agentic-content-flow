@@ -15,16 +15,8 @@ export const useNodeState = () => {
   const nodeParentMap = useNodeStore((state) => state.nodeParentMap);
   const expandedNodes = useNodeStore((state) => state.expandedNodes);
   const toggleNodeExpansion = useNodeStore((state) => state.toggleNodeExpansion);
-
-  const {
-    isDragging,
-    isDraggingRef,
-    localNodes,
-    setLocalNodes,
-    onNodeDragStart,
-    onNodeDragStop,
-    onNodeDrag
-  } = useNodeDrag();
+  
+  const trackSetNodes = useTrackableState("useNodeState/SetNodes", setNodes);
 
   const trackUpdateNode = useTrackableState(
     "useNodeState/UpdateNode",
@@ -37,8 +29,17 @@ export const useNodeState = () => {
     updateNodes,
     setNodes
   );
+  const {
+    isDragging,
+    isDraggingRef,
+    localNodes,
+    setLocalNodes,
+    onNodeDragStart,
+    onNodeDragStop,
+    onNodeDrag
+  } = useNodeDrag(trackUpdateNodes);
 
-  const trackSetNodes = useTrackableState("useNodeState/SetNodes", setNodes);
+
 
   // Function to check if a node should be hidden based on its ancestors' collapsed state
   const shouldNodeBeHidden = useCallback(
@@ -71,14 +72,14 @@ export const useNodeState = () => {
   const getVisibleNodeParentMap = useCallback(() => {
     const visibleNodeParentMap = new Map<string, Node<any>[]>();
     visibleNodeParentMap.set("no-parent", []);
-    
+
     nodeParentMap.forEach((children, parentId) => {
       const visibleChildren = children.filter(child => !shouldNodeBeHidden(child.id));
       if (visibleChildren.length > 0 || parentId === "no-parent") {
         visibleNodeParentMap.set(parentId, visibleChildren);
       }
     });
-    
+
     return visibleNodeParentMap;
   }, [nodeParentMap, shouldNodeBeHidden]);
 
@@ -94,6 +95,7 @@ export const useNodeState = () => {
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
+      console.log("onNodesChange - isDraggingRef:", isDraggingRef.current);
       if (isDraggingRef.current) {
         setLocalNodes(prev =>
           applyNodeChanges(changes, prev.length > 0 ? prev : nodes) as Node<NodeData>[]
@@ -108,38 +110,19 @@ export const useNodeState = () => {
 
   const handleUpdateNodes = useCallback(
     (updatedNodes: Node[]) => {
+      console.log("handleUpdateNodes - updatedNodes:", updatedNodes);
       trackUpdateNodes(updatedNodes, nodes);
     },
     [trackUpdateNodes, nodes]
   );
 
-  const handleNodeEdit = useCallback(
-    (nodeId: string, label: string, details: string) => {
-      const updatedNodes = nodes.map((node) =>
-        node.id === nodeId
-          ? {
-              ...node,
-              data: {
-                ...node.data,
-                label,
-                details,
-              },
-            }
-          : node
-      );
-      trackUpdateNodes(updatedNodes, nodes);
-    },
-    [nodes, trackUpdateNodes]
-  );
+
 
   const getVisibleNodes = useCallback(() => {
-    const nodesToProcess = isDraggingRef.current && localNodes.length > 0 
-      ? nodes.map(node => {
-          const localNode = localNodes.find(ln => ln.id === node.id);
-          return localNode || node;
-        })
+    console.log("getVisibleNodes called");
+    const nodesToProcess = (isDraggingRef.current || localNodes.length > 0)
+      ? localNodes
       : nodes;
-      //console.log("getVisibleNodes called", nodesToProcess);
     return applyCollapsedState(nodesToProcess);
   }, [nodes, localNodes, applyCollapsedState, isDraggingRef])
 
@@ -163,10 +146,9 @@ export const useNodeState = () => {
     },
     [nodes, trackUpdateNode]
   );
-  
+
   return {
     displayedNodes,
-    nodes: displayedNodes,
     nodeMap,
     onNodeDrag,
     nodeParentMap,
@@ -179,7 +161,6 @@ export const useNodeState = () => {
     updateNode: handleUpdateNode,
     handleUpdateNodes,
     onNodesChange,
-    handleNodeEdit,
     getVisibleNodes,
     isDragging,
     onNodeDragStop,

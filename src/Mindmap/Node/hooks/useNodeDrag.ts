@@ -3,7 +3,6 @@ import { useCallback, useState, useRef } from "react";
 import { Node, useReactFlow, useViewport } from "@xyflow/react";
 import { NodeData } from "../../types";
 import { useNodeStore } from "../../stores";
-import { useTrackableState } from "@jalez/react-state-history";
 import { getPotentialParentId } from "./utils/getPotentialParents";
 import {
   updateNodeExtentInLocalNodes
@@ -16,11 +15,9 @@ const ROOT_INDICATOR = "no-parent";
 /**
  * A custom hook for handling node dragging behavior in a mindmap.
  */
-export const useNodeDrag = () => {
+export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previousNodes: Node<NodeData>[]) => void) => {
   const updateNode = useNodeStore((state) => state.updateNode);
-  const updateNodes = useNodeStore((state) => state.updateNodes);
   const nodes = useNodeStore((state) => state.nodes);
-  const setNodes = useNodeStore((state) => state.setNodes);
   const nodeMap = useNodeStore((state) => state.nodeMap);
   const nodeParentMap = useNodeStore((state) => state.nodeParentMap);
 
@@ -32,14 +29,13 @@ export const useNodeDrag = () => {
   const [currentParentCandidateId, setCurrentParentCandidateId] = useState<string | null>(null);
   const isDraggingRef = useRef(false);
 
-  const trackUpdateNodes = useTrackableState(
-    "useNodeDrag/UpdateNodes",
-    updateNodes,
-    setNodes
-  );
+
 
   // Handle drag start
   const onNodeDragStart = useCallback((_: React.MouseEvent, __: Node<NodeData>, nodesToDrag: Node<NodeData>[]) => {
+    console.log("DRAG STARTING", nodesToDrag);
+
+    
     setIsDragging(true);
     isDraggingRef.current = true;
     // Create a map of the nodes to drag where the nodeId is the key
@@ -93,7 +89,6 @@ export const useNodeDrag = () => {
    */
   const clearCurrentParentHighlight = useCallback(() => {
     if (currentParentCandidateId) {
-      console.log("Clearing highlight for current parent candidate:", currentParentCandidateId);
       updateNodeHighlight(currentParentCandidateId, false);
       setCurrentParentCandidateId(null);
     }
@@ -159,7 +154,6 @@ export const useNodeDrag = () => {
       }
 
 
-      console.log("Potential parent ID:", potentialParentId);
       if (currentParentCandidateId === potentialParentId) return;
       clearCurrentParentHighlight();
       updateNodeHighlight(potentialParentId, true);
@@ -185,17 +179,20 @@ export const useNodeDrag = () => {
   const onNodeDragStop = useCallback((_: React.MouseEvent, node: Node<NodeData>) => {
     setIsDragging(false);
     isDraggingRef.current = false;
+    console.log("STOPPING DRAGGING", node.id);
 
     // Reset drag start time for this node
     if (node.id) {
       dragStartTimes.delete(node.id);
     }
 
+    const updatedLocalNodes = [...localNodes];
+
     // Update parent relationship if there's a candidate
     if (currentParentCandidateId) {
       // If the candidate is the root indicator, remove parentId
 
-      localNodes.forEach((localNode) => {
+      updatedLocalNodes.forEach((localNode) => {
         if (localNode.id === currentParentCandidateId) {
           localNode.data.highlighted = false;
         }
@@ -209,7 +206,7 @@ export const useNodeDrag = () => {
       setCurrentParentCandidateId(null);
     } else {
       // If no parent candidate is set, the node should become a root node
-      localNodes.forEach((localNode) => {
+      updatedLocalNodes.forEach((localNode) => {
         if (localNode.id === node.id && localNode.parentId) {
           console.log("Setting node as root (no parent):", localNode.id);
           localNode.parentId = undefined;
@@ -218,12 +215,15 @@ export const useNodeDrag = () => {
       });
     }
 
+    console.log("Updated local nodes after drag stop:", updatedLocalNodes);
     // Commit changes to node state
-    if (localNodes.length > 0) {
-      trackUpdateNodes(localNodes, nodes);
+    if (updatedLocalNodes.length > 0) {
+      //setLocalNodes(updatedLocalNodes);
+      // Update the nodes in the store
+      trackUpdateNodes(updatedLocalNodes, nodes);
       setLocalNodes([]);
     }
-  }, [localNodes, trackUpdateNodes, nodes, currentParentCandidateId]);
+  }, [localNodes, nodes, currentParentCandidateId]);
 
   return {
     isDragging,
