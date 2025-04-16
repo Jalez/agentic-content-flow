@@ -68,124 +68,280 @@ const initialNodes = [...initialParentNodes, ...initialChildNodes];
 const initialMaps = rebuildMaps(initialNodes);
 
 export const useNodeStore = create<NodeStoreState>()(
-  // persist(
-    (set, get) => ({
-      nodes: initialNodes,
-      parentNodes: initialParentNodes,
-      childNodes: initialChildNodes,
-      nodeMap: initialMaps.nodeMap,
-      nodeParentMap: initialMaps.nodeParentMap,
+  persist(
+  (set, get) => ({
+    nodes: initialNodes,
+    parentNodes: initialParentNodes,
+    childNodes: initialChildNodes,
+    nodeMap: initialMaps.nodeMap,
+    nodeParentMap: initialMaps.nodeParentMap,
 
-      getNode: (id: string) => get().nodeMap.get(id),
+    getNode: (id: string) => get().nodeMap.get(id),
 
-      setNodes: (nodes) => {
-        if (!Array.isArray(nodes)) {
-          console.error("Invalid nodes value:", nodes);
-          return;
+    setNodes: (nodes) => {
+      if (!Array.isArray(nodes)) {
+        console.error("Invalid nodes value:", nodes);
+        return;
+      }
+      console.log("SET NODES CALLED", nodes);
+      const { nodeMap, nodeParentMap } = rebuildMaps(nodes);
+      set({ nodes, nodeMap, nodeParentMap });
+    },
+
+    setChildNodes: (newChildnodes: Node<any>[]) => {
+
+      const newNodes = [...get().parentNodes
+        , ...newChildnodes];
+
+      console.log("SET CHILD NODES CALLED", newChildnodes);
+      const { nodeMap, nodeParentMap } = rebuildMaps(newNodes);
+      set({ nodes: newNodes, nodeMap, nodeParentMap, childNodes: newChildnodes });
+    },
+
+    setParentNodes: (newParentnodes: Node<any>[]) => {
+      const newNodes = [...newParentnodes, ...get().childNodes];
+
+      const { nodeMap, nodeParentMap } = rebuildMaps(newNodes);
+      set({ nodes: newNodes, nodeMap, nodeParentMap, parentNodes: newParentnodes });
+    },
+
+
+    addNodeToStore: (node) => {
+      set((state) => {
+        console.log("ADD NODE CALLED", node);
+        // If node exists, throw an error
+        if (state.nodeMap.has(node.id)) {
+          console.error("Node already exists in the store:", node.id);
+          return state;
         }
-        console.log("SET NODES CALLED", nodes);
-        const { nodeMap, nodeParentMap } = rebuildMaps(nodes);
-        set({ nodes, nodeMap, nodeParentMap });
-      },
+        // Create new maps (shallow clones)
+        const newNodeMap = new Map(state.nodeMap);
+        const newNodeParentMap = new Map(state.nodeParentMap);
 
-      setChildNodes: (newChildnodes: Node<any>[]) => {
+        newNodeMap.set(node.id, node);
 
-        const newNodes = [...get().parentNodes
-          , ...newChildnodes];
-
-        const { nodeMap, nodeParentMap } = rebuildMaps(newNodes);
-        set({ nodes: newNodes, nodeMap, nodeParentMap, childNodes: newChildnodes });
-      },
-
-      setParentNodes: (newParentnodes: Node<any>[]) => {
-        const newNodes = [...newParentnodes, ...get().childNodes];
-
-        const { nodeMap, nodeParentMap } = rebuildMaps(newNodes);
-        set({ nodes: newNodes, nodeMap, nodeParentMap, parentNodes: newParentnodes });
-      },
-
-
-      addNodeToStore: (node) => {
-        set((state) => {
-          console.log("ADD NODE CALLED", node);
-          // If node exists, throw an error
-          if (state.nodeMap.has(node.id)) {
-            console.error("Node already exists in the store:", node.id);
+        // Update parent-child relationships
+        if (node.parentId) {
+          if (!newNodeParentMap.has(node.parentId)) {
+            console.error(
+              `Parent node not found in the store: ${node.parentId}. Node ID: ${node.id}`
+            );
             return state;
           }
-          // Create new maps (shallow clones)
-          const newNodeMap = new Map(state.nodeMap);
-          const newNodeParentMap = new Map(state.nodeParentMap);
+          const children = [...(newNodeParentMap.get(node.parentId) || [])];
+          children.push(node);
+          newNodeParentMap.set(node.parentId, children);
+        } else {
+          const noParentChildren = [...(newNodeParentMap.get("no-parent") || [])];
+          noParentChildren.push(node);
+          newNodeParentMap.set("no-parent", noParentChildren);
+        }
 
-          newNodeMap.set(node.id, node);
 
-          // Update parent-child relationships
-          if (node.parentId) {
-            if (!newNodeParentMap.has(node.parentId)) {
-              console.error(
-                `Parent node not found in the store: ${node.parentId}. Node ID: ${node.id}`
-              );
-              return state;
+        let newNodes = state.nodes;
+        let newChildNodes = state.childNodes;
+        let newParentNodes = state.parentNodes;
+        if (!isParentNodeType(node?.type || "")) {
+          newChildNodes = [...state.childNodes, node];
+          newNodes = [...state.parentNodes, ...newChildNodes];
+        }
+        else {
+          if (newNodeParentMap.has(node.id)) {
+            console.error(
+              `This node is already a parent node: ${node.id}. Node ID: ${node.id}. Aborting`
+            );
+            return state;
+          }
+          newNodeParentMap.set(node.id, []);
+          newParentNodes = organizeNodeParents(
+            newNodeParentMap,
+            newNodeMap
+          );
+          newNodes = [...newParentNodes, ...state.childNodes];
+        }
+
+        return {
+          nodes: newNodes,
+          nodeMap: newNodeMap,
+          nodeParentMap: newNodeParentMap,
+          parentNodes: newParentNodes,
+          childNodes: newChildNodes,
+        };
+      });
+    },
+
+    updateNode: (node) => {
+      set((state) => {
+        console.log("UPDATE NODE CALLED", node);
+        //If the node doesnt exist, cant update it
+        if (!state.nodeMap.has(node.id)) {
+          console.error("Node not found in the store:", node.id);
+          return state;
+        }
+        // Create new maps (shallow clones)
+        const newNodeMap = new Map(state.nodeMap);
+        const newNodeParentMap = new Map(state.nodeParentMap);
+        //Get also the old node
+        const oldNode = state.nodeMap.get(node.id);
+        // Update the node in the nodeMap
+
+        newNodeMap.set(node.id, node);
+        // Update parent-child relationships if the parentId has changed
+        if (oldNode?.parentId !== node?.parentId) {
+          const addToId = node.parentId || "no-parent";
+          // If the new parentId is not in the map, throw an error
+          if (!newNodeParentMap.has(addToId)) {
+            console.error(
+              `Parent node not found in the store: ${addToId}. Node ID: ${node.id}`
+            );
+            return state;
+          }
+          // Add the node to the new parentId
+          const newSiblings = [...(newNodeParentMap.get(addToId) || [])];
+          newSiblings.push(node);
+          newNodeParentMap.set(addToId, newSiblings);
+
+          const removeFromId = oldNode?.parentId || "no-parent";
+          const oldSiblings = [...(newNodeParentMap.get(removeFromId) || [])];
+          const index = oldSiblings.findIndex((child) => child.id === node.id);
+          if (index !== -1) {
+            oldSiblings.splice(index, 1);
+            newNodeParentMap.set(removeFromId, oldSiblings);
+          }
+        }
+
+        let newNodes = state.nodes;
+        let newChildNodes = state.childNodes;
+        let newParentNodes = state.parentNodes;
+
+        if (!isParentNodeType(node?.type || "")) {
+          newChildNodes = state.childNodes.map((child) => {
+            if (child.id === node.id) {
+              return node;
             }
-            const children = [...(newNodeParentMap.get(node.parentId) || [])];
-            children.push(node);
-            newNodeParentMap.set(node.parentId, children);
-          } else {
-            const noParentChildren = [...(newNodeParentMap.get("no-parent") || [])];
-            noParentChildren.push(node);
+            return child;
+          });
+          newNodes = [...state.parentNodes, ...newChildNodes];
+        } else {
+          newParentNodes = organizeNodeParents(
+            newNodeParentMap,
+            newNodeMap
+          );
+          newNodes = [...newParentNodes, ...state.childNodes];
+        }
+
+        return {
+          nodes: newNodes,
+          nodeMap: newNodeMap,
+          nodeParentMap: newNodeParentMap,
+          parentNodes: newParentNodes,
+          childNodes: newChildNodes,
+        };
+      });
+    },
+    removeNode: (nodeId) => {
+      set((state) => {
+        console.log("REMOVE NODE CALLED", nodeId);
+        // If node doesn't exist, throw an error
+        if (!state.nodeMap.has(nodeId)) {
+          console.error("Node not found in the store:", nodeId);
+          return state;
+        }
+        // Create new maps (shallow clones)
+        const newNodeMap = new Map(state.nodeMap);
+        const newNodeParentMap = new Map(state.nodeParentMap);
+        //we know its in the map
+        // Remove the node from the nodeMap
+        const nodeToRemove = newNodeMap.get(nodeId);
+        newNodeMap.delete(nodeId);
+        // Remove the node from the parent-child relationships
+        if (nodeToRemove?.parentId) {
+          const children = [...(newNodeParentMap.get(nodeToRemove.parentId) || [])];
+          const index = children.findIndex((child) => child.id === nodeId);
+          if (index !== -1) {
+            children.splice(index, 1);
+            newNodeParentMap.set(nodeToRemove.parentId, children);
+          }
+        } else {
+          const noParentChildren = [...(newNodeParentMap.get("no-parent") || [])];
+          const index = noParentChildren.findIndex((child) => child.id === nodeId);
+          if (index !== -1) {
+            noParentChildren.splice(index, 1);
             newNodeParentMap.set("no-parent", noParentChildren);
           }
-
-
-          let newNodes = state.nodes;
-          let newChildNodes = state.childNodes;
-          let newParentNodes = state.parentNodes;
-          if (!isParentNodeType(node?.type || "")) {
-            newChildNodes = [...state.childNodes, node];
-            newNodes = [...state.parentNodes, ...newChildNodes];
-          }
-          else {
-            if (newNodeParentMap.has(node.id)) {
-              console.error(
-                `This node is already a parent node: ${node.id}. Node ID: ${node.id}. Aborting`
-              );
-              return state;
+        }
+        const nodeType = nodeToRemove?.type;
+        if (nodeType && isParentNodeType(nodeType)) {
+          //If it has children, then make them children of the nodes parent
+          const children = newNodeParentMap.get(nodeId);
+          if (children && children.length > 0) {
+            // Get the parent of the node
+            const parentId = nodeToRemove.parentId;
+            if (parentId) {
+              // Add the children to the parent
+              const parentChildren = newNodeParentMap.get(parentId);
+              if (parentChildren) {
+                parentChildren.push(...children);
+                newNodeParentMap.set(parentId, parentChildren);
+              }
             }
-            newNodeParentMap.set(node.id, []);
-            newParentNodes = organizeNodeParents(
-              newNodeParentMap,
-              newNodeMap
-            );
-            newNodes = [...newParentNodes, ...state.childNodes];
           }
+          newNodeParentMap.delete(nodeId);
+        }
 
-          return {
-            nodes: newNodes,
-            nodeMap: newNodeMap,
-            nodeParentMap: newNodeParentMap,
-            parentNodes: newParentNodes,
-            childNodes: newChildNodes,
-          };
-        });
-      },
+        let newNodes = state.nodes;
+        let newChildNodes = state.childNodes;
+        let newParentNodes = state.parentNodes;
 
-      updateNode: (node) => {
-        set((state) => {
-          console.log("UPDATE NODE CALLED", node);
-          //If the node doesnt exist, cant update it
+        if (!isParentNodeType(nodeToRemove?.type || "")) {
+          newChildNodes = state.childNodes.filter((node) => node.id !== nodeId);
+          newNodes = [...state.parentNodes, ...newChildNodes];
+        } else {
+          newParentNodes = state.parentNodes.filter((node) => node.id !== nodeId);
+          newNodes = [...newParentNodes, ...state.childNodes];
+        }
+        return {
+          nodes: newNodes,
+          nodeMap: newNodeMap,
+          nodeParentMap: newNodeParentMap,
+          parentNodes: newParentNodes,
+          childNodes: newChildNodes,
+        };
+
+
+      });
+    },
+
+    // Merges only the updated nodes with the existing ones.
+    updateNodes: (updatedNodes: Node<any>[]) => {
+      set((state) => {
+        console.log("UPDATE ALL NODES CALLED", updatedNodes);
+
+        //First, go through the updated nodes and check if they exist in the store
+        for (const node of updatedNodes) {
           if (!state.nodeMap.has(node.id)) {
             console.error("Node not found in the store:", node.id);
             return state;
           }
-          // Create new maps (shallow clones)
-          const newNodeMap = new Map(state.nodeMap);
-          const newNodeParentMap = new Map(state.nodeParentMap);
-          //Get also the old node
-          const oldNode = state.nodeMap.get(node.id);
-          // Update the node in the nodeMap
+        }
 
+        // Create new maps (shallow clones)
+        const newNodeMap = new Map(state.nodeMap);
+        const newNodeParentMap = new Map(state.nodeParentMap);
+
+        // Update the nodes in the nodeMap
+        updatedNodes.forEach((node) => {
           newNodeMap.set(node.id, node);
-          // Update parent-child relationships if the parentId has changed
+        });
+
+        // Update parent-child relationships
+
+        // Update the nodes in the store
+        let newNodes = state.nodes;
+        let newChildNodes: Node[] = []
+        let newParentNodes = state.parentNodes;
+        updatedNodes.forEach((node) => {
+          const oldNode = state.nodeMap.get(node.id);
           if (oldNode?.parentId !== node?.parentId) {
             const addToId = node.parentId || "no-parent";
             // If the new parentId is not in the map, throw an error
@@ -209,211 +365,55 @@ export const useNodeStore = create<NodeStoreState>()(
             }
           }
 
-          let newNodes = state.nodes;
-          let newChildNodes = state.childNodes;
-          let newParentNodes = state.parentNodes;
-
-          if (!isParentNodeType(node?.type || "")) {
-            newChildNodes = state.childNodes.map((child) => {
-              if (child.id === node.id) {
-                return node;
-              }
-              return child;
-            });
-            newNodes = [...state.parentNodes, ...newChildNodes];
+          if (!isParentNodeType(node.type || "")) {
+            newChildNodes.push(node);
+            console.log("NEW CHILD NODES", newChildNodes);
           } else {
+            console.log("IS PARENT NODE TYPE");
             newParentNodes = organizeNodeParents(
               newNodeParentMap,
               newNodeMap
             );
-            newNodes = [...newParentNodes, ...state.childNodes];
           }
-          
-          return {
-            nodes: newNodes,
-            nodeMap: newNodeMap,
-            nodeParentMap: newNodeParentMap,
-            parentNodes: newParentNodes,
-            childNodes: newChildNodes,
-          };
         });
-      },
-      removeNode: (nodeId) => {
-        set((state) => {
-          console.log("REMOVE NODE CALLED", nodeId);
-          // If node doesn't exist, throw an error
-          if (!state.nodeMap.has(nodeId)) {
-            console.error("Node not found in the store:", nodeId);
-            return state;
-          }
-          // Create new maps (shallow clones)
-          const newNodeMap = new Map(state.nodeMap);
-          const newNodeParentMap = new Map(state.nodeParentMap);
-          //we know its in the map
-          // Remove the node from the nodeMap
-          const nodeToRemove = newNodeMap.get(nodeId);
-          newNodeMap.delete(nodeId);
-          // Remove the node from the parent-child relationships
-          if (nodeToRemove?.parentId) {
-            const children = [...(newNodeParentMap.get(nodeToRemove.parentId) || [])];
-            const index = children.findIndex((child) => child.id === nodeId);
-            if (index !== -1) {
-              children.splice(index, 1);
-              newNodeParentMap.set(nodeToRemove.parentId, children);
-            }
-          } else {
-            const noParentChildren = [...(newNodeParentMap.get("no-parent") || [])];
-            const index = noParentChildren.findIndex((child) => child.id === nodeId);
-            if (index !== -1) {
-              noParentChildren.splice(index, 1);
-              newNodeParentMap.set("no-parent", noParentChildren);
-            }
-          }
-          const nodeType = nodeToRemove?.type;
-          if (nodeType && isParentNodeType(nodeType)) {
-            //If it has children, then make them children of the nodes parent
-            const children = newNodeParentMap.get(nodeId);
-            if (children && children.length > 0) {
-              // Get the parent of the node
-              const parentId = nodeToRemove.parentId;
-              if (parentId) {
-                // Add the children to the parent
-                const parentChildren = newNodeParentMap.get(parentId);
-                if (parentChildren) {
-                  parentChildren.push(...children);
-                  newNodeParentMap.set(parentId, parentChildren);
-                }
-              }
-            }
-            newNodeParentMap.delete(nodeId);
-          }
+        newNodes = [...newParentNodes, ...newChildNodes];
 
-          let newNodes = state.nodes;
-          let newChildNodes = state.childNodes;
-          let newParentNodes = state.parentNodes;
-
-          if (!isParentNodeType(nodeToRemove?.type || "")) {
-            newChildNodes = state.childNodes.filter((node) => node.id !== nodeId);
-            newNodes = [...state.parentNodes, ...newChildNodes];
-          } else {
-            newParentNodes = state.parentNodes.filter((node) => node.id !== nodeId);
-            newNodes = [...newParentNodes, ...state.childNodes];
-          }
-          return {
-            nodes: newNodes,
-            nodeMap: newNodeMap,
-            nodeParentMap: newNodeParentMap,
-            parentNodes: newParentNodes,
-            childNodes: newChildNodes,
-          };
+        console.log("SAVING TO STORE NODES", newNodes);
+        return {
+          nodes: newNodes,
+          nodeMap: newNodeMap,
+          nodeParentMap: newNodeParentMap,
+          parentNodes: newParentNodes,
+          childNodes: newChildNodes,
+        };
+      });
+    },
 
 
-        });
-      },
-
-      // Merges only the updated nodes with the existing ones.
-      updateNodes: (updatedNodes: Node<any>[]) => {
-        set((state) => {
-          console.log("UPDATE ALL NODES CALLED", updatedNodes);
-          return state;
-          //First, go through the updated nodes and check if they exist in the store, if any of them do not exist, throw an error and return
-          updatedNodes.forEach((node) => {
-            if (!state.nodeMap.has(node.id)) {
-              console.error("Node not found in the store:", node.id);
-              return state
-            }
-          }
-          );
-          // Create new maps (shallow clones)
-          const newNodeMap = new Map(state.nodeMap);
-          const newNodeParentMap = new Map(state.nodeParentMap);
-
-          // Update the nodes in the nodeMap
-          updatedNodes.forEach((node) => {
-            newNodeMap.set(node.id, node);
-          });
-
-
-          // Update parent-child relationships
-          updatedNodes.forEach((node) => {
-            const oldNode = state.nodeMap.get(node.id);
-            if (oldNode?.parentId !== node?.parentId) {
-              const addToId = node.parentId || "no-parent";
-              // If the new parentId is not in the map, throw an error
-              if (!newNodeParentMap.has(addToId)) {
-                console.error(
-                  `Parent node not found in the store: ${addToId}. Node ID: ${node.id}`
-                );
-                return state;
-              }
-              // Add the node to the new parentId
-              const newSiblings = [...(newNodeParentMap.get(addToId) || [])];
-              newSiblings.push(node);
-              newNodeParentMap.set(addToId, newSiblings);
-
-              const removeFromId = oldNode?.parentId || "no-parent";
-              const oldSiblings = [...(newNodeParentMap.get(removeFromId) || [])];
-              const index = oldSiblings.findIndex((child) => child.id === node.id);
-              if (index !== -1) {
-                oldSiblings.splice(index, 1);
-                newNodeParentMap.set(removeFromId, oldSiblings);
-              }
-            }
-          });
-
-          // Update the nodes in the store
-          let newNodes = state.nodes;
-          let newChildNodes = state.childNodes;
-          let newParentNodes = state.parentNodes;
-
-          if (!isParentNodeType(updatedNodes[0]?.type || "")) {
-            newChildNodes = state.childNodes.map((child) => {
-              const updatedNode = updatedNodes.find((node) => node.id === child.id);
-              return updatedNode ? updatedNode : child;
-            });
-            newNodes = [...state.parentNodes, ...newChildNodes];
-          } else {
-            newParentNodes = organizeNodeParents(
-              newNodeParentMap,
-              newNodeMap
-            );
-            newNodes = [...newParentNodes, ...state.childNodes];
-          }
-          return {
-            nodes: newNodes,
-            nodeMap: newNodeMap,
-            nodeParentMap: newNodeParentMap,
-            parentNodes: newParentNodes,
-            childNodes: newChildNodes,
-          };
-        });
-      },
-
-
-      expandedNodes: {},
-      toggleNodeExpansion: (nodeId) =>
-        set((state) => ({
-          expandedNodes: {
-            ...state.expandedNodes,
-            [nodeId]: !state.expandedNodes[nodeId],
-          },
-        })),
+    expandedNodes: {},
+    toggleNodeExpansion: (nodeId) =>
+      set((state) => ({
+        expandedNodes: {
+          ...state.expandedNodes,
+          [nodeId]: !state.expandedNodes[nodeId],
+        },
+      })),
+  }),
+  {
+    name: "node-storage",
+    partialize: (state) => ({
+      nodes: state.nodes,
+      parentNodes: state.parentNodes,
+      childNodes: state.childNodes,
+      expandedNodes: state.expandedNodes,
     }),
-    // {
-    //   name: "node-storage",
-    //   partialize: (state) => ({
-    //     nodes: state.nodes,
-    //     parentNodes: state.parentNodes,
-    //     childNodes: state.childNodes,
-    //     expandedNodes: state.expandedNodes,
-    //   }),
-    //   onRehydrateStorage: () => (state) => {
-    //     if (state) {
-    //       const { nodeMap, nodeParentMap } = rebuildMaps(state.nodes);
-    //       state.nodeMap = nodeMap;
-    //       state.nodeParentMap = nodeParentMap;
-    //     }
-    //   },
-    // }
-  // )
+    onRehydrateStorage: () => (state) => {
+      if (state) {
+        const { nodeMap, nodeParentMap } = rebuildMaps(state.nodes);
+        state.nodeMap = nodeMap;
+        state.nodeParentMap = nodeParentMap;
+      }
+    },
+  }
+  )
 );
