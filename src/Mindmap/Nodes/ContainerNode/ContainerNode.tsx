@@ -76,7 +76,7 @@ export const ContainerNode = ({
   }
   // Use the most up-to-date data during dragging
   if(selected) {
-    console.log(`Node ${id} is selected`);
+    console.log(`Container Node ${id} is selected`);
   }
 
   return (
