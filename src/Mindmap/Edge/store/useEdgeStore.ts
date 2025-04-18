@@ -79,7 +79,6 @@ export const useEdgeStore = create<EdgeStoreState>()(
           }
           //Otherwise, we get the new edge from the updatedEdges (is it the last one?)
           const newEdge = updatedEdges[updatedEdges.length - 1];
-          console.log("New edge added:", newEdge);
 
           if (state.edgeMap.has(newEdge.id)) {
             console.warn(`Edge with id ${newEdge.id} already exists.`);

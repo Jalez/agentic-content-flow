@@ -20,7 +20,6 @@ export const createCellNodeTemplate = (
   // Determine the level based on parent node
   const level = eventNode?.data.level;
 
-  console.log("position", position);
   // Create the node with proper structure
   return {
     id,

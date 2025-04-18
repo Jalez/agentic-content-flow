@@ -58,9 +58,7 @@ const UnifiedControlsPanel: React.FC<UnifiedControlsPanelProps> = memo(({
   const controlTypes = useMemo(() => getControlTypes(context), [getControlTypes, context]);
 
   // Only log in development
-  if (process.env.NODE_ENV === 'development') {
-    console.log("UnifiedControlsPanel - control types:", controlTypes);
-  }
+
 
   // Memoize the entire controls panel structure
   const controlsPanel = useMemo(() => (

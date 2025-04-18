@@ -163,7 +163,6 @@ export function useViewportManager(
           centeringInProgress.current = false;
         }
       } catch (error) {
-        console.error("Error centering node:", error);
         centeringInProgress.current = false;
       }
     },

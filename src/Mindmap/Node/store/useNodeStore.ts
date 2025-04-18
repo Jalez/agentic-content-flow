@@ -83,7 +83,6 @@ export const useNodeStore = create<NodeStoreState>()(
         console.error("Invalid nodes value:", nodes);
         return;
       }
-      console.log("SET NODES CALLED", nodes);
       const { nodeMap, nodeParentMap } = rebuildMaps(nodes);
       set({ nodes, nodeMap, nodeParentMap });
     },
@@ -93,7 +92,6 @@ export const useNodeStore = create<NodeStoreState>()(
       const newNodes = [...get().parentNodes
         , ...newChildnodes];
 
-      console.log("SET CHILD NODES CALLED", newChildnodes);
       const { nodeMap, nodeParentMap } = rebuildMaps(newNodes);
       set({ nodes: newNodes, nodeMap, nodeParentMap, childNodes: newChildnodes });
     },
@@ -108,7 +106,6 @@ export const useNodeStore = create<NodeStoreState>()(
 
     addNodeToStore: (node) => {
       set((state) => {
-        console.log("ADD NODE CALLED", node);
         // If node exists, throw an error
         if (state.nodeMap.has(node.id)) {
           console.error("Node already exists in the store:", node.id);
@@ -172,7 +169,6 @@ export const useNodeStore = create<NodeStoreState>()(
 
     updateNode: (node) => {
       set((state) => {
-        console.log("UPDATE NODE CALLED", node);
         //If the node doesnt exist, cant update it
         if (!state.nodeMap.has(node.id)) {
           console.error("Node not found in the store:", node.id);
@@ -241,7 +237,6 @@ export const useNodeStore = create<NodeStoreState>()(
     },
     removeNode: (nodeId) => {
       set((state) => {
-        console.log("REMOVE NODE CALLED", nodeId);
         // If node doesn't exist, throw an error
         if (!state.nodeMap.has(nodeId)) {
           console.error("Node not found in the store:", nodeId);
@@ -315,7 +310,6 @@ export const useNodeStore = create<NodeStoreState>()(
     // Merges only the updated nodes with the existing ones.
     updateNodes: (updatedNodes: Node<any>[]) => {
       set((state) => {
-        console.log("UPDATE ALL NODES CALLED", updatedNodes);
 
         //First, go through the updated nodes and check if they exist in the store
         for (const node of updatedNodes) {
@@ -367,9 +361,7 @@ export const useNodeStore = create<NodeStoreState>()(
 
           if (!isParentNodeType(node.type || "")) {
             newChildNodes.push(node);
-            console.log("NEW CHILD NODES", newChildNodes);
           } else {
-            console.log("IS PARENT NODE TYPE");
             newParentNodes = organizeNodeParents(
               newNodeParentMap,
               newNodeMap
@@ -378,7 +370,6 @@ export const useNodeStore = create<NodeStoreState>()(
         });
         newNodes = [...newParentNodes, ...newChildNodes];
 
-        console.log("SAVING TO STORE NODES", newNodes);
         return {
           nodes: newNodes,
           nodeMap: newNodeMap,

@@ -122,11 +122,7 @@ describe('organizeNodeParents performance', () => {
     const optimizedTime = timeExecution(() => 
       organizeNodeParents(parentIdWithChildren, poolOfAllNodes));
     
-    console.log(`Small hierarchy (40 nodes):`);
-    console.log(`- Original: ${originalTime.timeMs.toFixed(3)}ms`);
-    console.log(`- Optimized: ${optimizedTime.timeMs.toFixed(3)}ms`);
-    console.log(`- Speed improvement: ${(originalTime.timeMs / optimizedTime.timeMs).toFixed(2)}x`);
-    
+
     // Verify both implementations return the same result
     expect(optimizedTime.result.map(node => node.id))
       .toEqual(originalTime.result.map(node => node.id));
@@ -142,11 +138,7 @@ describe('organizeNodeParents performance', () => {
     const optimizedTime = timeExecution(() => 
       organizeNodeParents(parentIdWithChildren, poolOfAllNodes));
     
-    console.log(`Medium hierarchy (341 nodes):`);
-    console.log(`- Original: ${originalTime.timeMs.toFixed(3)}ms`);
-    console.log(`- Optimized: ${optimizedTime.timeMs.toFixed(3)}ms`);
-    console.log(`- Speed improvement: ${(originalTime.timeMs / optimizedTime.timeMs).toFixed(2)}x`);
-    
+
     // Verify both implementations return the same result
     expect(optimizedTime.result.map(node => node.id))
       .toEqual(originalTime.result.map(node => node.id));
@@ -162,11 +154,7 @@ describe('organizeNodeParents performance', () => {
     const optimizedTime = timeExecution(() => 
       organizeNodeParents(parentIdWithChildren, poolOfAllNodes));
     
-    console.log(`Large hierarchy (3906 nodes):`);
-    console.log(`- Original: ${originalTime.timeMs.toFixed(3)}ms`);
-    console.log(`- Optimized: ${optimizedTime.timeMs.toFixed(3)}ms`);
-    console.log(`- Speed improvement: ${(originalTime.timeMs / optimizedTime.timeMs).toFixed(2)}x`);
-    
+
     // Verify both implementations return the same result
     expect(optimizedTime.result.map(node => node.id))
       .toEqual(originalTime.result.map(node => node.id));
@@ -227,12 +215,7 @@ describe('organizeNodeParents performance', () => {
       organizeNodeParentsOriginal(parentIdWithChildren, poolOfAllNodes));
     const optimizedTime = timeExecution(() => 
       organizeNodeParents(parentIdWithChildren, poolOfAllNodes));
-    
-    console.log(`Shared paths hierarchy (~200 nodes with complex references):`);
-    console.log(`- Original: ${originalTime.timeMs.toFixed(3)}ms`);
-    console.log(`- Optimized: ${optimizedTime.timeMs.toFixed(3)}ms`);
-    console.log(`- Speed improvement: ${(originalTime.timeMs / optimizedTime.timeMs).toFixed(2)}x`);
-    
+
     // Verify both implementations return the same result
     expect(optimizedTime.result.map(node => node.id).sort())
       .toEqual(originalTime.result.map(node => node.id).sort());

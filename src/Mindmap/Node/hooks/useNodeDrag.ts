@@ -33,9 +33,6 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
 
   // Handle drag start
   const onNodeDragStart = useCallback((_: React.MouseEvent, __: Node<NodeData>, nodesToDrag: Node<NodeData>[]) => {
-    console.log("DRAG STARTING", nodesToDrag);
-
-    
     setIsDragging(true);
     isDraggingRef.current = true;
     // Create a map of the nodes to drag where the nodeId is the key
@@ -77,7 +74,6 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
     } as Node<NodeData>;
     //updateNode(updatedNode);
 
-    console.log("Updating node highlight:", nodeId, highlighted, node);
     setLocalNodes(prev =>
       prev.map(n => n.id === nodeId ? updatedNode : n)
     );
@@ -99,9 +95,7 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
     (event: React.MouseEvent, draggedNode: Node<NodeData>, _: Node<NodeData>[]) => {
       // Handle breaking free from parent
       const parentNode = nodeMap.get(draggedNode?.parentId || "");
-      //console.log("node", draggedNode)
       if (parentNode) {
-        console.log("Parent node found:", parentNode.id);
         // Get mouse position from event and transform to flow coordinates
         const mousePosition = {
           x: (event.clientX - x) / zoom,
@@ -179,7 +173,6 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
   const onNodeDragStop = useCallback((_: React.MouseEvent, node: Node<NodeData>) => {
     setIsDragging(false);
     isDraggingRef.current = false;
-    console.log("STOPPING DRAGGING", node.id);
 
     // Reset drag start time for this node
     if (node.id) {
@@ -197,7 +190,6 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
           localNode.data.highlighted = false;
         }
         if (localNode.id === node.id) {
-          console.log("Setting ", currentParentCandidateId, " as parentId for node:", localNode.id);
           localNode.parentId = currentParentCandidateId;
 
 
@@ -208,14 +200,12 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
       // If no parent candidate is set, the node should become a root node
       updatedLocalNodes.forEach((localNode) => {
         if (localNode.id === node.id && localNode.parentId) {
-          console.log("Setting node as root (no parent):", localNode.id);
           localNode.parentId = undefined;
 
         }
       });
     }
 
-    console.log("Updated local nodes after drag stop:", updatedLocalNodes);
     // Commit changes to node state
     if (updatedLocalNodes.length > 0) {
       //setLocalNodes(updatedLocalNodes);

@@ -50,7 +50,6 @@ const useNodeSelection = ({ nodes, isDragging }: UseNodeSelectionProps) => {
 
   const handleSelectionDragStart = useCallback(
     (_: React.MouseEvent) => {
-      console.log("Selection started, removing all node parents");
       //Set all nodeParents selectable properties to false
       nodeParentMap.forEach((_, parentId) => {
         changeParentSelectState(parentId, false);
@@ -137,7 +136,6 @@ const useNodeSelection = ({ nodes, isDragging }: UseNodeSelectionProps) => {
   // Handler for when selection operation ends (selection rect is released)
   const handleSelectionEnd = useCallback(() => {
     //Let all node parents selectable properties to true
-    console.log("Selection ended, restoring all node parents");
     nodeParentMap.forEach((_, parentId) => {
       changeParentSelectState(parentId, true);
     });

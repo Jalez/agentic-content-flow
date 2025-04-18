@@ -95,7 +95,6 @@ export const useNodeState = () => {
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      console.log("onNodesChange - isDraggingRef:", isDraggingRef.current);
       if (isDraggingRef.current) {
         setLocalNodes(prev =>
           applyNodeChanges(changes, prev.length > 0 ? prev : nodes) as Node<NodeData>[]
@@ -110,7 +109,6 @@ export const useNodeState = () => {
 
   const handleUpdateNodes = useCallback(
     (updatedNodes: Node[]) => {
-      console.log("handleUpdateNodes - updatedNodes:", updatedNodes);
       trackUpdateNodes(updatedNodes, nodes);
     },
     [trackUpdateNodes, nodes]
@@ -119,7 +117,6 @@ export const useNodeState = () => {
 
 
   const getVisibleNodes = useCallback(() => {
-    console.log("getVisibleNodes called");
     const nodesToProcess = (isDraggingRef.current || localNodes.length > 0)
       ? localNodes
       : nodes;

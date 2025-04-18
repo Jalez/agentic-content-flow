@@ -34,7 +34,6 @@ export const useConnectionOperations = () => {
   );
 
   const addSourceNode = (childNode: Node<NodeData>) => {
-    console.log("Adding parent node to child node", childNode);
     const realChildNode = nodeMap.get(childNode.id);
     if (!realChildNode) {
       console.error("Child node not found in nodeMap");
@@ -178,8 +177,6 @@ export const useConnectionOperations = () => {
       source: eventNode.id,
       target: newNodeId,
     };
-    console.log("ADDING NEW CHILD NODE TO STORE", newChildNode);
-    console.log("ADDING NEW EDGE TO STORE", newEdge);
     withTransaction(
       () => {
         trackAddNodeToStore(
@@ -283,8 +280,6 @@ export const useConnectionOperations = () => {
           source: connectionState.fromNode.id,
           target: newNodeId,
         };
-        console.log("ON CONNECT END NEW NODE", newNode);
-        console.log("ON CONNECT END NEW EDGE", newEdge);
         withTransaction(
           () => {
             trackAddNodeToStore(

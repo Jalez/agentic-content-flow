@@ -49,7 +49,6 @@ function Flow({ children }: { children?: React.ReactNode }) {
   // Add this to get clearSelection
   const { clearSelection } = useSelect();
   const handleClearSelection = useCallback(() => {
-    console.log("Clearing selection");
     clearSelection();
   }
   , [clearSelection]);
@@ -64,7 +63,6 @@ function Flow({ children }: { children?: React.ReactNode }) {
 
   // Optimize pan start/end handling
   const handlePanStart = useCallback(() => {
-    console.log("Pan started");
     isPanning.current = true;
     lastPanTime.current = Date.now();
   }, []);
@@ -76,7 +74,6 @@ function Flow({ children }: { children?: React.ReactNode }) {
 const findSelectedFromNodes = () => {  
   
   const selectedNodes = displayedNodes.filter((node) => node.selected);
-  console.log("LOOK AT THIS VISIBLENODES is selected", selectedNodes);
 }
 findSelectedFromNodes();
 

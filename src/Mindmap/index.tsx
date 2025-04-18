@@ -68,7 +68,6 @@ export function MindmapContent() {
 const testCallNodes = useCallback((nodes: Node[]) => {
   console.log("testCallNodes:", nodes);
   handleUpdateNodes(nodes);
-  // console.log("testCallNodes - visibleNodeMap:", visibleNodeMap);
 }, [handleUpdateNodes, visibleNodeMap]);
   
   console.log("Node Parent Map:", visibleNodeParentMap);

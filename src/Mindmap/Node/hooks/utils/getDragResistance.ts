@@ -50,18 +50,6 @@ export const getDragResistance = (
     
     // If the distance exceeds our threshold, the node should break free
     const shouldBreakFree = distance > RESISTANCE_THRESHOLD;
-    
-    if (process.env.NODE_ENV !== 'production') {
-        // console.debug('Drag resistance check:', {
-        //     nodeId: node.id,
-        //     mousePos: mousePosition,
-        //     nodeCenter,
-        //     distance,
-        //     dragDuration,
-        //     threshold: RESISTANCE_THRESHOLD,
-        //     shouldBreakFree
-        // });
-    }
 
     return { shouldBreakFree };
 };

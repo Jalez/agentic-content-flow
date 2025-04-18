@@ -75,7 +75,6 @@ const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
       }
 
       if (newNode) {
-        console.log("newNode", newNode);
         trackAddNodeToStore(newNode, newNode.id);
       }
     }, "NodeCreationControl/Add");
