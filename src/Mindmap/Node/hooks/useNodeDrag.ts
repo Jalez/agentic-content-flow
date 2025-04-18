@@ -191,6 +191,8 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
         }
         if (localNode.id === node.id) {
           localNode.parentId = currentParentCandidateId;
+          //Set extent to parent
+          localNode.extent = "parent";
 
 
         }
@@ -201,7 +203,8 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
       updatedLocalNodes.forEach((localNode) => {
         if (localNode.id === node.id && localNode.parentId) {
           localNode.parentId = undefined;
-
+          //Remove extent
+          delete localNode.extent;
         }
       });
     }

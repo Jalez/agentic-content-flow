@@ -67,11 +67,12 @@ export function MindmapContent() {
   }, [flowWrapper]);
 const testCallNodes = useCallback((nodes: Node[]) => {
   console.log("testCallNodes:", nodes);
+  console.log("node parent map:", nodeParentMap);
   handleUpdateNodes(nodes);
 }, [handleUpdateNodes, visibleNodeMap]);
   
-  console.log("Node Parent Map:", visibleNodeParentMap);
-  console.log("VISIBLE Node Map:", visibleNodeMap);
+  //console.log("Node Parent Map:", visibleNodeParentMap);
+  //console.log("VISIBLE Node Map:", visibleNodeMap);
   return (
     <LayoutProvider
       initialDirection="DOWN"
