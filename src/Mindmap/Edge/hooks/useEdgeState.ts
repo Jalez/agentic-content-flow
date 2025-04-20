@@ -8,9 +8,16 @@ export const useEdgeState = () => {
   const edges = useEdgeStore((state) => state.edges);
   const setEdges = useEdgeStore((state) => state.setEdges);
   const updateEdges = useEdgeStore((state) => state.updateEdges);
+  const removeEdges = useEdgeStore((state) => state.removeEdges);
   const trackUpdateEdges = useTrackableState(
     "useEdgeState/UpdateEdges",
     updateEdges,
+    setEdges
+  );
+
+  const trackRemoveEdges = useTrackableState(
+    "useEdgeState/RemoveEdges",
+    removeEdges,
     setEdges
   );
 
@@ -52,6 +59,16 @@ export const useEdgeState = () => {
     [setEdges, edges, trackSetEdges]
   );
 
+  const onEdgeRemove = useCallback(
+    withErrorHandler("onEdgeRemove", (edges: Edge[]) => {
+      if (!Array.isArray(edges)) {
+        throw new Error("Edges is not an array:" + edges);
+      }
+      trackRemoveEdges(edges, edges); // Use removeEdges for consistency
+    }),
+    [removeEdges, edges, trackRemoveEdges]
+  );
+
   const visibleEdges = useMemo(() => {
     return getVisibleEdges();
   }
@@ -64,5 +81,6 @@ export const useEdgeState = () => {
     onEdgesChange,
     getVisibleEdges,
     handleUpdateEdges,
+    onEdgeRemove,
   };
 };

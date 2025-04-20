@@ -16,6 +16,7 @@ export interface EdgeStoreState {
   updateEdge: (edge: Edge) => void;
   updateEdges: (edges: Edge[]) => void;
   removeEdge: (edgeId: string) => void;
+  removeEdges: (edges: Edge[]) => void;
   getEdge: (id: string) => Edge | undefined;
 }
 
@@ -203,6 +204,37 @@ export const useEdgeStore = create<EdgeStoreState>()(
           };
         });
       },
+      removeEdges: (edges) => {
+        set((state) => {
+          const edgeIdsToRemove = new Set(edges.map((edge) => edge.id));
+          const updatedEdges = state.edges.filter(
+            (edge) => !edgeIdsToRemove.has(edge.id)
+          );
+
+          // Update edgeMap
+          const updatedMap = new Map(state.edgeMap);
+          edges.forEach((edge) => updatedMap.delete(edge.id));
+
+          // Update edgeSourceMap
+          const updatedSourceMap = new Map(state.edgeSourceMap);
+          edges.forEach((edge) => {
+            if (edge.source) {
+              const sourceEdges =
+                updatedSourceMap.get(edge.source) || [];
+              updatedSourceMap.set(
+                edge.source,
+                sourceEdges.filter((e) => e.id !== edge.id)
+              );
+            }
+          });
+
+          return {
+            edges: updatedEdges,
+            edgeMap: updatedMap,
+            edgeSourceMap: updatedSourceMap,
+          };
+        });
+      }
     }),
     {
       name: "edge-storage",
