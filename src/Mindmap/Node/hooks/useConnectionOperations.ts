@@ -10,7 +10,7 @@ import { useTrackableState, useTransaction } from "@jalez/react-state-history";
 // type useConnectionOperationsProps = {};
 
 export const useConnectionOperations = () => {
-  const { addNodeToStore, nodeMap, updateNode, nodeParentMap, removeNode } =
+  const { addNodeToStore, nodeMap, updateNode, nodeParentMap, removeNodes } =
     useNodeStore();
   const { edges, addEdgeToStore, setEdges, edgeMap } = useEdgeStore();
   const { screenToFlowPosition } = useReactFlow();
@@ -19,7 +19,7 @@ export const useConnectionOperations = () => {
   const trackAddNodeToStore = useTrackableState(
     "useConnectionOperations/AddSourceNode",
     addNodeToStore,
-    removeNode
+    removeNodes
   );
 
   const trackAddEdgeToStore = useTrackableState(
@@ -85,7 +85,7 @@ export const useConnectionOperations = () => {
         );
         trackAddNodeToStore(
           newParentNode,
-          newParentNode.id,
+        [newParentNode],
           `Add Parent Node to ${childNode.id}`
         );
         trackAddEdgeToStore(
@@ -181,7 +181,7 @@ export const useConnectionOperations = () => {
       () => {
         trackAddNodeToStore(
           newChildNode,
-          newChildNode.id,
+        [newChildNode],
           `Create target Node of ${eventNode.id}`
         );
         trackAddEdgeToStore(
@@ -284,7 +284,7 @@ export const useConnectionOperations = () => {
           () => {
             trackAddNodeToStore(
               newNode,
-              newNode.id,
+              [newNode],
               `Add New Node from ${connectionState.fromNode.id}`
             );
             trackAddEdgeToStore(

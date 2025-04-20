@@ -15,7 +15,7 @@ export const useNodeState = () => {
   const nodeParentMap = useNodeStore((state) => state.nodeParentMap);
   const expandedNodes = useNodeStore((state) => state.expandedNodes);
   const toggleNodeExpansion = useNodeStore((state) => state.toggleNodeExpansion);
-  
+  const removeNodes = useNodeStore((state) => state.removeNodes);
   const trackSetNodes = useTrackableState("useNodeState/SetNodes", setNodes);
 
   const trackUpdateNode = useTrackableState(
@@ -29,6 +29,13 @@ export const useNodeState = () => {
     updateNodes,
     setNodes
   );
+
+  const trackRemoveNodes = useTrackableState(
+    "useNodeState/RemoveNode",
+    removeNodes,
+    setNodes
+  );
+
   const {
     isDragging,
     isDraggingRef,
@@ -75,9 +82,9 @@ export const useNodeState = () => {
 
     nodeParentMap.forEach((children, parentId) => {
       const visibleChildren = children.filter(child => !shouldNodeBeHidden(child.id));
-      if (visibleChildren.length > 0 || parentId === "no-parent") {
+      //if (visibleChildren.length > 0 || parentId === "no-parent") {
         visibleNodeParentMap.set(parentId, visibleChildren);
-      }
+      //}
     });
 
     return visibleNodeParentMap;
@@ -127,8 +134,8 @@ export const useNodeState = () => {
 
   // Memoize the displayed nodes to prevent unnecessary recalculations
   const displayedNodes = useMemo(() => getVisibleNodes(), [getVisibleNodes, expandedNodes, nodes, localNodes, isDraggingRef]);
-  const visibleNodeParentMap = useMemo(() => getVisibleNodeParentMap(), [getVisibleNodeParentMap, expandedNodes, nodes]);
-  const visibleNodeMap = useMemo(() => getVisibleNodeMap(), [getVisibleNodeMap, expandedNodes, nodes]);
+  const visibleNodeParentMap = useMemo(() => getVisibleNodeParentMap(), [getVisibleNodeParentMap, expandedNodes, nodes, nodeParentMap]);
+  const visibleNodeMap = useMemo(() => getVisibleNodeMap(), [getVisibleNodeMap, expandedNodes, nodes, nodeMap]);
 
   const handleSetNodes = useCallback(
     (newNodes: Node<NodeData>[]) => {
@@ -142,6 +149,17 @@ export const useNodeState = () => {
       trackUpdateNode(updatedNode, nodes);
     },
     [nodes, trackUpdateNode]
+  );
+
+
+  const onNodesDelete = useCallback(
+    (nodesToRemove: Node<NodeData>[]) => {
+      // Handle node deletion
+      console.log("Nodes deleted:", nodes);
+      trackRemoveNodes(nodesToRemove, nodes);
+      
+    },
+    [ trackRemoveNodes, nodes]
   );
 
   return {
@@ -159,6 +177,7 @@ export const useNodeState = () => {
     handleUpdateNodes,
     onNodesChange,
     getVisibleNodes,
+    onNodesDelete,
     isDragging,
     onNodeDragStop,
     onNodeDragStart,

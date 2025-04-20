@@ -15,7 +15,7 @@ export interface NodeStoreState {
 
   setNodes: (nodes: Node<any>[]) => void;
   addNodeToStore: (node: Node<any>) => void;
-  removeNode: (nodeId: string) => void;
+  removeNodes: (nodes: Node<any>[]) => void;
   getNode: (id: string) => Node<any> | undefined;
   updateNode: (node: Node<any>) => void;
   updateNodes: (nodes: Node<any>[]) => void;
@@ -235,70 +235,75 @@ export const useNodeStore = create<NodeStoreState>()(
         };
       });
     },
-    removeNode: (nodeId) => {
+    removeNodes: (nodesToRemove) => {
       set((state) => {
         // If node doesn't exist, throw an error
-        if (!state.nodeMap.has(nodeId)) {
-          console.error("Node not found in the store:", nodeId);
-          return state;
-        }
-        // Create new maps (shallow clones)
         const newNodeMap = new Map(state.nodeMap);
         const newNodeParentMap = new Map(state.nodeParentMap);
-        //we know its in the map
-        // Remove the node from the nodeMap
-        const nodeToRemove = newNodeMap.get(nodeId);
-        newNodeMap.delete(nodeId);
-        // Remove the node from the parent-child relationships
-        if (nodeToRemove?.parentId) {
-          const children = [...(newNodeParentMap.get(nodeToRemove.parentId) || [])];
-          const index = children.findIndex((child) => child.id === nodeId);
-          if (index !== -1) {
-            children.splice(index, 1);
-            newNodeParentMap.set(nodeToRemove.parentId, children);
-          }
-        } else {
-          const noParentChildren = [...(newNodeParentMap.get("no-parent") || [])];
-          const index = noParentChildren.findIndex((child) => child.id === nodeId);
-          if (index !== -1) {
-            noParentChildren.splice(index, 1);
-            newNodeParentMap.set("no-parent", noParentChildren);
-          }
-        }
-        const nodeType = nodeToRemove?.type;
-        if (nodeType && isParentNodeType(nodeType)) {
-          //If it has children, then make them children of the nodes parent
-          const children = newNodeParentMap.get(nodeId);
-          if (children && children.length > 0) {
-            // Get the parent of the node
-            const parentId = nodeToRemove.parentId;
-            if (parentId) {
-              // Add the children to the parent
-              const parentChildren = newNodeParentMap.get(parentId);
-              if (parentChildren) {
-                parentChildren.push(...children);
-                newNodeParentMap.set(parentId, parentChildren);
-              }
-            }
-          }
-          newNodeParentMap.delete(nodeId);
-        }
-
         let newNodes = state.nodes;
         let newChildNodes = state.childNodes;
         let newParentNodes = state.parentNodes;
-
-        if (!isParentNodeType(nodeToRemove?.type || "")) {
-          newChildNodes = state.childNodes.filter((node) => node.id !== nodeId);
-          newNodes = [...state.parentNodes, ...newChildNodes];
-        } else {
-          newParentNodes = state.parentNodes.filter((node) => node.id !== nodeId);
-          newNodes = [...newParentNodes, ...state.childNodes];
+        for (const node of nodesToRemove) {
+          const nodeId = node.id;
+          if (!state.nodeMap.has(nodeId)) {
+            console.error("Node not found in the store:", nodeId);
+            return state;
+          }
+          
+          // Create new maps (shallow clones)
+          //we know its in the map
+          // Remove the node from the nodeMap
+          const nodeToRemove = newNodeMap.get(nodeId);
+          newNodeMap.delete(nodeId);
+          // Remove the node from the parent-child relationships
+          if (nodeToRemove?.parentId) {
+            const children = [...(newNodeParentMap.get(nodeToRemove.parentId) || [])];
+            const index = children.findIndex((child) => child.id === nodeId);
+            if (index !== -1) {
+              children.splice(index, 1);
+              newNodeParentMap.set(nodeToRemove.parentId, children);
+            }
+          } else {
+            const noParentChildren = [...(newNodeParentMap.get("no-parent") || [])];
+            const index = noParentChildren.findIndex((child) => child.id === nodeId);
+            if (index !== -1) {
+              noParentChildren.splice(index, 1);
+              newNodeParentMap.set("no-parent", noParentChildren);
+            }
+          }
+          const nodeType = nodeToRemove?.type;
+          if (nodeType && isParentNodeType(nodeType)) {
+            //If it has children, then make them children of the nodes parent
+            const children = newNodeParentMap.get(nodeId);
+            if (children && children.length > 0) {
+              // Get the parent of the node
+              const parentId = nodeToRemove.parentId;
+              if (parentId) {
+                // Add the children to the parent
+                const parentChildren = newNodeParentMap.get(parentId);
+                if (parentChildren) {
+                  parentChildren.push(...children);
+                  newNodeParentMap.set(parentId, parentChildren);
+                }
+              }
+            }
+            newNodeParentMap.delete(nodeId);
+          }
+          
+          
+          
+          if (!isParentNodeType(nodeToRemove?.type || "")) {
+            newChildNodes = state.childNodes.filter((node) => node.id !== nodeId);
+            newNodes = [...state.parentNodes, ...newChildNodes];
+          } else {
+            newParentNodes = state.parentNodes.filter((node) => node.id !== nodeId);
+            newNodes = [...newParentNodes, ...state.childNodes];
+          }
         }
-        return {
-          nodes: newNodes,
-          nodeMap: newNodeMap,
-          nodeParentMap: newNodeParentMap,
+          return {
+            nodes: newNodes,
+            nodeMap: newNodeMap,
+            nodeParentMap: newNodeParentMap,
           parentNodes: newParentNodes,
           childNodes: newChildNodes,
         };

@@ -17,7 +17,7 @@ const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
   availableNodeTypes,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const { addNodeToStore, removeNode } = useNodeStore();
+  const { addNodeToStore, removeNodes } = useNodeStore();
   const { addEdgeToStore, setEdges, edges } = useEdgeStore();
   const { screenToFlowPosition } = useReactFlow();
   const { selectedNodes } = useSelect();
@@ -26,7 +26,7 @@ const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
   const trackAddNodeToStore = useTrackableState(
     "NodeCreationControl/AddNode",
     addNodeToStore,
-    removeNode
+    removeNodes
   );
   const trackAddEdgeToStore = useTrackableState(
     "NodeCreationControl/AddEdge",
@@ -75,7 +75,7 @@ const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
       }
 
       if (newNode) {
-        trackAddNodeToStore(newNode, newNode.id);
+        trackAddNodeToStore(newNode,[newNode]);
       }
     }, "NodeCreationControl/Add");
 
