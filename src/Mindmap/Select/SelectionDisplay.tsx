@@ -31,8 +31,9 @@ function SelectionDisplay() {
       <p>Selected nodes: {selectedNodes.join(", ")}</p>
       <p>Selected edges: {selectedEdges.join(", ")}</p>
       <p>
-        Is potential parent: {JSON.stringify(isPotentialParent(selectedNodes[0]))}
+        First Is potential parent: {JSON.stringify(isPotentialParent(selectedNodes[0]))}
       </p>
+  
     </Panel>
   );
 }

@@ -27,7 +27,6 @@ export const SelectProvider = ({ children }: { children: ReactNode }) => {
   const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
   const [selectedEdges, setSelectedEdges] = useState<Edge[]>([]);
   const removeEdge = useEdgeStore((state) => state.removeEdge);
-  const removeNode = useNodeStore((state) => state.removeNode);
 
   // Handle keyboard events
   useEffect(() => {
@@ -54,14 +53,15 @@ export const SelectProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const deleteSelected = useCallback(() => {
+    console.log("Attempting to delete selected nodes and edges");
     if (selectedNodes.length === 0 && selectedEdges.length === 0) return;
 
-    selectedNodes.forEach((node) => {
-      removeNode(node.id);
-    });
-    selectedEdges.forEach((edge) => {
-      removeEdge(edge.id);
-    });
+    // selectedNodes.forEach((node) => {
+    //   removeNode(node.id);
+    // });
+    // selectedEdges.forEach((edge) => {
+    //   removeEdge(edge.id);
+    // });
     reactFlowInstance.deleteElements({
       nodes: selectedNodes,
       edges: selectedEdges,

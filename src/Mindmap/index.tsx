@@ -2,6 +2,7 @@
 import {
   Background,
   BackgroundVariant,
+  Edge,
   Node,
   ReactFlowProvider,
   useReactFlow,
@@ -68,8 +69,13 @@ export function MindmapContent() {
 const testCallNodes = useCallback((nodes: Node[]) => {
   console.log("testCallNodes:", nodes);
   console.log("node parent map:", nodeParentMap);
+  console.log("visible node parent map:", visibleNodeParentMap);
   handleUpdateNodes(nodes);
-}, [handleUpdateNodes, visibleNodeMap]);
+}, [handleUpdateNodes, visibleNodeMap, nodeParentMap, visibleNodeParentMap])
+const testCallEdges = useCallback((edges: Edge[]) => {
+  console.log("testCallEdges:", edges);
+  handleUpdateEdges(edges);
+}, [handleUpdateEdges, nodeMap, nodeParentMap, visibleNodeMap, visibleNodeParentMap])
   
   //console.log("Node Parent Map:", visibleNodeParentMap);
   //console.log("VISIBLE Node Map:", visibleNodeMap);
@@ -89,7 +95,7 @@ const testCallNodes = useCallback((nodes: Node[]) => {
       }}
       //updateNodes={handleUpdateNodes}
       updateNodes={testCallNodes}
-      updateEdges={handleUpdateEdges}
+      updateEdges={testCallEdges}
       parentIdWithNodes={visibleNodeParentMap}
       nodeIdWithNode={visibleNodeMap}
     >

@@ -1,4 +1,4 @@
-import { MarkerType, ReactFlow, SelectionMode } from "@xyflow/react";
+import { Edge, MarkerType, Node, ReactFlow, SelectionMode } from "@xyflow/react";
 import { memo, useEffect, useCallback, useRef } from "react";
 import { useNodeState } from "../Node/hooks/useNodeState";
 import { useEdgeState } from "../Edge/hooks/useEdgeState";
@@ -9,6 +9,7 @@ import { useConnectionOperations } from "../Node/hooks/useConnectionOperations";
 import { useNodeTypeRegistry } from "../Node/registry/nodeTypeRegistry";
 import { ensureNodeTypesRegistered } from "../Nodes/registerBasicNodeTypes";
 import { useSelect } from "../Select/contexts/SelectContext";
+import { NodeData } from "../types";
 
 const defaultEdgeOptions = {
   zIndex: 1,
@@ -18,7 +19,7 @@ const defaultEdgeOptions = {
 };
 
 function Flow({ children }: { children?: React.ReactNode }) {
-  const { visibleEdges, onEdgesChange } = useEdgeState();
+  const { visibleEdges, onEdgesChange, onEdgeRemove } = useEdgeState();
   const {
     displayedNodes,
     onNodesChange,
@@ -26,6 +27,7 @@ function Flow({ children }: { children?: React.ReactNode }) {
     onNodeDrag,
     onNodeDragStop,
     isDragging,
+    onNodesDelete,
   } = useNodeState();
 
   // Add ref for tracking panning performance
@@ -71,17 +73,15 @@ function Flow({ children }: { children?: React.ReactNode }) {
     isPanning.current = false;
   }, []);
 
-const findSelectedFromNodes = () => {  
-  
-  const selectedNodes = displayedNodes.filter((node) => node.selected);
-}
-findSelectedFromNodes();
+
+
 
   return (
     <ReactFlow
       nodeTypes={nodeTypes}
       defaultEdgeOptions={defaultEdgeOptions}
       nodes={displayedNodes}
+      onNodesDelete={onNodesDelete}
       onNodesChange={onNodesChange}
       onNodeDragStart={onNodeDragStart}
       onNodeDrag={onNodeDrag}
@@ -92,6 +92,7 @@ findSelectedFromNodes();
       onEdgesChange={onEdgesChange}
       onEdgeClick={DetermineEdgeClickFunction}
       onEdgeDoubleClick={DetermineEdgeClickFunction}
+      onEdgesDelete={onEdgeRemove}
       onConnect={onConnect}
       onConnectEnd={onConnectEnd}
       // Enable node functionality

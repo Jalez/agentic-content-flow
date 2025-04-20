@@ -32,7 +32,6 @@ export const ContainerNode = ({
   selected,
   targetPosition,
   sourcePosition,
-  dragging,
 }: NodeProps) => {
   const { updateNode, nodeParentMap, expandedNodes, toggleNodeExpansion } = useNodeState();
   const updateNodeInternals = useUpdateNodeInternals();
@@ -92,8 +91,8 @@ export const ContainerNode = ({
         selected={selected}
         color={nodeColor}
         sx={{
-          width: nodeInStore.width,
-          height: nodeInStore.height,
+          width: nodeInStore?.width,
+          height: nodeInStore?.height,
           backgroundColor: "background.default",
           display: "flex",
           flexDirection: "column",
