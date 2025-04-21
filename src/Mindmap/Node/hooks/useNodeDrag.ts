@@ -92,35 +92,27 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
 
   // Handle drag in progress
   const onNodeDrag = useCallback(
-    (event: React.MouseEvent, draggedNode: Node<NodeData>, _: Node<NodeData>[]) => {
-      // Handle breaking free from parent
-      const parentNode = nodeMap.get(draggedNode?.parentId || "");
-      if (parentNode) {
-        // Get mouse position from event and transform to flow coordinates
-        const mousePosition = {
-          x: (event.clientX - x) / zoom,
-          y: (event.clientY - y) / zoom
-        };
-
-        // Get the actual current node position from React Flow
-        const currentNodeState = getNode(draggedNode.id) as Node<NodeData> | null;
-        const nodeWithUpdatedPosition = currentNodeState || draggedNode;
-
-        // Check if node should break free using our simplified resistance logic
+    (event: React.MouseEvent, draggedNode: Node<NodeData>, draggedNodes: Node<NodeData>[]) => {
+      // Handle breaking free from parent for all dragged nodes
+      const mousePosition = {
+        x: (event.clientX - x) / zoom,
+        y: (event.clientY - y) / zoom
+      };
+      draggedNodes.forEach((dn) => {
+        const parent = nodeMap.get(dn.parentId || "");
+        if (!parent) return;
+        const currentState = (getNode(dn.id) as Node<NodeData>) || dn;
         const { shouldBreakFree } = getDragResistance(
-          nodeWithUpdatedPosition,
+          currentState,
           mousePosition,
-          parentNode
+          parent
         );
-
         if (shouldBreakFree) {
-          // Update local nodes for visual representation during drag
-          setLocalNodes(prevNodes =>
-            updateNodeExtentInLocalNodes(prevNodes, draggedNode.id, true)
+          setLocalNodes(prev =>
+            updateNodeExtentInLocalNodes(prev, dn.id, true)
           );
         }
-      }
-
+      });
 
       // Handle parent candidate selection
       const intersectingNodes = getIntersectingNodes(draggedNode);
@@ -170,40 +162,36 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
   );
 
   // Handle drag end
-  const onNodeDragStop = useCallback((_: React.MouseEvent, node: Node<NodeData>) => {
+  const onNodeDragStop = useCallback((event: React.MouseEvent, _node: Node<NodeData>, draggedNodes: Node<NodeData>[]) => {
     setIsDragging(false);
     isDraggingRef.current = false;
 
-    // Reset drag start time for this node
-    if (node.id) {
-      dragStartTimes.delete(node.id);
-    }
+    // Reset drag start times for all dragged nodes
+    draggedNodes.forEach(dn => {
+      if (dn.id) dragStartTimes.delete(dn.id);
+    });
 
     const updatedLocalNodes = [...localNodes];
 
-    // Update parent relationship if there's a candidate
+    // Update parent relationships for all dragged nodes
     if (currentParentCandidateId) {
-      // If the candidate is the root indicator, remove parentId
-
-      updatedLocalNodes.forEach((localNode) => {
+      // Clear highlight on the candidate
+      updatedLocalNodes.forEach(localNode => {
         if (localNode.id === currentParentCandidateId) {
           localNode.data.highlighted = false;
         }
-        if (localNode.id === node.id) {
+        // Assign new parent to each dragged node
+        if (draggedNodes.some(dn => dn.id === localNode.id)) {
           localNode.parentId = currentParentCandidateId;
-          //Set extent to parent
           localNode.extent = "parent";
-
-
         }
       });
       setCurrentParentCandidateId(null);
     } else {
-      // If no parent candidate is set, the node should become a root node
-      updatedLocalNodes.forEach((localNode) => {
-        if (localNode.id === node.id && localNode.parentId) {
+      // If no parent candidate, make each dragged node a root
+      updatedLocalNodes.forEach(localNode => {
+        if (draggedNodes.some(dn => dn.id === localNode.id) && localNode.parentId) {
           localNode.parentId = undefined;
-          //Remove extent
           delete localNode.extent;
         }
       });
