@@ -10,7 +10,7 @@ import {
 import { SelectProvider } from "./Select/contexts/SelectContext";
 import { useTheme } from "@mui/material";
 import { useCallback, useRef } from "react";
-import { useViewPreferencesStore } from "./stores";
+import { useNodeStore, useViewPreferencesStore } from "./stores";
 import { useViewportManager } from "./Flow/hooks/useViewportManager";
 import { GRID_SETTINGS, VIEWPORT_CONSTRAINTS } from "./constants";
 import { FlowContainer } from "./Flow/FlowContainer";
@@ -25,7 +25,7 @@ import { ensureNodeTypesRegistered } from "./Nodes/registerBasicNodeTypes";
 import "@xyflow/react/dist/style.css"; // Ensure to import the styles for React Flow
 import ReactStateHistory from "./History/ReactStateHistory";
 import { LayoutProvider } from "@jalez/react-flow-automated-layout";
-import { useNodeState } from "./Node/hooks/useNodeState";
+import { useNodeHistoryState } from "./Node/hooks/useNodeState";
 import { useEdgeState } from "./Edge/hooks/useEdgeState";
 
 // Register node types before any rendering occurs
@@ -36,14 +36,11 @@ export function MindmapContent() {
   const flowWrapper = useRef<HTMLDivElement>(null);
   const { showGrid } = useViewPreferencesStore();
   const reactFlowInstance = useReactFlow();
+  const { nodeMap, nodeParentMap } = useNodeStore();
 
   const {
-    handleUpdateNodes,
-    nodeMap,
-    nodeParentMap,
-    visibleNodeMap,
-    visibleNodeParentMap,
-  } = useNodeState();
+    updateNodes,
+  } = useNodeHistoryState();
 
   const { handleUpdateEdges } = useEdgeState();
 
@@ -67,15 +64,14 @@ export function MindmapContent() {
     }
   }, [flowWrapper]);
 const testCallNodes = useCallback((nodes: Node[]) => {
-  console.log("testCallNodes:", nodes);
-  console.log("node parent map:", nodeParentMap);
-  console.log("visible node parent map:", visibleNodeParentMap);
-  handleUpdateNodes(nodes);
-}, [handleUpdateNodes, visibleNodeMap, nodeParentMap, visibleNodeParentMap])
+
+  updateNodes(nodes);
+}, [updateNodes, nodeMap, nodeParentMap])
+  
 const testCallEdges = useCallback((edges: Edge[]) => {
   console.log("testCallEdges:", edges);
   handleUpdateEdges(edges);
-}, [handleUpdateEdges, nodeMap, nodeParentMap, visibleNodeMap, visibleNodeParentMap])
+}, [handleUpdateEdges, nodeMap, nodeParentMap, updateNodes]);
   
   //console.log("Node Parent Map:", visibleNodeParentMap);
   //console.log("VISIBLE Node Map:", visibleNodeMap);
@@ -96,8 +92,8 @@ const testCallEdges = useCallback((edges: Edge[]) => {
       //updateNodes={handleUpdateNodes}
       updateNodes={testCallNodes}
       updateEdges={testCallEdges}
-      parentIdWithNodes={visibleNodeParentMap}
-      nodeIdWithNode={visibleNodeMap}
+      parentIdWithNodes={nodeParentMap}
+      nodeIdWithNode={nodeMap}
     >
       <FlowContainer ref={flowWrapper} onWheel={handleWheel}>
         <Flow>

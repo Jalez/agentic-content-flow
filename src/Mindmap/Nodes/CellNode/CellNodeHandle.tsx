@@ -1,5 +1,5 @@
 import { HandleType, Position } from "@xyflow/react";
-import { StyledHandle, getHandleStyles } from "./CellNodeHandleStyles";
+import { StyledCellHandle, getHandleStyles } from "./CellNodeHandleStyles";
 
 interface CellNodeHandleProps {
   type: HandleType;
@@ -22,7 +22,7 @@ const CellNodeHandle = ({
   const positionStyles = getHandleStyles(position);
 
   return (
-    <StyledHandle
+    <StyledCellHandle
       type={type}
       id={id}
       position={position}

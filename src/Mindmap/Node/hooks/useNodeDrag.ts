@@ -162,7 +162,7 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
   );
 
   // Handle drag end
-  const onNodeDragStop = useCallback((event: React.MouseEvent, _node: Node<NodeData>, draggedNodes: Node<NodeData>[]) => {
+  const onNodeDragStop = useCallback((_: React.MouseEvent, _node: Node<NodeData>, draggedNodes: Node<NodeData>[]) => {
     setIsDragging(false);
     isDraggingRef.current = false;
 
