@@ -1,20 +1,16 @@
 /** @format */
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { NodeChange, applyNodeChanges, Node } from "@xyflow/react";
 import { NodeData } from "../../types";
 import { useNodeStore } from "../../stores";
 import { useTrackableState } from "@jalez/react-state-history";
 import { useNodeDrag } from "./useNodeDrag";
 
-export const useNodeState = () => {
+export const useNodeHistoryState = () => {
   const nodes = useNodeStore((state) => state.nodes);
   const setNodes = useNodeStore((state) => state.setNodes);
   const updateNode = useNodeStore((state) => state.updateNode);
   const updateNodes = useNodeStore((state) => state.updateNodes);
-  const nodeMap = useNodeStore((state) => state.nodeMap);
-  const nodeParentMap = useNodeStore((state) => state.nodeParentMap);
-  const expandedNodes = useNodeStore((state) => state.expandedNodes);
-  const toggleNodeExpansion = useNodeStore((state) => state.toggleNodeExpansion);
   const removeNodes = useNodeStore((state) => state.removeNodes);
   const trackSetNodes = useTrackableState("useNodeState/SetNodes", setNodes);
 
@@ -46,60 +42,6 @@ export const useNodeState = () => {
     onNodeDrag
   } = useNodeDrag(trackUpdateNodes);
 
-
-
-  // Function to check if a node should be hidden based on its ancestors' collapsed state
-  const shouldNodeBeHidden = useCallback(
-    (nodeId: string, checkedNodes = new Set<string>()): boolean => {
-      // Prevent infinite recursion
-      if (checkedNodes.has(nodeId)) return false;
-      checkedNodes.add(nodeId);
-
-      const node = nodeMap.get(nodeId);
-      if (!node) return false;
-      if (!node.parentId) return false;
-      if (expandedNodes[node.parentId] === false) return true;
-      return shouldNodeBeHidden(node.parentId, checkedNodes);
-    },
-    [nodeMap, expandedNodes]
-  );
-
-  // Apply hidden property to nodes based on their parents' collapse state
-  const applyCollapsedState = useCallback(
-    (nodesToProcess: Node<NodeData>[]): Node<NodeData>[] => {
-      return nodesToProcess.map((node) => ({
-        ...node,
-        hidden: shouldNodeBeHidden(node.id)
-      }));
-    },
-    [shouldNodeBeHidden]
-  );
-
-  // Create a filtered parent-child map that only includes visible children
-  const getVisibleNodeParentMap = useCallback(() => {
-    const visibleNodeParentMap = new Map<string, Node<any>[]>();
-    visibleNodeParentMap.set("no-parent", []);
-
-    nodeParentMap.forEach((children, parentId) => {
-      const visibleChildren = children.filter(child => !shouldNodeBeHidden(child.id));
-      //if (visibleChildren.length > 0 || parentId === "no-parent") {
-        visibleNodeParentMap.set(parentId, visibleChildren);
-      //}
-    });
-
-    return visibleNodeParentMap;
-  }, [nodeParentMap, shouldNodeBeHidden]);
-
-  const getVisibleNodeMap = useCallback(() => {
-    const visibleNodeMap = new Map<string, Node<any>>();
-    nodes.forEach((node) => {
-      if (!shouldNodeBeHidden(node.id)) {
-        visibleNodeMap.set(node.id, node);
-      }
-    });
-    return visibleNodeMap;
-  }, [nodes, shouldNodeBeHidden]);
-
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
       if (isDraggingRef.current) {
@@ -121,22 +63,6 @@ export const useNodeState = () => {
     [trackUpdateNodes, nodes]
   );
 
-
-
-  const getVisibleNodes = useCallback(() => {
-    const nodesToProcess = (isDraggingRef.current || localNodes.length > 0)
-      ? localNodes
-      : nodes;
-    return applyCollapsedState(nodesToProcess);
-  }, [nodes, localNodes, applyCollapsedState, isDraggingRef])
-
-
-
-  // Memoize the displayed nodes to prevent unnecessary recalculations
-  const displayedNodes = useMemo(() => getVisibleNodes(), [getVisibleNodes, expandedNodes, nodes, localNodes, isDraggingRef]);
-  const visibleNodeParentMap = useMemo(() => getVisibleNodeParentMap(), [getVisibleNodeParentMap, expandedNodes, nodes, nodeParentMap]);
-  const visibleNodeMap = useMemo(() => getVisibleNodeMap(), [getVisibleNodeMap, expandedNodes, nodes, nodeMap]);
-
   const handleSetNodes = useCallback(
     (newNodes: Node<NodeData>[]) => {
       trackSetNodes(newNodes, nodes);
@@ -146,6 +72,7 @@ export const useNodeState = () => {
 
   const handleUpdateNode = useCallback(
     (updatedNode: Node) => {
+      console.log("Node updated:", updatedNode);
       trackUpdateNode(updatedNode, nodes);
     },
     [nodes, trackUpdateNode]
@@ -163,23 +90,14 @@ export const useNodeState = () => {
   );
 
   return {
-    displayedNodes,
-    nodeMap,
-    onNodeDrag,
-    nodeParentMap,
-    expandedNodes,
-    toggleNodeExpansion,
-    visibleNodeMap,
-    visibleNodeParentMap,
     setNodes: handleSetNodes,
-    updateNodes: trackUpdateNodes,
+    updateNodes: handleUpdateNodes,
     updateNode: handleUpdateNode,
-    handleUpdateNodes,
     onNodesChange,
-    getVisibleNodes,
     onNodesDelete,
-    isDragging,
-    onNodeDragStop,
     onNodeDragStart,
+    isDragging,
+    onNodeDrag,
+    onNodeDragStop,
   };
 };
