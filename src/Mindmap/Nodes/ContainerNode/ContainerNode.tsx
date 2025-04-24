@@ -16,7 +16,7 @@ import {
   NodeHeaderMenuAction,
   NodeHeaderDeleteAction,
 } from "../common/NodeHeader";
-import { useNodeState } from "../../Node/hooks/useNodeState";
+import { useNodeHistoryState } from "../../Node/hooks/useNodeState";
 import ExpandCollapseButton from "../common/ExpandCollapseButton";
 import NodeContent from "../common/NodeContent";
 import { NodeStyleHelper } from "../common/NodeStyleHelper";
@@ -33,12 +33,11 @@ export const ContainerNode = ({
   targetPosition,
   sourcePosition,
 }: NodeProps) => {
-  const { updateNode, nodeParentMap, expandedNodes, toggleNodeExpansion } = useNodeState();
+  const { updateNode } = useNodeHistoryState();
   const updateNodeInternals = useUpdateNodeInternals();
   const { getNode } = useReactFlow();
 
-  const nodeInStore = getNode(id);
-  const isExpanded = expandedNodes[id] !== false; // Default to expanded if not explicitly collapsed
+  const nodeInFlow = getNode(id);
   
   // Safely cast data to our expected type
   const nodeData = data as UnifiedNodeData;
@@ -51,12 +50,12 @@ export const ContainerNode = ({
   });
 
   const handleResize = (_: ResizeDragEvent, params: ResizeParams) => {
-    if (!nodeInStore) return;
+    if (!nodeInFlow) return;
     
     updateNode({
-      ...nodeInStore,
+      ...nodeInFlow,
       style: {
-        ...nodeInStore.style,
+        ...nodeInFlow.style,
         width: params.width,
         height: params.height,
       },
@@ -66,16 +65,25 @@ export const ContainerNode = ({
     });
   };
 
-  const childNodes = nodeParentMap.get(id) || [];
-  const childCount = childNodes.length;
 
-  if (!nodeInStore) {
+
+  if (!nodeInFlow) {
     console.error(`Node with id ${id} not found in store.`);
     return null;
   }
   // Use the most up-to-date data during dragging
   if(selected) {
   }
+
+  const collapsedDimensions = {
+    width: 300,
+    height: 200,
+  };
+  const expandedDimensions = {
+    width: nodeInFlow?.width || LAYOUT_CONSTANTS.NODE_DEFAULT_WIDTH,
+    height: nodeInFlow?.height  || LAYOUT_CONSTANTS.NODE_DEFAULT_HEIGHT,
+  };
+  
 
   return (
     <>
@@ -91,8 +99,8 @@ export const ContainerNode = ({
         selected={selected}
         color={nodeColor}
         sx={{
-          width: nodeInStore?.width,
-          height: nodeInStore?.height,
+          width: nodeInFlow?.width,
+          height: nodeInFlow?.height,
           backgroundColor: "background.default",
           display: "flex",
           flexDirection: "column",
@@ -116,12 +124,9 @@ export const ContainerNode = ({
           <NodeHeaderTitle>{nodeData.label}</NodeHeaderTitle>
           <NodeHeaderActions>
             <ExpandCollapseButton
-              nodeInStore={nodeInStore}
-              nodeId={id}
-              isExpanded={isExpanded}
-              childCount={childCount}
-              updateNode={updateNode}
-              toggleNodeExpansion={toggleNodeExpansion}
+              collapsedDimensions={collapsedDimensions}
+              expandedDimensions={expandedDimensions}
+              nodeInFlow={nodeInFlow}
             />
             <NodeHeaderMenuAction label="Container Options">
               {/* Add menu items here if needed */}
