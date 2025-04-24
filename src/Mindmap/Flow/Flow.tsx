@@ -1,6 +1,5 @@
-import { Edge, MarkerType, Node, ReactFlow, SelectionMode } from "@xyflow/react";
+import { MarkerType, ReactFlow, SelectionMode } from "@xyflow/react";
 import { memo, useEffect, useCallback, useRef } from "react";
-import { useNodeState } from "../Node/hooks/useNodeState";
 import { useEdgeState } from "../Edge/hooks/useEdgeState";
 import useNodeSelection from "../Node/hooks/useNodeSelect";
 import { useEdgeSelect } from "../Edge/hooks/useEdgeSelect";
@@ -9,7 +8,8 @@ import { useConnectionOperations } from "../Node/hooks/useConnectionOperations";
 import { useNodeTypeRegistry } from "../Node/registry/nodeTypeRegistry";
 import { ensureNodeTypesRegistered } from "../Nodes/registerBasicNodeTypes";
 import { useSelect } from "../Select/contexts/SelectContext";
-import { NodeData } from "../types";
+import { useNodeStore } from "../stores";
+import { useNodeHistoryState } from "../Node/hooks/useNodeState";
 
 const defaultEdgeOptions = {
   zIndex: 1,
@@ -19,16 +19,17 @@ const defaultEdgeOptions = {
 };
 
 function Flow({ children }: { children?: React.ReactNode }) {
+  const { nodes } = useNodeStore();
   const { visibleEdges, onEdgesChange, onEdgeRemove } = useEdgeState();
   const {
-    displayedNodes,
     onNodesChange,
     onNodeDragStart,
     onNodeDrag,
     onNodeDragStop,
     isDragging,
     onNodesDelete,
-  } = useNodeState();
+  } = useNodeHistoryState();
+
 
   // Add ref for tracking panning performance
   const isPanning = useRef(false);
@@ -40,11 +41,11 @@ function Flow({ children }: { children?: React.ReactNode }) {
     DetermineNodeClickFunction,
     handleSelectionEnd,
   } = useNodeSelection({
-    nodes: displayedNodes,
+    nodes,
     isDragging,
   });
   const { DetermineEdgeClickFunction } = useEdgeSelect({
-    nodes: displayedNodes,
+    nodes,
     edges: visibleEdges,
   });
 
@@ -80,7 +81,7 @@ function Flow({ children }: { children?: React.ReactNode }) {
     <ReactFlow
       nodeTypes={nodeTypes}
       defaultEdgeOptions={defaultEdgeOptions}
-      nodes={displayedNodes}
+      nodes={nodes}
       onNodesDelete={onNodesDelete}
       onNodesChange={onNodesChange}
       onNodeDragStart={onNodeDragStart}
