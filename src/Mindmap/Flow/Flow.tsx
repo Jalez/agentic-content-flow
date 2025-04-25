@@ -22,6 +22,7 @@ function Flow({ children }: { children?: React.ReactNode }) {
   const { nodes } = useNodeStore();
   const { visibleEdges, onEdgesChange, onEdgeRemove } = useEdgeState();
   const {
+    localNodes,
     onNodesChange,
     onNodeDragStart,
     onNodeDrag,
@@ -81,7 +82,7 @@ function Flow({ children }: { children?: React.ReactNode }) {
     <ReactFlow
       nodeTypes={nodeTypes}
       defaultEdgeOptions={defaultEdgeOptions}
-      nodes={nodes}
+      nodes={isDragging ? localNodes : nodes}
       onNodesDelete={onNodesDelete}
       onNodesChange={onNodesChange}
       onNodeDragStart={onNodeDragStart}

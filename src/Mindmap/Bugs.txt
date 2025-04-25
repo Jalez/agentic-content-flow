@@ -1,3 +1,0 @@
-1. First click on the edge is supposed to select it, only the second is supposed to switch your focus onto the other node.
-2. You are supposed to be able to remove the edge only too. 
-3. Should be able to edit the 

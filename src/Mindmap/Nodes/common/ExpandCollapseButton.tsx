@@ -1,10 +1,11 @@
-import {  useState } from "react";
+import { useState } from "react";
 import { IconButton, Badge } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { Node } from "@xyflow/react";
 import { useNodeStore } from "../../stores";
 import { useNodeHistoryState } from "../../Node/hooks/useNodeState";
+import { updateNodeHierarchyVisibility } from "./utils/nodeHierarchyUtils";
 
 interface ExpandCollapseButtonProps {
   /**
@@ -38,6 +39,11 @@ export const ExpandCollapseButton = ({
   nodeInFlow,
 }: ExpandCollapseButtonProps) => {
   const nodeParentMap = useNodeStore((state) => state.nodeParentMap);
+
+  const nodeParentIdMapWithChildIdSet = useNodeStore(
+    (state) => state.nodeParentIdMapWithChildIdSet
+  );
+  const nodeMap = useNodeStore((state) => state.nodeMap);
   const childNodes = nodeParentMap.get(nodeInFlow.id) || [];
   const childCount = childNodes.length;
   const [expanded, setExpanded] = useState(nodeInFlow.data.expanded || false);
@@ -46,57 +52,36 @@ export const ExpandCollapseButton = ({
 
   const handleToggleExpand = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setExpanded((prev: boolean) => !prev);
-
-    //First node to update is the current node, which is the one that is being expanded/collapsed
+    const newExpanded = !expanded;
+    setExpanded(newExpanded);
+    console.log("Expanded", newExpanded);
+    
+    // First node to update is the current node, which is being expanded/collapsed
     const updatedParentNode = {
       ...nodeInFlow,
       data: {
         ...nodeInFlow.data,
-        expanded
+        expanded: newExpanded,
       },
       style: {
         ...nodeInFlow.style,
-        width: expanded ? expandedDimensions.width : collapsedDimensions.width,
-        height: expanded ? expandedDimensions.height : collapsedDimensions.height,
+        width: newExpanded ? expandedDimensions.width : collapsedDimensions.width,
+        height: newExpanded ? expandedDimensions.height : collapsedDimensions.height,
       },
     };
 
+    // Update the child nodes using the utility function
+    const updatedChildNodes = updateNodeHierarchyVisibility(
+      updatedParentNode, 
+      nodeMap,
+      nodeParentIdMapWithChildIdSet,
+      newExpanded
+    );
 
-    // Add the updated node to the list
-
-    // Update the child nodes (and their child nodes) hidden state in a recursive manner and then return the updated nodes
-    const updateParentIdChildren = (Parent: Node): Node[] => {
-      //First check if it is in the nodeParentMap
-      if (!nodeParentMap.has(Parent.id)) {
-        return [];
-      }
-      //Then check if its expanded
-      if (!Parent.data.expanded) {
-        return [];
-      }
-      const childNodes = nodeParentMap.get(Parent.id) || [];
-      //Change all children hidden state
-      for (const childNode of childNodes) {
-        const updatedChildNode = {
-          ...childNode,
-          hidden: !expanded
-          
-        };
-        const updatedGrandChildNodes = updateParentIdChildren(childNode);
-        updatedChildNodes.push(updatedChildNode);
-        updatedChildNodes.push(...updatedGrandChildNodes);
-      }
-
-      return updatedChildNodes;
-
-    }
-
-    // Update the child nodes
-    const updatedChildNodes = updateParentIdChildren(nodeInFlow);
     // Toggle expansion state
     const updatedNodes = [updatedParentNode, ...updatedChildNodes];
-    updateNodes(updatedNodes)
+    console.log("Updated nodes", updatedNodes);
+    updateNodes(updatedNodes);
   };
 
   return (
