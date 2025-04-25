@@ -90,6 +90,7 @@ export const useNodeHistoryState = () => {
   );
 
   return {
+    localNodes,
     setNodes: handleSetNodes,
     updateNodes: handleUpdateNodes,
     updateNode: handleUpdateNode,
