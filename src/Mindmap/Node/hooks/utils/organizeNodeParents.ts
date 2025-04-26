@@ -6,7 +6,7 @@ import { NodeData } from "../../../types";
  * Example: For a tree root->a->b, the order would be [root, a, b]
  */
 export const organizeNodeParents = (
-    parentIdWithChildren: Map<string, Node<NodeData>[]>,
+    nodeParentIdMapWithChildIdSet: Map<string, Set<string>>,
     poolOfAllNodes: Map<string, Node<NodeData>>,
 ): Node[] => {
     // Cache for already-computed node levels
@@ -42,7 +42,7 @@ export const organizeNodeParents = (
     };
 
     // Get all parent node IDs and precompute levels in one pass
-    const parentIds = Array.from(parentIdWithChildren.keys());
+    const parentIds = Array.from(nodeParentIdMapWithChildIdSet.keys());
     
     // Pre-fill cache with obvious cases - root nodes are level 0
     for (const id of parentIds) {
