@@ -19,7 +19,7 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
   const updateNode = useNodeStore((state) => state.updateNode);
   const nodes = useNodeStore((state) => state.nodes);
   const nodeMap = useNodeStore((state) => state.nodeMap);
-  const nodeParentMap = useNodeStore((state) => state.nodeParentMap);
+  const nodeParentIdMapWithChildIdSet = useNodeStore((state) => state.nodeParentIdMapWithChildIdSet);
 
   const { getIntersectingNodes, getNode } = useReactFlow();
   const { x, y, zoom } = useViewport();
@@ -127,7 +127,7 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
       const potentialParentId = getPotentialParentId(
         draggedNode,
         intersectingNodes,
-        nodeParentMap,
+        nodeParentIdMapWithChildIdSet,
         nodeMap,
         ROOT_INDICATOR
       );
@@ -147,7 +147,7 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
     },
     [
       getIntersectingNodes,
-      nodeParentMap,
+      nodeParentIdMapWithChildIdSet,
       nodeMap,
       currentParentCandidateId,
       updateNode,

@@ -36,7 +36,7 @@ export function MindmapContent() {
   const flowWrapper = useRef<HTMLDivElement>(null);
   const { showGrid } = useViewPreferencesStore();
   const reactFlowInstance = useReactFlow();
-  const { nodeMap, nodeParentMap } = useNodeStore();
+  const { nodeMap, nodeParentIdMapWithChildIdSet } = useNodeStore();
 
   const {
     updateNodes,
@@ -64,17 +64,15 @@ export function MindmapContent() {
     }
   }, [flowWrapper]);
 const testCallNodes = useCallback((nodes: Node[]) => {
-
+  console.log("testCallNodes:", nodes);
   updateNodes(nodes);
-}, [updateNodes, nodeMap, nodeParentMap])
+}, [updateNodes])
   
 const testCallEdges = useCallback((edges: Edge[]) => {
   console.log("testCallEdges:", edges);
   handleUpdateEdges(edges);
-}, [handleUpdateEdges, nodeMap, nodeParentMap, updateNodes]);
+}, [handleUpdateEdges]);
   
-  //console.log("Node Parent Map:", visibleNodeParentMap);
-  //console.log("VISIBLE Node Map:", visibleNodeMap);
   return (
     <LayoutProvider
       initialDirection="DOWN"
@@ -89,10 +87,9 @@ const testCallEdges = useCallback((edges: Edge[]) => {
         minWidth: 150,
         minHeight: 150,
       }}
-      //updateNodes={handleUpdateNodes}
       updateNodes={testCallNodes}
       updateEdges={testCallEdges}
-      parentIdWithNodes={nodeParentMap}
+      nodeParentIdMapWithChildIdSet={nodeParentIdMapWithChildIdSet}
       nodeIdWithNode={nodeMap}
     >
       <FlowContainer ref={flowWrapper} onWheel={handleWheel}>

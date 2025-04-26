@@ -38,14 +38,15 @@ export const ExpandCollapseButton = ({
   expandedDimensions,
   nodeInFlow,
 }: ExpandCollapseButtonProps) => {
-  const nodeParentMap = useNodeStore((state) => state.nodeParentMap);
-
   const nodeParentIdMapWithChildIdSet = useNodeStore(
     (state) => state.nodeParentIdMapWithChildIdSet
   );
   const nodeMap = useNodeStore((state) => state.nodeMap);
-  const childNodes = nodeParentMap.get(nodeInFlow.id) || [];
-  const childCount = childNodes.length;
+  
+  // Use the more efficient Set-based approach to get child IDs
+  const childIdSet = nodeParentIdMapWithChildIdSet.get(nodeInFlow.id) || new Set();
+  const childCount = childIdSet.size;
+  
   const [expanded, setExpanded] = useState(nodeInFlow.data.expanded || false);
   const { updateNodes } = useNodeHistoryState();
 

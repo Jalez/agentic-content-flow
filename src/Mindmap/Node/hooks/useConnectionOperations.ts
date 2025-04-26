@@ -10,7 +10,7 @@ import { useTrackableState, useTransaction } from "@jalez/react-state-history";
 // type useConnectionOperationsProps = {};
 
 export const useConnectionOperations = () => {
-  const { addNodeToStore, nodeMap, updateNode, nodeParentMap, removeNodes } =
+  const { addNodeToStore, nodeMap, updateNode, nodeParentIdMapWithChildIdSet, removeNodes } =
     useNodeStore();
   const { edges, addEdgeToStore, setEdges, edgeMap } = useEdgeStore();
   const { screenToFlowPosition } = useReactFlow();
@@ -108,16 +108,22 @@ export const useConnectionOperations = () => {
   const addTargetNode = (eventNode: Node<NodeData>) => {
     const newNodeId = `node-${Date.now()}`;
 
-    // Find existing children of this parent
-    //filter performance: O(n) for each node
-    // sort performance: O(n log n) for each node
-    // This is acceptable for a small number of nodes, but could be optimized for larger datasets
-    // by using a more efficient data structure or algorithm: data strucutre like a map, where key is parentId and value is an array of children
-    const existingChildren = nodeParentMap
-      .get(eventNode.id)
-      // ?.filter((node) => node.data.level === childLevel)
-      // .filter((node) => node.data.parent === eventNode.id)
-      ?.sort((a, b) => a.position.y - b.position.y) as Node<NodeData>[];
+    // Find existing children of this parent using the more efficient Set structure
+    const childIdSet = nodeParentIdMapWithChildIdSet.get(eventNode.id);
+    
+    // Get all child nodes from the nodeMap using the IDs in the Set
+    const childNodes: Node<NodeData>[] = [];
+    if (childIdSet) {
+      childIdSet.forEach(childId => {
+        const childNode = nodeMap.get(childId);
+        if (childNode) {
+          childNodes.push(childNode);
+        }
+      });
+    }
+    
+    // Sort child nodes by Y position (only if there are children)
+    const existingChildren = childNodes.sort((a, b) => a.position.y - b.position.y);
 
     // Calculate vertical position
     let newY = eventNode.position.y;

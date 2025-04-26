@@ -3,7 +3,7 @@ import { NodeData } from "../../../types";
 
 /**
  * Gets the most suitable potential parent ID from a list of candidates.
- * Only nodes that are already parents (exist in parentIdWithChildren) or are the current parent of the node
+ * Only nodes that are already parents (exist in nodeParentIdMapWithChildIdSet) or are the current parent of the node
  * can be suggested as potential parents.
  * 
  * Selection criteria (in order):
@@ -20,7 +20,7 @@ import { NodeData } from "../../../types";
  * 
  * @param {Node<NodeData>} node - The node being dragged
  * @param {Node[]} potentialParentCandidates - List of nodes that intersect with the dragged node
- * @param {Map<string, Node<NodeData>[]>} parentIdWithChildren - Map of parent IDs to their children, defines which nodes can be parents
+ * @param {Map<string, Set<string>>} nodeParentIdMapWithChildIdSet - Map of parent IDs to their set of child IDs
  * @param {Map<string, Node<NodeData>>} poolOfAllNodes - Map of all nodes in the workspace for ancestry checks
  * @param {string} rootIndicator - String to return when node should become a root node (no parent)
  * @returns {string} The ID of the most suitable parent candidate, or rootIndicator if no valid candidates found
@@ -28,7 +28,7 @@ import { NodeData } from "../../../types";
 export const getPotentialParentId = (
     node: Node<NodeData>, 
     potentialParentCandidates: Node[],
-    parentIdWithChildren: Map<string, Node<NodeData>[]>, 
+    nodeParentIdMapWithChildIdSet: Map<string, Set<string>>, 
     poolOfAllNodes: Map<string, Node<NodeData>>,
     rootIndicator: string
 ): string => {
@@ -87,7 +87,7 @@ export const getPotentialParentId = (
     const validCandidates = potentialParentCandidates.filter(
         candidate => !isDescendant(candidate.id, node.id) && 
                     candidate.id !== node.id &&
-                    (parentIdWithChildren.has(candidate.id) || // is already a parent
+                    (nodeParentIdMapWithChildIdSet.has(candidate.id) || // is already a parent
                      candidate.id === node.parentId) // or is the current parent
     );
 
