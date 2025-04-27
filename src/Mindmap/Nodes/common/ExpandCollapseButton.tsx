@@ -6,7 +6,6 @@ import { Node } from "@xyflow/react";
 import { useNodeStore } from "../../stores";
 import { useNodeHistoryState } from "../../Node/hooks/useNodeState";
 import { updateNodeHierarchyVisibility } from "./utils/nodeHierarchyUtils";
-
 interface ExpandCollapseButtonProps {
   /**
    * Dimensions to apply when the node is collapsed

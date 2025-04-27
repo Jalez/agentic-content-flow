@@ -467,8 +467,7 @@ export const useNodeStore = create<NodeStoreState>()(
           }
         });
         newNodes = [...newParentNodes, ...newChildNodes];
-        console.log("nodeMap", newNodeMap);
-        console.log("newNodes", newNodes);
+
         return {
           nodes: newNodes,
           nodeMap: newNodeMap,

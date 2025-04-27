@@ -1,5 +1,5 @@
-import { MarkerType, ReactFlow, SelectionMode } from "@xyflow/react";
-import { memo, useEffect, useCallback, useRef } from "react";
+import { MarkerType, ReactFlow, SelectionMode, Node } from "@xyflow/react";
+import { memo, useEffect, useCallback, useRef, useMemo } from "react";
 import { useEdgeState } from "../Edge/hooks/useEdgeState";
 import useNodeSelection from "../Node/hooks/useNodeSelect";
 import { useEdgeSelect } from "../Edge/hooks/useEdgeSelect";
@@ -10,6 +10,7 @@ import { ensureNodeTypesRegistered } from "../Nodes/registerBasicNodeTypes";
 import { useSelect } from "../Select/contexts/SelectContext";
 import { useNodeStore } from "../stores";
 import { useNodeHistoryState } from "../Node/hooks/useNodeState";
+
 
 const defaultEdgeOptions = {
   zIndex: 1,
@@ -76,13 +77,19 @@ function Flow({ children }: { children?: React.ReactNode }) {
   }, []);
 
 
+const filteredNodes = useMemo(() => {
+  const sourceNodes = isDragging ? localNodes : nodes;
+  return sourceNodes.filter(node => !node.hidden);
+}, [nodes, localNodes, isDragging]);
+
+console.log("Filtered Nodes length:", filteredNodes.length);
 
 
   return (
     <ReactFlow
       nodeTypes={nodeTypes}
       defaultEdgeOptions={defaultEdgeOptions}
-      nodes={isDragging ? localNodes : nodes}
+      nodes={filteredNodes}
       onNodesDelete={onNodesDelete}
       onNodesChange={onNodesChange}
       onNodeDragStart={onNodeDragStart}
@@ -119,6 +126,7 @@ function Flow({ children }: { children?: React.ReactNode }) {
       onPaneClick={handleClearSelection}
     >
       {children}
+      {/* Add any additional components or overlays here */}
     </ReactFlow>
   );
 }
