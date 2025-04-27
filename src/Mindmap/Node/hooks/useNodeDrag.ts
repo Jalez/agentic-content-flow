@@ -192,7 +192,7 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
 
 
     // Update parent relationships for all dragged nodes
-    if (potentialParentId) {
+    if (potentialParentId && potentialParentId !== ROOT_INDICATOR) {
       // Clear highlight on the candidate
       updatedLocalNodes.forEach(localNode => {
         if (localNode.id === potentialParentId) {
@@ -210,7 +210,6 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
       updatedLocalNodes.forEach(localNode => {
         if (draggedNodes.some(dn => dn.id === localNode.id) && localNode.parentId) {
           localNode.parentId = undefined;
-          console.log("Removing parentId");
           delete localNode.extent;
         }
       });
