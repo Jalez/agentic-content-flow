@@ -162,7 +162,7 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
   );
 
   // Handle drag end
-  const onNodeDragStop = useCallback((_: React.MouseEvent, _node: Node<NodeData>, draggedNodes: Node<NodeData>[]) => {
+  const onNodeDragStop = useCallback((_: React.MouseEvent, draggedNode: Node<NodeData>, draggedNodes: Node<NodeData>[]) => {
     setIsDragging(false);
     isDraggingRef.current = false;
 
@@ -173,16 +173,34 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
 
     const updatedLocalNodes = [...localNodes];
 
+    const intersectingNodes = getIntersectingNodes(draggedNode);
+
+    // No intersecting nodes - we are suggesting it becomes a root node
+    if (intersectingNodes.length === 0 || !draggedNode.id) {
+      clearCurrentParentHighlight();
+      setCurrentParentCandidateId(null);
+      return;
+    }
+
+    const potentialParentId = getPotentialParentId(
+      draggedNode,
+      intersectingNodes,
+      nodeParentIdMapWithChildIdSet,
+      nodeMap,
+      ROOT_INDICATOR
+    );
+
+
     // Update parent relationships for all dragged nodes
-    if (currentParentCandidateId) {
+    if (potentialParentId) {
       // Clear highlight on the candidate
       updatedLocalNodes.forEach(localNode => {
-        if (localNode.id === currentParentCandidateId) {
+        if (localNode.id === potentialParentId) {
           localNode.data.highlighted = false;
         }
         // Assign new parent to each dragged node
         if (draggedNodes.some(dn => dn.id === localNode.id)) {
-          localNode.parentId = currentParentCandidateId;
+          localNode.parentId = potentialParentId;
           localNode.extent = "parent";
         }
       });
@@ -192,6 +210,7 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
       updatedLocalNodes.forEach(localNode => {
         if (draggedNodes.some(dn => dn.id === localNode.id) && localNode.parentId) {
           localNode.parentId = undefined;
+          console.log("Removing parentId");
           delete localNode.extent;
         }
       });
