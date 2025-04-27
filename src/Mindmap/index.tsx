@@ -9,7 +9,7 @@ import {
 } from "@xyflow/react";
 import { SelectProvider } from "./Select/contexts/SelectContext";
 import { useTheme } from "@mui/material";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useNodeStore, useViewPreferencesStore } from "./stores";
 import { useViewportManager } from "./Flow/hooks/useViewportManager";
 import { GRID_SETTINGS, VIEWPORT_CONSTRAINTS } from "./constants";
@@ -72,7 +72,11 @@ const testCallEdges = useCallback((edges: Edge[]) => {
   console.log("testCallEdges:", edges);
   handleUpdateEdges(edges);
 }, [handleUpdateEdges]);
-  
+  useEffect(() => {
+    //console log when nodeMap changes
+    console.log("nodeMap changed:", nodeMap);
+
+  }, [nodeMap]);
   return (
     <LayoutProvider
       initialDirection="DOWN"
