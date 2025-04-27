@@ -33,7 +33,7 @@ function SelectionDisplay() {
       <p>
         First Is potential parent: {JSON.stringify(isPotentialParent(selectedNodes[0]))}
       </p>
-  
+
     </Panel>
   );
 }
