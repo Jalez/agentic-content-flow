@@ -416,9 +416,7 @@ export const useNodeStore = create<NodeStoreState>()(
             const oldParentChildren = newNodeParentIdMapWithChildIdSet.get(oldParentId);
             if (oldParentChildren) {
               oldParentChildren.delete(node.id);
-              if (oldParentChildren.size === 0) {
-                newNodeParentIdMapWithChildIdSet.delete(oldParentId);
-              }
+            
             }
             // Add the node to the new parentId
             // If the new parentId is not in the map, throw an error
@@ -460,14 +458,17 @@ export const useNodeStore = create<NodeStoreState>()(
               console.error("Node not found in the childNodes:", node.id);
             }
           } else {
+            console.log("newNodeParentIdMapWithChildIdSet", newNodeParentIdMapWithChildIdSet);
+            console.log("newNodeMap", newNodeMap);
             newParentNodes = organizeNodeParents(
               newNodeParentIdMapWithChildIdSet,
               newNodeMap
             );
+            console.log("New parent nodes:", newParentNodes);
           }
         });
         newNodes = [...newParentNodes, ...newChildNodes];
-
+        console.log("New nodes:", newNodes);
         return {
           nodes: newNodes,
           nodeMap: newNodeMap,
