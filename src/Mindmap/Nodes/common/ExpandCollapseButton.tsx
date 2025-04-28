@@ -70,6 +70,12 @@ export const ExpandCollapseButton = ({
       },
     };
 
+    //remove measured and width and height
+    delete updatedParentNode.measured;
+    delete updatedParentNode.width;
+    delete updatedParentNode.height;
+    
+
     // Update the child nodes using the utility function
     const updatedChildNodes = updateNodeHierarchyVisibility(
       updatedParentNode, 
