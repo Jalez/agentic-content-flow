@@ -80,8 +80,8 @@ export const ContainerNode = ({
     height: 200,
   };
   const expandedDimensions = {
-    width: nodeInFlow?.width || LAYOUT_CONSTANTS.NODE_DEFAULT_WIDTH,
-    height: nodeInFlow?.height  || LAYOUT_CONSTANTS.NODE_DEFAULT_HEIGHT,
+    width: nodeInFlow?.width || collapsedDimensions.width,
+    height: nodeInFlow?.height  || collapsedDimensions.height,
   };
   
 
@@ -130,8 +130,8 @@ export const ContainerNode = ({
             />
             <NodeHeaderMenuAction label="Container Options">
               {/* Add menu items here if needed */}
-            </NodeHeaderMenuAction>
             <NodeHeaderDeleteAction />
+            </NodeHeaderMenuAction>
           </NodeHeaderActions>
         </NodeHeader>
 
