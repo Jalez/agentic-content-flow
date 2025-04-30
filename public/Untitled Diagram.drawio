@@ -1,32 +1,26 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:137.0) Gecko/20100101 Firefox/137.0" version="26.2.14">
   <diagram name="Page-1" id="eNPtsUAIUc8ON8tqVejX">
-    <mxGraphModel dx="2186" dy="1015" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="none" math="0" shadow="0">
+    <mxGraphModel dx="2392" dy="1171" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="none" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="IlpyLP8oz_AvC5KWS2CE-35" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Example 1:&amp;nbsp; Learning management system (LMS) &lt;br&gt;&lt;/h1&gt;&lt;p&gt;This sketch shows how the flow can be used to create a course. You are able to create dependencies between courses with arrows, &lt;br&gt;&lt;/p&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" parent="1" vertex="1">
-          <mxGeometry x="102" y="110" width="710" height="100" as="geometry" />
+        <mxCell id="SBHnLMibvocw1fzGwh0x-16" value="" style="group" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="-250" y="20" width="1070" height="1033.9" as="geometry" />
         </mxCell>
-        <mxCell id="IlpyLP8oz_AvC5KWS2CE-53" value="Page" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="270" y="66.1" width="117" height="40" as="geometry" />
+        <mxCell id="SBHnLMibvocw1fzGwh0x-12" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="SBHnLMibvocw1fzGwh0x-16">
+          <mxGeometry width="1070" height="1033.9" as="geometry" />
         </mxCell>
-        <mxCell id="IlpyLP8oz_AvC5KWS2CE-60" value="Data Wrapper" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;shadow=1;dashed=1;dashPattern=8 8;" parent="1" vertex="1">
-          <mxGeometry x="410" y="71" width="103" height="39" as="geometry" />
+        <mxCell id="IlpyLP8oz_AvC5KWS2CE-35" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Example 1:&amp;nbsp; Learning management system (LMS) &lt;br&gt;&lt;/h1&gt;&lt;p&gt;This sketch shows how the flow can be used to create a course. You are able to create dependencies between courses with arrows, &lt;br&gt;&lt;/p&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" parent="SBHnLMibvocw1fzGwh0x-16" vertex="1">
+          <mxGeometry x="10" y="10" width="710" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="IlpyLP8oz_AvC5KWS2CE-79" value="Data" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" parent="1" vertex="1">
-          <mxGeometry x="420" y="7.1" width="60" height="49" as="geometry" />
+        <mxCell id="SBHnLMibvocw1fzGwh0x-1" value="Course Stats" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="SBHnLMibvocw1fzGwh0x-16">
+          <mxGeometry x="20" y="411.89" width="140" height="106.22" as="geometry" />
         </mxCell>
-        <mxCell id="IlpyLP8oz_AvC5KWS2CE-80" value="View" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="283.92132759647654" y="10.002216278181141" width="89.15" height="46.1" as="geometry" />
-        </mxCell>
-        <mxCell id="SBHnLMibvocw1fzGwh0x-1" value="Course Stats" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="1">
-          <mxGeometry x="-230" y="471.89" width="140" height="106.22" as="geometry" />
-        </mxCell>
-        <mxCell id="SBHnLMibvocw1fzGwh0x-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="IlpyLP8oz_AvC5KWS2CE-21" target="SBHnLMibvocw1fzGwh0x-1">
+        <mxCell id="SBHnLMibvocw1fzGwh0x-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="SBHnLMibvocw1fzGwh0x-16" source="IlpyLP8oz_AvC5KWS2CE-21" target="SBHnLMibvocw1fzGwh0x-1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="SBHnLMibvocw1fzGwh0x-9" value="" style="group" vertex="1" connectable="0" parent="1">
-          <mxGeometry x="10" y="190" width="790.0012625604717" height="887.0719999999999" as="geometry" />
+        <mxCell id="SBHnLMibvocw1fzGwh0x-9" value="" style="group" vertex="1" connectable="0" parent="SBHnLMibvocw1fzGwh0x-16">
+          <mxGeometry x="260" y="130" width="790.0012625604717" height="887.0719999999999" as="geometry" />
         </mxCell>
         <mxCell id="IlpyLP8oz_AvC5KWS2CE-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" parent="SBHnLMibvocw1fzGwh0x-9" source="IlpyLP8oz_AvC5KWS2CE-21" target="IlpyLP8oz_AvC5KWS2CE-24" edge="1">
           <mxGeometry relative="1" as="geometry" />
@@ -134,11 +128,29 @@
         <mxCell id="IlpyLP8oz_AvC5KWS2CE-85" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="SBHnLMibvocw1fzGwh0x-8" source="IlpyLP8oz_AvC5KWS2CE-49" target="IlpyLP8oz_AvC5KWS2CE-57" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="SBHnLMibvocw1fzGwh0x-10" value="Conditional" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="550" y="20" width="80" height="80" as="geometry" />
+        <mxCell id="SBHnLMibvocw1fzGwh0x-17" value="" style="group" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="-540" y="20" width="255" height="740" as="geometry" />
         </mxCell>
-        <mxCell id="SBHnLMibvocw1fzGwh0x-11" value="" style="group" vertex="1" connectable="0" parent="1">
-          <mxGeometry x="140" y="45" width="80" height="30" as="geometry" />
+        <mxCell id="SBHnLMibvocw1fzGwh0x-14" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="SBHnLMibvocw1fzGwh0x-17">
+          <mxGeometry width="255" height="740" as="geometry" />
+        </mxCell>
+        <mxCell id="IlpyLP8oz_AvC5KWS2CE-53" value="Page" style="rounded=0;whiteSpace=wrap;html=1;" parent="SBHnLMibvocw1fzGwh0x-17" vertex="1">
+          <mxGeometry x="26" y="190" width="117" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="IlpyLP8oz_AvC5KWS2CE-60" value="Data Wrapper" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;shadow=1;dashed=1;dashPattern=8 8;" parent="SBHnLMibvocw1fzGwh0x-17" vertex="1">
+          <mxGeometry x="26" y="340" width="103" height="39" as="geometry" />
+        </mxCell>
+        <mxCell id="IlpyLP8oz_AvC5KWS2CE-79" value="Data" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" parent="SBHnLMibvocw1fzGwh0x-17" vertex="1">
+          <mxGeometry x="26" y="260" width="60" height="49" as="geometry" />
+        </mxCell>
+        <mxCell id="IlpyLP8oz_AvC5KWS2CE-80" value="View" style="rounded=1;whiteSpace=wrap;html=1;" parent="SBHnLMibvocw1fzGwh0x-17" vertex="1">
+          <mxGeometry x="26.001327596476585" y="120.00221627818115" width="89.15" height="46.1" as="geometry" />
+        </mxCell>
+        <mxCell id="SBHnLMibvocw1fzGwh0x-10" value="Conditional" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="SBHnLMibvocw1fzGwh0x-17">
+          <mxGeometry x="26" y="401.89" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="SBHnLMibvocw1fzGwh0x-11" value="" style="group" vertex="1" connectable="0" parent="SBHnLMibvocw1fzGwh0x-17">
+          <mxGeometry x="150" y="45" width="80" height="30" as="geometry" />
         </mxCell>
         <mxCell id="IlpyLP8oz_AvC5KWS2CE-38" value="Optional dependency" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;endFill=1;startFill=1;startArrow=classicThin;" parent="SBHnLMibvocw1fzGwh0x-11" edge="1">
           <mxGeometry x="1" y="67" width="50" height="50" relative="1" as="geometry">
