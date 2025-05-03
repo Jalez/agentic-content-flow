@@ -4,7 +4,7 @@ import { Box, Paper, useTheme, SxProps, Theme, Divider } from "@mui/material";
 import { Panel, PanelPosition } from "@xyflow/react";
 
 import RegisteredControls from "./RegisteredControls";
-import KeyboardShortcutPanel from "../../KeyboardShortCuts";
+import KeyboardShortcutPanel from "../../ShortCuts";
 import { useControls } from "../context/ControlsContext";
 import { CONTROL_TYPES } from "../../constants";
 import { useControlsRegistry } from "./controlsRegistry";

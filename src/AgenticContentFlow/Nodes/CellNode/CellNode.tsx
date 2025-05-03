@@ -5,14 +5,12 @@ import { useTheme } from "@mui/material/styles";
 import { Box } from "@mui/material";
 import { AccordionSummary } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { subjectConfig } from "../../../config/subjectConfig";
 import { CellNodeMenu } from "./CellNodeMenu";
 import { CourseNodeData } from "../../types";
 import {
   StyledNodeCard,
   StyledAccordion,
   StyledAccordionDetails,
-  SubjectIcon,
 } from "./CellNodeStyles";
 import { StyledCellHandle } from "./CellNodeHandleStyles";
 
@@ -22,12 +20,6 @@ const CellComponent = (node: Node<CourseNodeData>) => {
     useState<HTMLElement | null>(null);
   const reactFlowInstance = useReactFlow();
   const theme = useTheme();
-
-  const subject = node.data.subject || "COMP.CS";
-  const config = subjectConfig[subject] || subjectConfig["COMP.CS"];
-  const level = node.data.nodeLevel || "basic";
-  const courseColor =
-    config.levelShades[level as keyof typeof config.levelShades];
 
   useEffect(() => {
     if (isExpanded) {
@@ -46,6 +38,7 @@ const CellComponent = (node: Node<CourseNodeData>) => {
     event.preventDefault();
     setContextMenuAnchor(event.currentTarget as HTMLElement);
   };
+  const courseColor = "#FF5733"; // Replace with your logic to get the course color
 
   return (
     <>
@@ -123,12 +116,12 @@ const CellComponent = (node: Node<CourseNodeData>) => {
               >
                 {node.data.details}
               </Box>
-              <SubjectIcon
+              {/* <SubjectIcon
                 className="subject-icon"
                 src={config.icon}
                 alt={subject}
                 courseColor={courseColor}
-              />
+              /> */}
             </StyledAccordionDetails>
           )}
         </StyledAccordion>

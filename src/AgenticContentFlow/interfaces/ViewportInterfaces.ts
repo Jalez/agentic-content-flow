@@ -81,7 +81,7 @@ export interface ViewportWheelHandlers {
  */
 export interface ViewportManager
   extends ViewportOperations,
-    ViewportWheelHandlers {
+  ViewportWheelHandlers {
   /**
    * Current viewport state
    */

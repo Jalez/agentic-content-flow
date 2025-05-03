@@ -31,7 +31,7 @@ import { useEdgeState } from "./Edge/hooks/useEdgeState";
 // Register node types before any rendering occurs
 ensureNodeTypesRegistered();
 
-export function MindmapContent() {
+export function AgenticContentFlowContent() {
   const theme = useTheme();
   const flowWrapper = useRef<HTMLDivElement>(null);
   const { showGrid } = useViewPreferencesStore();
@@ -121,14 +121,14 @@ const testCallEdges = useCallback((edges: Edge[]) => {
   );
 }
 
-const Mindmap = () => (
+const AgenticContentFlow = () => (
   <ReactFlowProvider>
     <SelectProvider>
       <ReactStateHistory>
-        <MindmapContent />
+        <AgenticContentFlowContent />
       </ReactStateHistory>
     </SelectProvider>
   </ReactFlowProvider>
 );
 
-export default Mindmap;
+export default AgenticContentFlow;
