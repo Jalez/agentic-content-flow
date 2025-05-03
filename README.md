@@ -1,6 +1,8 @@
-# Mindmap Project
+# AgenticContentFlow
 
-This project is a React-based application built with TypeScript and Vite. It provides a platform for creating and managing mindmaps with a variety of features and tools to enhance user experience. The project is structured to support modular development and includes several components, utilities, and stores for managing the mindmap's state and functionality.
+From data to dynamic pages—powered by agents
+
+This project is a React-based application built with TypeScript and Vite. It provides a platform for creating and managing dynamic content flows with agent-powered capabilities to enhance user experience. The project is structured to support modular development and includes several components, utilities, and stores for managing state and functionality.
 
 ## Key Features
 
@@ -24,22 +26,22 @@ This project is a React-based application built with TypeScript and Vite. It pro
 
 The project is organized into the following main directories:
 
-- `src/Mindmap`: Contains the core logic and components for the mindmap.
-- `src/Mindmap/Controls`: Includes components and context for managing controls.
-- `src/Mindmap/Layout`: Handles layout algorithms and related utilities.
-- `src/Mindmap/Node`: Manages node creation, editing, and registry.
-- `src/Mindmap/Flow`: Manages the flow and viewport of the mindmap.
-- `src/Mindmap/Minimap`: Implements the minimap feature.
-- `src/Mindmap/Select`: Handles selection logic and UI.
-- `src/Mindmap/Documentation`: Contains documentation and notes for development.
-- `src/Mindmap/test`: Includes test data and utilities for testing.
+- `src/AgenticContentFlow`: Contains the core logic and components.
+- `src/AgenticContentFlow/Controls`: Includes components and context for managing controls.
+- `src/AgenticContentFlow/Layout`: Handles layout algorithms and related utilities.
+- `src/AgenticContentFlow/Node`: Manages node creation, editing, and registry.
+- `src/AgenticContentFlow/Flow`: Manages the flow and viewport.
+- `src/AgenticContentFlow/Minimap`: Implements the minimap feature.
+- `src/AgenticContentFlow/Select`: Handles selection logic and UI.
+- `src/AgenticContentFlow/Documentation`: Contains documentation and notes for development.
+- `src/AgenticContentFlow/test`: Includes test data and utilities for testing.
 
 ## Getting Started
 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/Jalez/mindmap.git
+   git clone https://github.com/Jalez/agentic-content-flow.git
    ```
 
 2. Install dependencies:
