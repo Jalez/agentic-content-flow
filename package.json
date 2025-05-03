@@ -1,8 +1,9 @@
 {
-  "name": "mindmap",
+  "name": "agentic-content-flow",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "description": "From data to dynamic pages—powered by agents",
   "scripts": {
     "dev": "vite --open",
     "build": "tsc -b && vite build",
