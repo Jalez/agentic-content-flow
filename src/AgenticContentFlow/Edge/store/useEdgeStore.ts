@@ -2,7 +2,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { addEdge, Connection, Edge } from "@xyflow/react";
-import { edgesData } from "../../test/edgeData";
+import { edgesData } from "../../test/default/edgeData";
 
 export interface EdgeStoreState {
   // Keep both data structures

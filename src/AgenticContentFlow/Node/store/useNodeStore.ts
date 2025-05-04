@@ -2,7 +2,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Node } from "@xyflow/react";
-import { childNodesData, parentNodesData } from "../../test/nodesData";
+import { childNodesData, parentNodesData } from "../../test/default/nodesData";
 import { getNodeTypeInfo } from "../registry/nodeTypeRegistry";
 import { organizeNodeParents } from "../hooks/utils/organizeNodeParents";
 
@@ -92,7 +92,24 @@ export const useNodeStore = create<NodeStoreState>()(
         return;
       }
       const { nodeMap, nodeParentMap, nodeParentIdMapWithChildIdSet } = rebuildStoreState(nodes);
-      set({ nodes, nodeMap, nodeParentMap, nodeParentIdMapWithChildIdSet });
+      
+      // Split the nodes into parent and child arrays
+      const parentNodes = nodes.filter(node => 
+        node.type && isParentNodeType(node.type)
+      );
+      const childNodes = nodes.filter(node => 
+        !node.type || !isParentNodeType(node.type)
+      );
+      
+      // Update the entire state with the new data
+      set({ 
+        nodes, 
+        nodeMap, 
+        nodeParentMap, 
+        nodeParentIdMapWithChildIdSet,
+        parentNodes,
+        childNodes
+      });
     },
 
     setChildNodes: (newChildnodes: Node<any>[]) => {
