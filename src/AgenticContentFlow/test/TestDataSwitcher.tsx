@@ -7,10 +7,17 @@ import { useEdgeStore } from "../Edge/store/useEdgeStore";
 import { useNodeStore } from "../Node/store/useNodeStore";
 
 // Import test data sets
-import { childNodesData, parentNodesData } from "./nodesData";
-import { edgesData } from "./edgeData";
+import { childNodesData, parentNodesData } from "./default/nodesData";
+import { edgesData } from "./default/edgeData";
+// Import simple test data
 import { initialSimpleNodes } from "./simple/nodesData";
 import { initialSimpleEdges } from "./simple/edgeData";
+// Import our new flow nodes test data
+import { flowNodesData } from "./flowNodes/nodesData";
+import { flowEdgesData } from "./flowNodes/edgeData";
+// Import LMS example data
+import { lmsNodesData } from "./lms/nodesData";
+import { lmsEdgesData } from "./lms/edgeData";
 
 const nodesData = [...parentNodesData, ...childNodesData];
 
@@ -50,6 +57,16 @@ const TestDataSwitcher: React.FC = () => {
           setNodes(initialSimpleNodes);
           setEdges(initialSimpleEdges);
           break;
+        case "flow":
+          // Load our new flow nodes test data
+          setNodes(flowNodesData);
+          setEdges(flowEdgesData);
+          break;
+        case "lms":
+          // Load Learning Management System example
+          setNodes(lmsNodesData);
+          setEdges(lmsEdgesData);
+          break;
         case "empty":
           // Load empty data
           setNodes([]);
@@ -78,6 +95,12 @@ const TestDataSwitcher: React.FC = () => {
         </MenuItem>
         <MenuItem onClick={() => switchToDataSet("simple")}>
           Simple Test Data
+        </MenuItem>
+        <MenuItem onClick={() => switchToDataSet("flow")}>
+          Flow Nodes Demo
+        </MenuItem>
+        <MenuItem onClick={() => switchToDataSet("lms")}>
+          LMS Example
         </MenuItem>
         <MenuItem onClick={() => switchToDataSet("empty")}>Empty Data</MenuItem>
       </Menu>
