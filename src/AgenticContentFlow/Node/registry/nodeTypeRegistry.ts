@@ -24,6 +24,10 @@ export interface NodeTypeEntry {
   Component: ComponentType<any>;
   createTemplate: NodeTemplateCreator;
   isParent: boolean;
+  defaultDimensions: {
+    width: number;
+    height: number;
+  };
 }
 
 /**
@@ -77,9 +81,13 @@ export function registerNodeType(
   type: string,
   Component: ComponentType<any>,
   createTemplate: NodeTemplateCreator,
-  isParent: boolean = false
+  isParent: boolean = false,
+  defaultDimensions: {
+    width: number;
+    height: number;
+  } = { width: 300, height: 200 }
 ) {
-  nodeTypeRegistry.set(type, { Component, createTemplate, isParent });
+  nodeTypeRegistry.set(type, { Component, createTemplate, isParent, defaultDimensions });
   debouncedUpdateRegistry();
 }
 
