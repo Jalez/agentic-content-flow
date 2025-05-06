@@ -1,7 +1,4 @@
 # AgenticContentFlow
-
-From data to dynamic pages—powered by agents
-
 This project is a React-based application built with TypeScript and Vite. It provides a platform for creating and managing dynamic content flows with agent-powered capabilities to enhance user experience. The project is structured to support modular development and includes several components, utilities, and stores for managing state and functionality.
 
 ## Key Features
