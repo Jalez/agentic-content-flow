@@ -9,6 +9,7 @@ import { useNodeStore } from "../Node/store/useNodeStore";
 // Import test data sets
 import { childNodesData, parentNodesData } from "./default/nodesData";
 import { edgesData } from "./default/edgeData";
+
 // Import simple test data
 import { initialSimpleNodes } from "./simple/nodesData";
 import { initialSimpleEdges } from "./simple/edgeData";
@@ -18,6 +19,10 @@ import { flowEdgesData } from "./flowNodes/edgeData";
 // Import LMS example data
 import { lmsNodesData } from "./lms/nodesData";
 import { lmsEdgesData } from "./lms/edgeData";
+
+// Import LMS default data
+import { nodesDataLMSDefault } from "./default-lms/nodesData";
+import { edgesDataLMSDefault } from "./default-lms/edgeData";
 
 const nodesData = [...parentNodesData, ...childNodesData];
 
@@ -62,9 +67,23 @@ const TestDataSwitcher: React.FC = () => {
           setNodes(flowNodesData);
           setEdges(flowEdgesData);
           break;
+        case "lmsDefault":
+          setNodes(nodesDataLMSDefault);
+          setEdges(edgesDataLMSDefault);
+          break;
         case "lms":
           // Load Learning Management System example
-          setNodes(lmsNodesData);
+          setNodes(lmsNodesData.map((node) => ({ //Give style width and height to all nodes
+            ...node,
+            style: {
+              width: node.type === "conditionalnode" ? 100 : 300,
+              height: node.type === "conditionalnode" ? 100 : 200,
+            },
+            data: {
+              ...node.data,
+              //positionType: node.type === "conditionalnode" ? "center" : "topLeft",
+            },
+          })));
           setEdges(lmsEdgesData);
           break;
         case "empty":
@@ -98,6 +117,9 @@ const TestDataSwitcher: React.FC = () => {
         </MenuItem>
         <MenuItem onClick={() => switchToDataSet("flow")}>
           Flow Nodes Demo
+        </MenuItem>
+        <MenuItem onClick={() => switchToDataSet("lmsDefault")}>
+          LMS Default Data
         </MenuItem>
         <MenuItem onClick={() => switchToDataSet("lms")}>
           LMS Example

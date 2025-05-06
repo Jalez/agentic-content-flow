@@ -1,5 +1,5 @@
 import { CoordinateExtent, Node } from "@xyflow/react";
-import { NodeData } from "../../types";
+
 
 // Parent nodes in our flow: containers that can hold other nodes
 export const flowParentNodesData: Array<Node> = [

@@ -79,7 +79,7 @@ export const lmsParentNodesData: Array<Node> = [
       details: "First module of Instance 1",
       level: "basic",
       subject: "education",
-      expanded: true
+      expanded: false
     },
     position: { x: 800, y: 300 },
     parentId: "instance-1",
@@ -93,7 +93,7 @@ export const lmsParentNodesData: Array<Node> = [
       details: "Second module of Instance 1",
       level: "basic",
       subject: "education",
-      expanded: true
+      expanded: false
     },
     position: { x: 1000, y: 300 },
     parentId: "instance-1",
@@ -107,7 +107,7 @@ export const lmsParentNodesData: Array<Node> = [
       details: "Third module of Instance 1",
       level: "basic",
       subject: "education",
-      expanded: true
+      expanded: false
     },
     position: { x: 900, y: 500 },
     parentId: "instance-1",
@@ -121,7 +121,6 @@ export const lmsParentNodesData: Array<Node> = [
       details: "Course analytics data",
       level: "advanced",
       subject: "data",
-      expanded: false
     },
     position: { x: 280, y: 350 },
   },

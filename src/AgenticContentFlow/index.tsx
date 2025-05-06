@@ -91,6 +91,10 @@ const testCallEdges = useCallback((edges: Edge[]) => {
         minWidth: 150,
         minHeight: 150,
       }}
+       initialNodeDimensions={{
+        width: 300,
+        height: 200,
+      }}
       updateNodes={testCallNodes}
       updateEdges={testCallEdges}
       nodeParentIdMapWithChildIdSet={nodeParentIdMapWithChildIdSet}

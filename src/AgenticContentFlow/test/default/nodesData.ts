@@ -1,5 +1,5 @@
 import { CoordinateExtent, Node } from "@xyflow/react";
-import { CourseNodeData } from "../types";
+import { CourseNodeData } from "../../types";
 
 
 
