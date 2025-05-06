@@ -1,20 +1,20 @@
-import React from 'react';
-import { NodeProps, Position, NodeResizer } from '@xyflow/react';
+import React, { useEffect, useState } from 'react';
+import { NodeProps } from '@xyflow/react';
 import LanguageIcon from '@mui/icons-material/Language';
 import { Box, MenuItem } from '@mui/material';
-import { StyledHandle } from '../common/NodeStyles';
 import { PageNodeContainer } from './PageNodeStyles';
-import { 
+import {
   NodeHeader,
   NodeHeaderTitle,
   NodeHeaderActions,
   NodeHeaderMenuAction,
   NodeHeaderDeleteAction
 } from '../common/NodeHeader';
-import { useNodeHistoryState } from '../../Node/hooks/useNodeState';
 import { useUpdateNodeInternals, useReactFlow } from '@xyflow/react';
 import { LAYOUT_CONSTANTS } from '../../Layout/utils/layoutUtils';
 import ExpandCollapseButton from '../common/ExpandCollapseButton';
+import ConnectionHandles from '../common/ConnectionHandles';
+import CornerResizer from '../common/CornerResizer';
 
 /**
  * Page Node Component
@@ -23,11 +23,22 @@ import ExpandCollapseButton from '../common/ExpandCollapseButton';
  * Features a minimal design with distinctive page appearance.
  */
 export const PageNode: React.FC<NodeProps> = ({ id, data, selected }) => {
-  const { updateNode } = useNodeHistoryState();
   const updateNodeInternals = useUpdateNodeInternals();
   const { getNode } = useReactFlow();
   const nodeInFlow = getNode(id);
-  const color = "#4caf50"; // Green color for page nodes
+
+  const [isExpanded, setIsExpanded] = useState(nodeInFlow?.data.expanded || false);
+
+  useEffect(() => {
+    if (nodeInFlow) {
+      setIsExpanded(Boolean(nodeInFlow.data?.expanded));
+    }
+  }, [nodeInFlow]);
+
+  const darkerColor = "#4caf50"; // Green color for page nodes
+  const lighterColor = "white"; // Lighter green for expanded state
+
+const color = isExpanded ? lighterColor : darkerColor;
 
   if (!nodeInFlow) {
     console.error(`Node with id ${id} not found in store.`);
@@ -39,32 +50,17 @@ export const PageNode: React.FC<NodeProps> = ({ id, data, selected }) => {
     width: 300,
     height: 200,
   };
-  
+
   const expandedDimensions = {
     width: nodeInFlow?.width || collapsedDimensions.width,
     height: nodeInFlow?.height || collapsedDimensions.height,
   };
 
-  const handleResize = (_: any, params: any) => {
-    if (!nodeInFlow) return;
-    
-    updateNode({
-      ...nodeInFlow,
-      style: {
-        ...nodeInFlow.style,
-        width: params.width,
-        height: params.height,
-      },
-      measured: undefined,
-      width: undefined,
-      height: undefined,
-    });
-  };
 
   // Type checking for data properties
   const nodeLabel = data?.label ? String(data.label) : 'Page';
   const nodeDetails = data?.details ? String(data.details) : undefined;
-  const isHighlighted = !!data?.highlighted;
+
 
   // Additional menu items specific to page nodes
   const pageNodeMenuItems = [
@@ -76,15 +72,16 @@ export const PageNode: React.FC<NodeProps> = ({ id, data, selected }) => {
     </MenuItem>
   ];
 
+
   return (
     <>
-      {selected && (
-        <NodeResizer
-          minHeight={LAYOUT_CONSTANTS.NODE_DEFAULT_HEIGHT}
-          minWidth={LAYOUT_CONSTANTS.NODE_DEFAULT_WIDTH}
-          onResize={handleResize}
-        />
-      )}
+      <CornerResizer
+        minHeight={LAYOUT_CONSTANTS.NODE_DEFAULT_HEIGHT}
+        minWidth={LAYOUT_CONSTANTS.NODE_DEFAULT_WIDTH}
+        nodeToResize={nodeInFlow}
+        canResize={selected}
+        color={color}
+      />
       <PageNodeContainer
         onTransitionEnd={() => updateNodeInternals(id)}
         selected={selected}
@@ -92,6 +89,8 @@ export const PageNode: React.FC<NodeProps> = ({ id, data, selected }) => {
         sx={{
           width: nodeInFlow?.width,
           height: nodeInFlow?.height,
+          backgroundColor: color,
+
           display: "flex",
           flexDirection: "column",
           userSelect: "none",
@@ -99,39 +98,19 @@ export const PageNode: React.FC<NodeProps> = ({ id, data, selected }) => {
         }}
       >
         {/* Connection handles */}
-        <StyledHandle
-          type="target"
-          position={Position.Left}
-          id="left"
-          color={color}
-          style={{ left: '-7px', zIndex: 3 }}
-        />
-        <StyledHandle
-          type="source"
-          position={Position.Right}
-          id="right"
-          color={color}
-          style={{ right: '-7px', zIndex: 3 }}
-        />
-        <StyledHandle
-          type="target"
-          position={Position.Top}
-          id="top"
-          color={color}
-          style={{ top: '-7px', zIndex: 3 }}
-        />
-        <StyledHandle
-          type="source"
-          position={Position.Bottom}
-          id="bottom"
-          color={color}
-          style={{ bottom: '-7px', zIndex: 3 }}
-        />
-
+        <ConnectionHandles color={color} />
         <NodeHeader className="dragHandle">
-          <div style={{ marginRight: '8px', display: 'flex', alignItems: 'center' }}>
-            <LanguageIcon style={{ color }} />
-          </div>
+          <LanguageIcon sx={{
+            color: 'primary.secondary',
+            position: isExpanded ? 'relative' : 'absolute',
+            //When it is not expanded, center the icon 
+            left: isExpanded ? '0' : '50%',
+            top: isExpanded ? '0' : '50%',
+            transform: isExpanded ? 'none' : 'translate(-50%, -50%)',
+            //Make it larger when not expanded
+            fontSize: isExpanded ? '1.5rem' : '5rem',
+          }} />
+
           <NodeHeaderTitle>{nodeLabel}</NodeHeaderTitle>
           <NodeHeaderActions>
             <ExpandCollapseButton
@@ -146,14 +125,7 @@ export const PageNode: React.FC<NodeProps> = ({ id, data, selected }) => {
           </NodeHeaderActions>
         </NodeHeader>
 
-        {/* Clean content area */}
-        <Box className="page-content-area">
-          {nodeDetails && (
-            <Box sx={{ color: 'text.primary', fontSize: '0.875rem' }}>
-              {nodeDetails}
-            </Box>
-          )}
-        </Box>
+
       </PageNodeContainer>
     </>
   );

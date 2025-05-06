@@ -31,7 +31,13 @@ export const createConditionalNodeTemplate = (
       details: params.details || "Define condition logic",
       // No isParent flag as conditional nodes don't support expand/collapse
     },
-    // No style dimensions as conditional nodes have fixed diamond shape
+    // Style for the node: width controls the space for the text below the circle.
+    // Height will be determined by content (circle + text + spacing).
+    // Example: A circle of 80px, text might make it 120px wide.
+    style: { 
+      width: 120, // Adjust as needed for typical label lengths
+      // height: 150, // React Flow will auto-calculate height based on content
+    }, 
     position,
     parentId: eventNode?.parentId,
     // Add extent property at the node level to match the data structure

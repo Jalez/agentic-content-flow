@@ -1,28 +1,26 @@
-import React from 'react';
-import { NodeProps, Position, NodeResizer } from '@xyflow/react';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import BarChartIcon from '@mui/icons-material/BarChart';
+import React, { useState, useEffect } from 'react';
+import { NodeProps } from '@xyflow/react';
+//Get an icon suitable for view nodes
+import ViewQuiltIcon from '@mui/icons-material/ViewQuilt';
 import { MenuItem } from '@mui/material';
-import { StyledHandle } from '../common/NodeStyles';
-import { ViewNodeContainer } from './ViewNodeStyles';
-import { 
+import {
   NodeHeader,
-  NodeHeaderTitle,
-  NodeHeaderActions,
   NodeHeaderMenuAction,
   NodeHeaderDeleteAction
 } from '../common/NodeHeader';
-import NodeContent from '../common/NodeContent';
 import { useNodeHistoryState } from '../../Node/hooks/useNodeState';
 import { useUpdateNodeInternals, useReactFlow } from '@xyflow/react';
 import { LAYOUT_CONSTANTS } from '../../Layout/utils/layoutUtils';
+import CornerResizer from '../common/CornerResizer';
+import ScrollingText from '../common/ScrollingText';
+import { ViewNodeContainer } from './ViewNodeStyles';
+import ConnectionHandles from '../common/ConnectionHandles';
 import ExpandCollapseButton from '../common/ExpandCollapseButton';
-
 /**
- * View Node Component
+ * Data Node Component
  * 
- * Represents a view or visualization in a flow diagram.
- * Has a distinctive dashboard-like appearance with graph/chart imagery.
+ * Represents a data source or repository in a flow diagram.
+ * Has a distinctive folder appearance.
  * Accepts data primarily from left side, produces data primarily to right side.
  * Also maintains top/bottom connections for sibling/conditional communication.
  */
@@ -31,7 +29,18 @@ export const ViewNode: React.FC<NodeProps> = ({ id, data, selected }) => {
   const updateNodeInternals = useUpdateNodeInternals();
   const { getNode } = useReactFlow();
   const nodeInFlow = getNode(id);
-  const color = "#9c27b0"; // Purple color for view nodes
+  const [isExpanded, setIsExpanded] = useState(nodeInFlow?.data.expanded || false);
+
+  useEffect(() => {
+    if (nodeInFlow) {
+      setIsExpanded(Boolean(nodeInFlow.data?.expanded));
+    }
+  }, [nodeInFlow]);
+
+
+  const color = isExpanded ?
+    "#FF5733" : //darker color when not expanded
+    "#FF8C00"; //lighter color when expanded
 
   if (!nodeInFlow) {
     console.error(`Node with id ${id} not found in store.`);
@@ -41,133 +50,101 @@ export const ViewNode: React.FC<NodeProps> = ({ id, data, selected }) => {
   // Default dimensions for the container
   const collapsedDimensions = {
     width: 300,
-    height: 200,
-  };
-  
-  const expandedDimensions = {
-    width: nodeInFlow?.width || collapsedDimensions.width,
-    height: nodeInFlow?.height || collapsedDimensions.height,
+    height: 60,
   };
 
-  const handleResize = (_: any, params: any) => {
-    if (!nodeInFlow) return;
-    
-    updateNode({
-      ...nodeInFlow,
-      style: {
-        ...nodeInFlow.style,
-        width: params.width,
-        height: params.height,
-      },
-      measured: undefined,
-      width: undefined,
-      height: undefined,
-    });
+  const expandedDimensions = {
+    width: nodeInFlow?.width || 300,
+    height: nodeInFlow?.height || 300,
   };
+
+
+
 
   // Type checking for data properties
-  const nodeLabel = data?.label ? String(data.label) : 'View';
-  const nodeDetails = data?.details ? String(data.details) : undefined;
-  const isHighlighted = !!data?.highlighted;
+  const nodeLabel = data?.label ? String(data.label) : 'Files';
 
-  // Additional menu items specific to view nodes
-  const viewNodeMenuItems = [
-    <MenuItem key="configure" onClick={() => console.log('Configure view')}>
-      Configure View
+  // Generate mock file structure for the explorer view
+
+  // Custom menu items for file operations
+  const fileNodeMenuItems = [
+    <MenuItem key="open" onClick={() => console.log('Open file')}>
+      Open File
     </MenuItem>,
-    <MenuItem key="export" onClick={() => console.log('Export visualization')}>
-      Export Visualization
+    <MenuItem key="download" onClick={() => console.log('Download file')}>
+      Download
+    </MenuItem>,
+    <MenuItem key="share" onClick={() => console.log('Share file')}>
+      Share
     </MenuItem>
   ];
 
+
+
   return (
     <>
-      {selected && (
-        <NodeResizer
-          minHeight={LAYOUT_CONSTANTS.NODE_DEFAULT_HEIGHT}
-          minWidth={LAYOUT_CONSTANTS.NODE_DEFAULT_WIDTH}
-          onResize={handleResize}
-        />
-      )}
+      <CornerResizer
+        minHeight={LAYOUT_CONSTANTS.NODE_DEFAULT_HEIGHT}
+        minWidth={LAYOUT_CONSTANTS.NODE_DEFAULT_WIDTH}
+        canResize={selected}
+        nodeToResize={nodeInFlow}
+        color={color}
+      />
       <ViewNodeContainer
         onTransitionEnd={() => updateNodeInternals(id)}
         selected={selected}
         color={color}
+        isCollapsed={!isExpanded}
         sx={{
-          width: nodeInFlow?.width,
-          height: nodeInFlow?.height,
-          backgroundColor: "background.paper",
+          width: nodeInFlow?.width || collapsedDimensions.width,
+          height: nodeInFlow?.height || (isExpanded ? expandedDimensions.height : collapsedDimensions.height),
+          backgroundColor: color,
           display: "flex",
           flexDirection: "column",
           userSelect: "none",
           transition: "width 0.2s ease, height 0.2s ease",
         }}
       >
-        {/* Primary data flow - left to right */}
-        <StyledHandle
-          type="target"
-          position={Position.Left}
-          id="left"
-          color={color}
-          style={{
-            left: '-7px',
-          }}
-        />
+        {/* Connection handles */}
+        <ConnectionHandles color={color} />
 
-        <StyledHandle
-          type="source"
-          position={Position.Right}
-          id="right"
-          color={color}
-          style={{
-            right: '-7px',
-          }}
-        />
-
-        {/* Hierarchical/sibling connections - top and bottom */}
-        <StyledHandle
-          type="target"
-          position={Position.Top}
-          id="top"
-          color={color}
-          style={{
-            top: '-7px',
-          }}
-        />
-
-        <StyledHandle
-          type="source"
-          position={Position.Bottom}
-          id="bottom"
-          color={color}
-          style={{
-            bottom: '-7px',
-          }}
-        />
-
+        {/* Input handle at the top */}
         <NodeHeader className="dragHandle">
-          <div style={{ marginRight: '8px', display: 'flex', alignItems: 'center' }}>
-            <BarChartIcon style={{ color: color }} />
-          </div>
-          <NodeHeaderTitle>{nodeLabel}</NodeHeaderTitle>
-          <NodeHeaderActions>
-            <ExpandCollapseButton
-              collapsedDimensions={collapsedDimensions}
-              expandedDimensions={expandedDimensions}
-              nodeInFlow={nodeInFlow}
-            />
-            
-            <NodeHeaderMenuAction label="View Options">
-              {viewNodeMenuItems}
-              <NodeHeaderDeleteAction />
-            </NodeHeaderMenuAction>
-          </NodeHeaderActions>
+
+          <ViewQuiltIcon
+            sx={{
+              color: 'primary.secondary',
+              position: isExpanded ? 'relative' : 'absolute',
+              //When it is not expanded, center the icon 
+              left: isExpanded ? '0' : '50%',
+              top: isExpanded ? '0' : '50%',
+              transform: isExpanded ? 'none' : 'translate(-50%, -50%)',
+              //Make it larger when not expanded
+              fontSize: isExpanded ? '1.5rem' : '5rem',
+            }}
+          />
+          <ScrollingText
+            text={nodeLabel}
+            variant="subtitle1"
+            maxWidth="100%"
+            sx={{
+              flex: 1,
+              fontWeight: 600,
+              position: 'relative',
+            }}
+          />
+          <ExpandCollapseButton
+            collapsedDimensions={collapsedDimensions}
+            expandedDimensions={expandedDimensions}
+            nodeInFlow={nodeInFlow}
+          />
+
+          <NodeHeaderMenuAction label="File Options">
+            {fileNodeMenuItems}
+            <NodeHeaderDeleteAction />
+          </NodeHeaderMenuAction>
         </NodeHeader>
 
-        <NodeContent 
-          isCourse={false}
-          details={nodeDetails}
-        />
       </ViewNodeContainer>
     </>
   );

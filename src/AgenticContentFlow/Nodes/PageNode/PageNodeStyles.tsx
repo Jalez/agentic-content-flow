@@ -1,44 +1,23 @@
 import { styled } from "@mui/material/styles";
 import { BaseNodeContainer } from "../common/NodeStyles";
 
-// Clean, minimal container for PageNode
-export const PageNodeContainer = styled(BaseNodeContainer)(({ theme, color, selected }) => ({
-  // Modern page appearance
-  borderRadius: '6px',
+// Define additional props interface for the ViewNodeContainer
+interface PageNodeProps {
+  isCollapsed?: boolean;
+}
+
+// Custom container for ViewNode with dashboard-like appearance incorporating DataNode's style elements
+// Custom container for DataNode with file/folder appearance
+export const PageNodeContainer = styled(BaseNodeContainer)<PageNodeProps>(({ }) => ({
   position: 'relative',
+  padding: 0,
   overflow: 'visible',
-  boxShadow: selected 
-    ? `0 0 0 2px ${color}, 0 4px 8px rgba(0, 0, 0, 0.08)` 
-    : '0 2px 4px rgba(0, 0, 0, 0.05)',
-  border: 'none',  // Remove default border
-  backgroundColor: theme.palette.mode === 'dark' 
-    ? theme.palette.grey[900]
-    : '#ffffff',
-    
-  // Simple colored accent at top
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '4px',
-    backgroundColor: color,
-    borderTopLeftRadius: '6px',
-    borderTopRightRadius: '6px',
-    opacity: selected ? 1 : 0.7,
-    zIndex: 2
-  },
-  
-  // Clean content area
-  '& .page-content-area': {
-    position: 'absolute',
-    top: 60, // Below the header
-    bottom: 0,
-    left: 0,
-    right: 0,
-    borderTop: `1px solid ${theme.palette.divider}`,
-    padding: '12px',
-    zIndex: 1
-  }
+  zIndex: 0,
+  borderRadius: '6px',
+  //boxShadow: '0 10px 20px rgba(0,0,0,0.15)',
+  border: `2px solid black`,
+  //borderTop: `10px solid black`,
+  //Add thick shadow to the top
+  boxShadow: `5px -2px black`,
+
 }));
