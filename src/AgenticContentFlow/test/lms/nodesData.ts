@@ -1,8 +1,21 @@
 import { Node } from "@xyflow/react";
-import { NodeData } from "../../types";
 
 // Course nodes (top-level container)
 export const lmsParentNodesData: Array<Node> = [
+  {
+    id: 'container-course-lr', // ID for the container
+    type: 'invisiblenode', 
+    position: { x: 0, y: 0 }, // Initial position doesn't matter, layout will set it
+    data: {
+      label: 'LR Container',
+      // *** Set data property to tell getContainerLayoutDirection this should be LR ***
+      layoutDirection: 'LR', // Your getContainerLayoutDirection helper should look for this
+      isContainer: true, // Or use a type check in isContainer
+      expanded: true
+
+    },
+    style: { width: 250, height: 100 }, // Container needs initial dimensions for rendering
+  },
   {
     id: "course-0",
     type: "pagenode",
@@ -11,10 +24,14 @@ export const lmsParentNodesData: Array<Node> = [
       details: "Main course container",
       level: "advanced",
       subject: "education",
-      expanded: true
+      expanded: true,
+      depth: 0
     },
     position: { x: 700, y: 100 },
+    parentId: "container-course-lr", // *** Set the parentId ***
+    extent: "parent",
   },
+
   {
     id: "instance-0",
     type: "pagenode",
@@ -23,7 +40,8 @@ export const lmsParentNodesData: Array<Node> = [
       details: "First course instance",
       level: "intermediate",
       subject: "education",
-      expanded: true
+      expanded: true,
+      depth: 1
     },
     position: { x: 300, y: 200 },
     parentId: "course-0",
@@ -37,7 +55,9 @@ export const lmsParentNodesData: Array<Node> = [
       details: "Second course instance",
       level: "intermediate",
       subject: "education",
-      expanded: true
+      expanded: true,
+      depth: 1
+      
     },
     position: { x: 900, y: 200 },
     parentId: "course-0",
@@ -51,7 +71,8 @@ export const lmsParentNodesData: Array<Node> = [
       details: "First module of Instance 0",
       level: "basic",
       subject: "education",
-      expanded: true
+      expanded: true,
+      depth: 2
     },
     position: { x: 300, y: 300 },
     parentId: "instance-0",
@@ -65,10 +86,45 @@ export const lmsParentNodesData: Array<Node> = [
       details: "Module 2 content",
       level: "basic",
       subject: "education",
-      expanded: true
+      expanded: true,
+      depth: 2
     },
     position: { x: 300, y: 450 },
     parentId: "instance-0",
+    extent: "parent",
+  },
+  {
+    id: 'container-instance-1-module-1-data-lr', // ID for the container
+    type: 'invisiblenode', 
+    position: { x: 0, y: 0 }, // Initial position doesn't matter, layout will set it
+    data: {
+      label: 'LR Container',
+      // *** Set data property to tell getContainerLayoutDirection this should be LR ***
+      layoutDirection: 'LR', // Your getContainerLayoutDirection helper should look for this
+      isContainer: true, // Or use a type check in isContainer
+      expanded: true,
+      depth: 3
+
+    },
+    style: { width: 250, height: 100 }, // Container needs initial dimensions for rendering
+    parentId: "module-1-instance-0", // Set the parentId to the course node
+    extent: "parent",
+  },
+  {
+    id: 'container-instance-0-module-2-data-lr', // ID for the container
+    type: 'invisiblenode', 
+    position: { x: 0, y: 0 }, // Initial position doesn't matter, layout will set it
+    data: {
+      label: 'LR Container',
+      // *** Set data property to tell getContainerLayoutDirection this should be LR ***
+      layoutDirection: 'LR', // Your getContainerLayoutDirection helper should look for this
+      isContainer: true, // Or use a type check in isContainer
+      expanded: true,
+      depth: 3
+
+    },
+    style: { width: 250, height: 100 }, // Container needs initial dimensions for rendering
+    parentId: "module-2-instance-0", // Set the parentId to the course node
     extent: "parent",
   },
   {
@@ -79,7 +135,8 @@ export const lmsParentNodesData: Array<Node> = [
       details: "First module of Instance 1",
       level: "basic",
       subject: "education",
-      expanded: false
+      expanded: false,
+      depth: 2
     },
     position: { x: 800, y: 300 },
     parentId: "instance-1",
@@ -93,7 +150,8 @@ export const lmsParentNodesData: Array<Node> = [
       details: "Second module of Instance 1",
       level: "basic",
       subject: "education",
-      expanded: false
+      expanded: false,
+      depth: 2
     },
     position: { x: 1000, y: 300 },
     parentId: "instance-1",
@@ -107,7 +165,8 @@ export const lmsParentNodesData: Array<Node> = [
       details: "Third module of Instance 1",
       level: "basic",
       subject: "education",
-      expanded: false
+      expanded: false,
+      depth: 2
     },
     position: { x: 900, y: 500 },
     parentId: "instance-1",
@@ -121,8 +180,11 @@ export const lmsParentNodesData: Array<Node> = [
       details: "Course analytics data",
       level: "advanced",
       subject: "data",
+      depth: 0
     },
     position: { x: 280, y: 350 },
+    parentId: "container-course-lr", // Set the parentId to the container
+    extent: "parent",
   },
   {
     id: "course-1",
@@ -131,7 +193,8 @@ export const lmsParentNodesData: Array<Node> = [
       label: "Course 1",
       details: "Dependent course",
       level: "advanced",
-      subject: "education"
+      subject: "education",
+      depth: 0
     },
     position: { x: 550, y: 700 },
   },
@@ -142,7 +205,8 @@ export const lmsParentNodesData: Array<Node> = [
       label: "Course 2",
       details: "Optional dependent course",
       level: "advanced",
-      subject: "education"
+      subject: "education",
+      depth: 0
     },
     position: { x: 850, y: 700 },
   }
@@ -157,10 +221,11 @@ export const lmsChildNodesData: Array<Node> = [
       label: "Data",
       details: "Module 1 database connection",
       level: "basic",
-      subject: "data"
+      subject: "data",
+      depth: 3
     },
     position: { x: 250, y: 340 },
-    parentId: "module-1-instance-0",
+    parentId: "container-instance-1-module-1-data-lr",
     extent: "parent",
   },
   {
@@ -170,10 +235,11 @@ export const lmsChildNodesData: Array<Node> = [
       label: "Module 1",
       details: "Module 1 visualization",
       level: "basic",
-      subject: "visualization"
+      subject: "visualization",
+      depth: 3
     },
     position: { x: 350, y: 340 },
-    parentId: "module-1-instance-0",
+    parentId: "container-instance-1-module-1-data-lr",
     extent: "parent",
   },
   {
@@ -183,10 +249,11 @@ export const lmsChildNodesData: Array<Node> = [
       label: "Data 1",
       details: "Module 2 data source 1",
       level: "basic",
-      subject: "data"
+      subject: "data",
+      depth: 3
     },
     position: { x: 250, y: 500 },
-    parentId: "module-2-instance-0",
+    parentId: "container-instance-0-module-2-data-lr",
     extent: "parent",
   },
   {
@@ -196,10 +263,11 @@ export const lmsChildNodesData: Array<Node> = [
       label: "Data 2",
       details: "Module 2 data source 2",
       level: "basic",
-      subject: "data"
+      subject: "data",
+      depth: 3
     },
     position: { x: 350, y: 500 },
-    parentId: "module-2-instance-0",
+    parentId: "container-instance-0-module-2-data-lr",
     extent: "parent",
   },
   {
@@ -209,10 +277,11 @@ export const lmsChildNodesData: Array<Node> = [
       label: "Module 2",
       details: "Module 2 visualization",
       level: "basic",
-      subject: "visualization"
+      subject: "visualization",
+      depth: 3
     },
     position: { x: 300, y: 550 },
-    parentId: "module-2-instance-0",
+    parentId: "container-instance-0-module-2-data-lr",
     extent: "parent",
   },
   {
@@ -222,7 +291,8 @@ export const lmsChildNodesData: Array<Node> = [
       label: "> 50% points",
       details: "Check if student has more than 50% points",
       level: "basic",
-      subject: "logic"
+      subject: "logic",
+      depth: 3
     },
     position: { x: 900, y: 400 },
     parentId: "instance-1",

@@ -68,7 +68,6 @@ export const lmsEdgesData: Edge[] = [
     target: "course-1",
     sourceHandle: "bottom", // Bottom of course (for routing)
     targetHandle: "top",  // Top of dependent course (for routing)
-    type: "default",       // Required dependency
   },
   {
     id: "e-course0-course2",
@@ -76,6 +75,5 @@ export const lmsEdgesData: Edge[] = [
     target: "course-2",
     sourceHandle: "bottom", // Bottom of course (for routing)
     targetHandle: "top",  // Top of dependent course (for routing)
-    type: "dotted",        // Optional dependency
   },
 ];

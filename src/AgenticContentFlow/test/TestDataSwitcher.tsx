@@ -1,7 +1,7 @@
 /** @format */
 import React, { useCallback, useState } from "react";
 import ControlButton from "../Controls/Components/ControlButton";
-import { Box, Menu, MenuItem, Tooltip } from "@mui/material";
+import { Menu, MenuItem, Tooltip } from "@mui/material";
 import DataObjectIcon from "@mui/icons-material/DataObject";
 import { useEdgeStore } from "../Edge/store/useEdgeStore";
 import { useNodeStore } from "../Node/store/useNodeStore";
@@ -11,20 +11,18 @@ import { childNodesData, parentNodesData } from "./default/nodesData";
 import { edgesData } from "./default/edgeData";
 
 // Import simple test data
-import { initialSimpleNodes } from "./simple/nodesData";
-import { initialSimpleEdges } from "./simple/edgeData";
-// Import our new flow nodes test data
-import { flowNodesData } from "./flowNodes/nodesData";
-import { flowEdgesData } from "./flowNodes/edgeData";
+import { initialSimpleNodes } from "./simpleBasic/nodesData";
+import { initialSimpleEdges } from "./simpleBasic/edgeData";
+
 // Import LMS example data
 import { lmsNodesData } from "./lms/nodesData";
 import { lmsEdgesData } from "./lms/edgeData";
 
-// Import LMS default data
-import { nodesDataLMSDefault } from "./default-lms/nodesData";
-import { edgesDataLMSDefault } from "./default-lms/edgeData";
+// Import LMS simplest data
+import { testEdgesMinimalSiblingNested, testNodesMinimalSiblingNested } from "./lmsSimple/simplestLMSNodesEdges";
 
 const nodesData = [...parentNodesData, ...childNodesData];
+
 
 /**
  * TestDataSwitcher Component
@@ -62,15 +60,7 @@ const TestDataSwitcher: React.FC = () => {
           setNodes(initialSimpleNodes);
           setEdges(initialSimpleEdges);
           break;
-        case "flow":
-          // Load our new flow nodes test data
-          setNodes(flowNodesData);
-          setEdges(flowEdgesData);
-          break;
-        case "lmsDefault":
-          setNodes(nodesDataLMSDefault);
-          setEdges(edgesDataLMSDefault);
-          break;
+
         case "lms":
           // Load Learning Management System example
           setNodes(lmsNodesData.map((node) => ({ //Give style width and height to all nodes
@@ -85,6 +75,21 @@ const TestDataSwitcher: React.FC = () => {
             },
           })));
           setEdges(lmsEdgesData);
+          break;
+        case "simplest":
+          // Load the simplest test data
+          setNodes(testNodesMinimalSiblingNested.map((node) => ({
+            ...node,
+            style: {
+              width: node.type === "conditionalnode" ? 100 : 300,
+              height: node.type === "conditionalnode" ? 100 : 200,
+            },
+            data: {
+              ...node.data,
+              //positionType: node.type === "conditionalnode" ? "center" : "topLeft",
+            },
+          })));
+          setEdges(testEdgesMinimalSiblingNested);
           break;
         case "empty":
           // Load empty data
@@ -109,22 +114,19 @@ const TestDataSwitcher: React.FC = () => {
         />
       </Tooltip>
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-        <MenuItem onClick={() => switchToDataSet("default")}>
-          Default Test Data
-        </MenuItem>
+        <MenuItem onClick={() => switchToDataSet("empty")}>Empty Data</MenuItem>
         <MenuItem onClick={() => switchToDataSet("simple")}>
           Simple Test Data
         </MenuItem>
-        <MenuItem onClick={() => switchToDataSet("flow")}>
-          Flow Nodes Demo
+        <MenuItem onClick={() => switchToDataSet("default")}>
+          Default Test Data
         </MenuItem>
-        <MenuItem onClick={() => switchToDataSet("lmsDefault")}>
-          LMS Default Data
+        <MenuItem onClick={() => switchToDataSet("simplest")}>
+          LMS simple Example Data
         </MenuItem>
         <MenuItem onClick={() => switchToDataSet("lms")}>
-          LMS Example
+          LMS Basic Example Data
         </MenuItem>
-        <MenuItem onClick={() => switchToDataSet("empty")}>Empty Data</MenuItem>
       </Menu>
     </>
   );
