@@ -81,15 +81,15 @@ const testCallEdges = useCallback((edges: Edge[]) => {
     <LayoutProvider
       initialDirection="DOWN"
       initialAutoLayout={true}
-      initialPadding={100}
+      initialPadding={20}
       initialSpacing={{ node: 50, layer: 50 }}
       initialParentResizingOptions={{
         padding: {
-          horizontal: 120,
-          vertical: 100,
+          horizontal: 50,
+          vertical: 50,
         },
-        minWidth: 150,
-        minHeight: 150,
+        minWidth: 100,
+        minHeight: 100,
       }}
        initialNodeDimensions={{
         width: 300,
