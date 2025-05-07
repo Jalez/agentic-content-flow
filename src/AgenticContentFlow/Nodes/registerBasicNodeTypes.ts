@@ -19,6 +19,8 @@ import ViewNode from "./ViewNode/ViewNode";
 import { createViewNodeTemplate } from "./ViewNode/createViewNodeTemplate";
 import ConditionalNode from "./ConditionalNode/ConditionalNode";
 import { createConditionalNodeTemplate } from "./ConditionalNode/createConditionalNodeTemplate";
+import { InvisibleNode } from './InvisibleNode/InvisibleNode';
+import { createInvisibleNodeTemplate } from './InvisibleNode/createInvisibleNodeTemplate';
 
 // Track initialization state
 let registered = false;
@@ -42,6 +44,7 @@ export function ensureNodeTypesRegistered(): void {
   registerNodeType("pagenode", PageNode, createPageNodeTemplate, true);
   registerNodeType("viewnode", ViewNode, createViewNodeTemplate, true);
   registerNodeType("conditionalnode", ConditionalNode, createConditionalNodeTemplate);
+  registerNodeType("invisiblenode", InvisibleNode, createInvisibleNodeTemplate, true);
 
   // Register the node creation control with all available node types
   registerControl(
@@ -57,7 +60,8 @@ export function ensureNodeTypesRegistered(): void {
         "datanode", 
         "pagenode", 
         "viewnode", 
-        "conditionalnode"
+        "conditionalnode",
+        "invisiblenode"
       ] 
     }
   );
