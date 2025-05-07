@@ -11,6 +11,12 @@ type SelectableProps = {
   selected?: boolean;
 };
 
+export interface BaseNodeProps {
+  color?: string;
+  selected?: boolean;
+  isExpanded?: boolean;
+}
+
 // Base styles for all node containers
 export const BaseNodeContainer = styled(Paper, {
   shouldForwardProp: (prop) => !["selected", "color"].includes(prop as string),

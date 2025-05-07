@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NodeProps } from '@xyflow/react';
 import LanguageIcon from '@mui/icons-material/Language';
-import { Box, MenuItem } from '@mui/material';
+import { MenuItem } from '@mui/material';
 import { PageNodeContainer } from './PageNodeStyles';
 import {
   NodeHeader,
@@ -15,6 +15,8 @@ import { LAYOUT_CONSTANTS } from '../../Layout/utils/layoutUtils';
 import ExpandCollapseButton from '../common/ExpandCollapseButton';
 import ConnectionHandles from '../common/ConnectionHandles';
 import CornerResizer from '../common/CornerResizer';
+import { colorByDepth } from '../common/utils/colorByDepth';
+
 
 /**
  * Page Node Component
@@ -35,10 +37,8 @@ export const PageNode: React.FC<NodeProps> = ({ id, data, selected }) => {
     }
   }, [nodeInFlow]);
 
-  const darkerColor = "#4caf50"; // Green color for page nodes
-  const lighterColor = "white"; // Lighter green for expanded state
-
-const color = isExpanded ? lighterColor : darkerColor;
+  const nodeDepth = nodeInFlow?.data.depth || 0;
+  const color = colorByDepth(nodeDepth as number);
 
   if (!nodeInFlow) {
     console.error(`Node with id ${id} not found in store.`);
@@ -84,6 +84,7 @@ const color = isExpanded ? lighterColor : darkerColor;
       />
       <PageNodeContainer
         onTransitionEnd={() => updateNodeInternals(id)}
+        isExpanded={isExpanded as boolean}
         selected={selected}
         color={color}
         sx={{
@@ -108,7 +109,7 @@ const color = isExpanded ? lighterColor : darkerColor;
             top: isExpanded ? '0' : '50%',
             transform: isExpanded ? 'none' : 'translate(-50%, -50%)',
             //Make it larger when not expanded
-            fontSize: isExpanded ? '1.5rem' : '5rem',
+            fontSize: isExpanded ? '2rem' : '5rem',
           }} />
 
           <NodeHeaderTitle>{nodeLabel}</NodeHeaderTitle>

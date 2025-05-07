@@ -14,6 +14,7 @@ import StorageIcon from '@mui/icons-material/Storage';
 import ScrollingText from '../common/ScrollingText';
 import ConnectionHandles from '../common/ConnectionHandles';
 import ExpandCollapseButton from '../common/ExpandCollapseButton';
+import { colorByDepth } from '../common/utils/colorByDepth';
 /**
  * Data Node Component
  * 
@@ -36,9 +37,8 @@ export const DataNode: React.FC<NodeProps> = ({ id, data, selected }) => {
         , [nodeInFlow]);
 
 
-    const color = isExpanded ? //If expanded, use a lighter color
-        '#e0f7fa' : // Light blue for expanded state
-        '#b2ebf2'; // Teal for collapsed state
+    const nodeDepth = nodeInFlow?.data.depth || 0;
+    const color = colorByDepth(nodeDepth as number);
 
     if (!nodeInFlow) {
         console.error(`Node with id ${id} not found in store.`);
@@ -128,11 +128,11 @@ export const DataNode: React.FC<NodeProps> = ({ id, data, selected }) => {
                             position: 'relative',
                         }}
                     />
-                            <ExpandCollapseButton
-                                collapsedDimensions={collapsedDimensions}
-                                expandedDimensions={expandedDimensions}
-                                nodeInFlow={nodeInFlow}
-                              />
+                    <ExpandCollapseButton
+                        collapsedDimensions={collapsedDimensions}
+                        expandedDimensions={expandedDimensions}
+                        nodeInFlow={nodeInFlow}
+                    />
                     <NodeHeaderMenuAction label="File Options">
                         {fileNodeMenuItems}
                         <NodeHeaderDeleteAction />

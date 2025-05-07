@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { NodeProps, Position } from '@xyflow/react';
+import { NodeProps, Position, useReactFlow } from '@xyflow/react';
 import { ConditionalHandle } from './ConditionalNodeStyles'; // HandleLabel might not be needed if text is outside
-import { Menu, MenuItem, Paper, Box, Typography, Avatar } from '@mui/material';
+import { Menu, MenuItem, Paper, Box, Avatar } from '@mui/material';
 import CallSplitIcon from '@mui/icons-material/CallSplit';
 import { useSelect } from '../../Select/contexts/SelectContext';
+import { colorByDepth } from '../common/utils/colorByDepth';
 
 /**
  * ConditionalNode Component
@@ -13,22 +14,25 @@ import { useSelect } from '../../Select/contexts/SelectContext';
  * Settings accessible via a modal on click (placeholder).
  */
 export const ConditionalNode: React.FC<NodeProps> = ({
-    width,
-    height,
+  width,
+  height,
   data,
   selected,
-  id 
+  id
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false); 
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const { deleteSelected } = useSelect();
-  const color = "#ff9800"; // Orange color for conditional nodes
-  
+  const { getNode } = useReactFlow();
+  const nodeInFlow = getNode(id);
+  const nodeDepth = nodeInFlow?.data.depth || 0;
+  const color = colorByDepth(nodeDepth as number);
+
   const handleContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
     setAnchorEl(event.currentTarget); // Context menu on the circle
   };
-  
+
   const handleCloseContextMenu = () => {
     setAnchorEl(null);
   };
@@ -50,61 +54,61 @@ export const ConditionalNode: React.FC<NodeProps> = ({
 
   return (
     <>
-        {/* Placeholder for Settings Modal */}
-        {/* {isSettingsModalOpen && (
+      {/* Placeholder for Settings Modal */}
+      {/* {isSettingsModalOpen && (
           <SettingsModal nodeId={id} isOpen={isSettingsModalOpen} onClose={handleCloseSettingsModal} />
         )} */}
 
-        <ConditionalHandle type="target" position={Position.Top} id="input" color={color} />
-        <ConditionalHandle type="source" position={Position.Right} id="false" color="#f44336" />
-        <ConditionalHandle type="source" position={Position.Bottom} id="true" color="#4caf50" />
+      <ConditionalHandle type="target" position={Position.Top} id="input" color={color} />
+      <ConditionalHandle type="source" position={Position.Right} id="false" color="#f44336" />
+      <ConditionalHandle type="source" position={Position.Bottom} id="true" color="#4caf50" />
 
-        <Box
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Paper
+          elevation={selected ? 8 : 2}
           sx={{
+            width: circleSize,
+            height: circleSize,
+            bgcolor: color,
+            borderRadius: '50%',
+            borderColor: selected ? "black" : 'divider',
+            borderWidth: selected ? '2px' : '1px',
+            borderStyle: 'solid',
             display: 'flex',
-            flexDirection: 'column',
             alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'border-color 0.2s, box-shadow 0.2s, border-width 0.2s',
+            cursor: 'pointer',
+            boxSizing: 'border-box',
           }}
+          onContextMenu={handleContextMenu}
+          onClick={handleNodeClick}
         >
-          <Paper
-            elevation={selected ? 8 : 2}
+          <Avatar
             sx={{
-              width: circleSize,
-              height: circleSize,
-              borderRadius: '50%',
-              backgroundColor: 'background.paper',
-              borderColor: selected ? color : 'divider',
-              borderWidth: selected ? '2px' : '1px', 
-              borderStyle: 'solid',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'border-color 0.2s, box-shadow 0.2s, border-width 0.2s',
-              cursor: 'pointer',
-              boxSizing: 'border-box',
+              backgroundColor: "transparent",
+              width: circleSize * 0.6, // Icon Avatar takes up 60% of circle
+              height: circleSize * 0.6,
             }}
-            onContextMenu={handleContextMenu}
-            onClick={handleNodeClick} 
           >
-            <Avatar
-              sx={{
-                bgcolor: selected ? 'rgba(255, 152, 0, 0.1)' : 'rgba(0,0,0,0.05)',
-                width: circleSize * 0.6, // Icon Avatar takes up 60% of circle
-                height: circleSize * 0.6,
-              }}
-            >
-              <CallSplitIcon sx={{ color: color, fontSize: circleSize * 0.4 }} /> {/* Icon itself takes 40% of circle */}
-            </Avatar>
-          </Paper>
-        </Box>
+            <CallSplitIcon sx={{ color: "black", fontSize: circleSize * 0.4 }} /> {/* Icon itself takes 40% of circle */}
+          </Avatar>
+        </Paper>
+      </Box>
 
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleCloseContextMenu}
-        >
-          <MenuItem onClick={() => { deleteSelected(); handleCloseContextMenu(); }}>Delete Node</MenuItem>
-        </Menu>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleCloseContextMenu}
+      >
+        <MenuItem onClick={() => { deleteSelected(); handleCloseContextMenu(); }}>Delete Node</MenuItem>
+      </Menu>
     </>
   );
 };
