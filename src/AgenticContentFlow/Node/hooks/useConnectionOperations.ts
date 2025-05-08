@@ -65,6 +65,8 @@ export const useConnectionOperations = () => {
       id: `e-${newParentNode.id}-${realChildNode.id}`,
       source: newParentNode.id,
       target: realChildNode.id,
+      sourceHandle: "right", // Default to right for source nodes
+      targetHandle: "left"  // Default to left for target nodes
     };
 
     const updatedChildNode = {
@@ -182,6 +184,8 @@ export const useConnectionOperations = () => {
       id: `e-${eventNode.id}-${newNodeId}`,
       source: eventNode.id,
       target: newNodeId,
+      sourceHandle: eventNode.type === "datanode" ? "right" : "bottom", // Data nodes use right, others use bottom
+      targetHandle: eventNode.type === "datanode" ? "left" : "top"     // Data nodes use left, others use top
     };
     withTransaction(
       () => {
@@ -202,8 +206,20 @@ export const useConnectionOperations = () => {
 
   const onConnect = useCallback(
     withErrorHandler("onConnect", (params: Connection) => {
+      // Determine appropriate target handle based on source handle
+      const targetHandle = params.sourceHandle === "left" ? "right" 
+        : params.sourceHandle === "right" ? "left"
+        : params.sourceHandle === "top" ? "bottom"
+        : params.sourceHandle === "bottom" ? "top"
+        : "left"; // Default to left if no source handle
+        
+      const connection = {
+        ...params,
+        targetHandle
+      };
+      
       trackAddEdgeToStore(
-        params,
+        connection,
         edges,
         `Add Edge from ${params.source} to ${params.target}`
       );
@@ -280,11 +296,27 @@ export const useConnectionOperations = () => {
 
         // Add the new node
 
-        // Create an edge from the source to the new node
+        // The edge should connect from the specific handle being dragged
+        // to the appropriate corresponding handle on the new node
+        const draggedHandle = connectionState.fromPosition;
+        console.log("Dragged handle:", connectionState);
+        
+        // Determine whether the dragged handle should be source or target
+        const isDraggedHandleSource = draggedHandle === 'right' || draggedHandle === 'bottom';
+        
+        // Create edge with correct source/target based on which handle was dragged
         const newEdge = {
-          id: `e-${connectionState.fromNode.id}-${newNodeId}`,
-          source: connectionState.fromNode.id,
-          target: newNodeId,
+          id: isDraggedHandleSource 
+            ? `e-${connectionState.fromNode.id}-${newNodeId}` 
+            : `e-${newNodeId}-${connectionState.fromNode.id}`,
+          source: isDraggedHandleSource ? connectionState.fromNode.id : newNodeId,
+          target: isDraggedHandleSource ? newNodeId : connectionState.fromNode.id,
+          sourceHandle: isDraggedHandleSource 
+            ? draggedHandle  // The dragged handle is the source
+            : (draggedHandle === 'left' ? 'right' : 'bottom'),  // The corresponding handle on new node
+          targetHandle: isDraggedHandleSource 
+            ? (draggedHandle === 'right' ? 'left' : 'top')  // The corresponding handle on new node
+            : draggedHandle  // The dragged handle is the target
         };
         withTransaction(
           () => {
