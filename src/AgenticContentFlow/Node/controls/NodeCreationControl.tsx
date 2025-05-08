@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { Menu, MenuItem, Tooltip } from "@mui/material";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import { useReactFlow } from "@xyflow/react";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import ControlButton from "../../Controls/Components/ControlButton";
 import { createNodeFromTemplate } from "../registry/nodeTypeRegistry";
 import { useNodeStore } from "../store/useNodeStore";
 import { useSelect } from "../../Select/contexts/SelectContext";
 import { useEdgeStore } from "../../stores";
 import { useTrackableState, useTransaction } from "@jalez/react-state-history";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface NodeCreationControlProps {
   availableNodeTypes: string[];
@@ -16,7 +16,6 @@ interface NodeCreationControlProps {
 const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
   availableNodeTypes,
 }) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { addNodeToStore, removeNodes } = useNodeStore();
   const { addEdgeToStore, setEdges, edges } = useEdgeStore();
   const { screenToFlowPosition } = useReactFlow();
@@ -34,13 +33,7 @@ const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
     setEdges
   );
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const [open, setOpen] = useState(false);
 
   const handleNodeTypeSelect = (nodeType: string) => {
     const center = screenToFlowPosition({
@@ -79,41 +72,28 @@ const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
       }
     }, "NodeCreationControl/Add");
 
-    handleClose();
+    setOpen(false);
   };
 
   return (
-    <>
-      <Tooltip title="Create New Node">
-        <ControlButton
-          tooltip="Create New Node"
-          icon={<AddCircleOutlineIcon />}
-          onClick={handleClick}
-        />
-      </Tooltip>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "center",
-        }}
-        transformOrigin={{
-          vertical: "top",
-          horizontal: "center",
-        }}
-      >
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <span>
+          <ControlButton
+            tooltip="Create New Node"
+            onClick={(e) => e.preventDefault()}
+            icon={<AddCircleOutlineIcon />}
+          />
+        </span>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
         {availableNodeTypes.map((nodeType) => (
-          <MenuItem
-            key={nodeType}
-            onClick={() => handleNodeTypeSelect(nodeType)}
-          >
+          <DropdownMenuItem key={nodeType} onClick={() => handleNodeTypeSelect(nodeType)}>
             {nodeType}
-          </MenuItem>
+          </DropdownMenuItem>
         ))}
-      </Menu>
-    </>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 

@@ -1,10 +1,9 @@
 /** @format */
-import React, { useCallback, useState } from "react";
 import ControlButton from "../Controls/Components/ControlButton";
-import { Menu, MenuItem, Tooltip } from "@mui/material";
 import DataObjectIcon from "@mui/icons-material/DataObject";
 import { useEdgeStore } from "../Edge/store/useEdgeStore";
 import { useNodeStore } from "../Node/store/useNodeStore";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 // Import test data sets
 import { childNodesData, parentNodesData } from "./default/nodesData";
@@ -21,115 +20,67 @@ import { lmsEdgesData } from "./lms/edgeData";
 // Import LMS simplest data
 import { testEdgesMinimalSiblingNested, testNodesMinimalSiblingNested } from "./lmsSimple/simplestLMSNodesEdges";
 
-const nodesData = [...parentNodesData, ...childNodesData];
-
-
 /**
- * TestDataSwitcher Component
- *
- * A self-contained test utility that allows switching between different data sets
- * for the mindmap. This is useful for testing different scenarios without affecting
- * the rest of the application.
+ * @description Switcher for loading different test data sets
  */
-const TestDataSwitcher: React.FC = () => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
-
-  // Access the node and edge stores
-  const { setNodes } = useNodeStore();
+export const TestDataSwitcher = () => {
   const { setEdges } = useEdgeStore();
+  const { setNodes } = useNodeStore();
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
+  const switchToDataSet = (dataSet: string) => {
+    switch (dataSet) {
+      case "default":
+        setNodes([...childNodesData, ...parentNodesData]);
+        setEdges(edgesData);
+        break;
+      case "simple":
+        setNodes(initialSimpleNodes);
+        setEdges(initialSimpleEdges);
+        break;
+      case "simplest":
+        setNodes(testNodesMinimalSiblingNested);
+        setEdges(testEdgesMinimalSiblingNested);
+        break;
+      case "lms":
+        setNodes(lmsNodesData.map((node) => ({
+          ...node,
+          style: {
+            width: node.type === "conditionalnode" ? 100: 300,
+            height: node.type === "conditionalnode" ? 100: 200,
+          }
+        })));
+        setEdges(lmsEdgesData);
+        break;
+      default:
+        console.warn("Unknown test data set:", dataSet);
+    }
   };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const switchToDataSet = useCallback(
-    (set: string) => {
-      switch (set) {
-        case "default":
-          // Load the default complex test data
-          setNodes(nodesData);
-          setEdges(edgesData);
-          break;
-        case "simple":
-          // Load simple test data
-          setNodes(initialSimpleNodes);
-          setEdges(initialSimpleEdges);
-          break;
-
-        case "lms":
-          // Load Learning Management System example
-          setNodes(lmsNodesData.map((node) => ({ //Give style width and height to all nodes
-            ...node,
-            style: {
-              width: node.type === "conditionalnode" ? 100 : 300,
-              height: node.type === "conditionalnode" ? 100 : 200,
-            },
-            data: {
-              ...node.data,
-              //positionType: node.type === "conditionalnode" ? "center" : "topLeft",
-            },
-          })));
-          setEdges(lmsEdgesData);
-          break;
-        case "simplest":
-          // Load the simplest test data
-          setNodes(testNodesMinimalSiblingNested.map((node) => ({
-            ...node,
-            style: {
-              width: node.type === "conditionalnode" ? 100 : 300,
-              height: node.type === "conditionalnode" ? 100 : 200,
-            },
-            data: {
-              ...node.data,
-              //positionType: node.type === "conditionalnode" ? "center" : "topLeft",
-            },
-          })));
-          setEdges(testEdgesMinimalSiblingNested);
-          break;
-        case "empty":
-          // Load empty data
-          setNodes([]);
-          setEdges([]);
-          break;
-        default:
-          console.warn("Unknown data set:", set);
-      }
-      handleClose();
-    },
-    [setNodes, setEdges]
-  );
 
   return (
-    <>
-      <Tooltip title="Switch Test Data">
-        <ControlButton
-          tooltip="Switch Test Data"
-          onClick={handleClick}
-          icon={<DataObjectIcon />}
-        />
-      </Tooltip>
-      <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-        <MenuItem onClick={() => switchToDataSet("empty")}>Empty Data</MenuItem>
-        <MenuItem onClick={() => switchToDataSet("simple")}>
-          Simple Test Data
-        </MenuItem>
-        <MenuItem onClick={() => switchToDataSet("default")}>
-          Default Test Data
-        </MenuItem>
-        <MenuItem onClick={() => switchToDataSet("simplest")}>
-          LMS simple Example Data
-        </MenuItem>
-        <MenuItem onClick={() => switchToDataSet("lms")}>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <span>
+          <ControlButton
+            tooltip="Load Test Data"
+            icon={<DataObjectIcon />}
+            onClick={(e) => e.preventDefault()}
+          />
+        </span>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem onClick={() => switchToDataSet("default")}>
+          Default Example Data
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => switchToDataSet("simple")}>
+          Simple Example Data
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => switchToDataSet("simplest")}>
+          LMS Simple Example Data
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => switchToDataSet("lms")}>
           LMS Basic Example Data
-        </MenuItem>
-      </Menu>
-    </>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
-
-export default TestDataSwitcher;

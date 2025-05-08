@@ -5,7 +5,7 @@ import {
   unregisterControl,
 } from "../Controls/registry/controlsRegistry";
 import { CONTROL_TYPES } from "../constants";
-import TestDataSwitcher from "./TestDataSwitcher";
+import { TestDataSwitcher } from "./TestDataSwitcher";
 
 /**
  * TestControlsRegistration Component

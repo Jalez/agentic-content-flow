@@ -7,20 +7,17 @@ import {
   TextField,
   Button,
   Stack,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
   Typography,
 } from "@mui/material";
 import { NodeData } from "../types";
 import { useNodeEditForm } from "./hooks/useNodeEditForm";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface EditNodeDialogProps {
   open: boolean;
   onClose: () => void;
   onSave: (updates: Partial<NodeData>) => void;
-  nodeData: NodeData;
+  nodeData: NodeData; // Made required since useNodeEditForm needs it
 }
 
 export const EditNodeDialog = ({
@@ -58,18 +55,24 @@ export const EditNodeDialog = ({
             helperText={!formData.label?.trim() ? "Label is required" : ""}
           />
 
-          <FormControl fullWidth>
-            <InputLabel>Difficulty Level</InputLabel>
+          <div className="space-y-2">
+            <Typography variant="subtitle2" component="label" htmlFor="difficulty-level">
+              Difficulty Level
+            </Typography>
             <Select
-              value={formData.nodeLevel || "basic"}
-              label="Difficulty Level"
-              onChange={(e) => updateField("nodeLevel", e.target.value)}
+              value={formData.nodeLevel as string || "basic"}
+              onValueChange={(value) => updateField("nodeLevel", value)}
             >
-              <MenuItem value="basic">Basic</MenuItem>
-              <MenuItem value="intermediate">Intermediate</MenuItem>
-              <MenuItem value="advanced">Advanced</MenuItem>
+              <SelectTrigger id="difficulty-level">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="basic">Basic</SelectItem>
+                <SelectItem value="intermediate">Intermediate</SelectItem>
+                <SelectItem value="advanced">Advanced</SelectItem>
+              </SelectContent>
             </Select>
-          </FormControl>
+          </div>
 
           <TextField
             label="Details"

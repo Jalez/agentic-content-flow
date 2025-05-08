@@ -33,14 +33,14 @@ export const lmsEdgesData: Edge[] = [
     source: "module-1-instance-1",
     target: "points-check",
     sourceHandle: "bottom", // Bottom of module (for routing)
-    targetHandle: "input", // Top of conditional node (default input)
+    targetHandle: "top", // Top of conditional node (default input)
   },
   {
     id: "e-module2-i1-points",
     source: "module-2-instance-1",
     target: "points-check",
     sourceHandle: "bottom", // Bottom of module (for routing)
-    targetHandle: "input", // Top of conditional node (default input)
+    targetHandle: "top", // Top of conditional node (default input)
   },
   
   // Connect conditional node to Module 3 - "OK" path - UPDATED
@@ -48,7 +48,7 @@ export const lmsEdgesData: Edge[] = [
     id: "e-points-module3",
     source: "points-check",
     target: "module-3-instance-1",
-    sourceHandle: "true",  // Bottom of conditional (OK)
+    sourceHandle: "bottom",  // Bottom of conditional (OK)
     targetHandle: "top",  // Top of module (for routing)
   },
   

@@ -1,88 +1,59 @@
-import React, { useState, useCallback } from "react";
-import { 
-  IconButton,
-  Menu,
-  MenuItem, 
-  Typography,
-  Tooltip
-} from "@mui/material";
+import React from "react";
+import { IconButton, Tooltip } from "@mui/material";
 import SwapVertIcon from "@mui/icons-material/SwapVert";
 import { LayoutDirection, useLayoutContext } from "@jalez/react-flow-automated-layout";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const DirectionControls: React.FC = () => {
   const { direction, setDirection } = useLayoutContext();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
   
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-  
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-  
-  const handleDirectionSelect = useCallback((newDirection: LayoutDirection) => {
+  const handleDirectionSelect = (newDirection: LayoutDirection) => {
     setDirection(newDirection);
-    handleClose();
-  }, [setDirection]);
+  };
 
   return (
-    <>
-      <Tooltip title="Layout Direction">
-        <IconButton
-          aria-controls={open ? "direction-menu" : undefined}
-          aria-haspopup="true"
-          aria-expanded={open ? "true" : undefined}
-          onClick={handleClick}
-          color="inherit"
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <span>
+          <Tooltip title="Layout Direction">
+            <IconButton color="inherit">
+              <SwapVertIcon />
+            </IconButton>
+          </Tooltip>
+        </span>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem 
+          className="font-semibold text-sm text-muted-foreground pb-2"
         >
-          <SwapVertIcon />
-        </IconButton>
-      </Tooltip>
-      
-      <Menu
-        id="direction-menu"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        MenuListProps={{
-          "aria-labelledby": "direction-button",
-        }}
-      >
-        <Typography variant="subtitle2" sx={{ px: 2, py: 1 }}>
           Layout Direction
-        </Typography>
-
-        <MenuItem
+        </DropdownMenuItem>
+        <DropdownMenuItem 
           onClick={() => handleDirectionSelect("DOWN")}
-          selected={direction === "DOWN"}
+          className={direction === "DOWN" ? "bg-accent" : ""}
         >
           Top to Bottom
-        </MenuItem>
-
-        <MenuItem
+        </DropdownMenuItem>
+        <DropdownMenuItem 
           onClick={() => handleDirectionSelect("RIGHT")}
-          selected={direction === "RIGHT"}
+          className={direction === "RIGHT" ? "bg-accent" : ""}
         >
           Left to Right
-        </MenuItem>
-
-        <MenuItem
+        </DropdownMenuItem>
+        <DropdownMenuItem 
           onClick={() => handleDirectionSelect("LEFT")}
-          selected={direction === "LEFT"}
+          className={direction === "LEFT" ? "bg-accent" : ""}
         >
           Right to Left
-        </MenuItem>
-
-        <MenuItem
+        </DropdownMenuItem>
+        <DropdownMenuItem 
           onClick={() => handleDirectionSelect("UP")}
-          selected={direction === "UP"}
+          className={direction === "UP" ? "bg-accent" : ""}
         >
           Bottom to Top
-        </MenuItem>
-      </Menu>
-    </>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 

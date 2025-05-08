@@ -6,26 +6,27 @@ import {
   useState,
 } from "react";
 import { useNodeId, useReactFlow } from "@xyflow/react";
+import { cn } from "@/lib/utils";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { styled } from "@mui/material/styles";
-import { IconButton, Menu, Box, Typography } from "@mui/material";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 /* NODE HEADER -------------------------------------------------------------- */
 
 export type NodeHeaderProps = HTMLAttributes<HTMLElement>;
 
-const StyledHeader = styled("header")(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: theme.spacing(1),
-  padding: `${theme.spacing(1)} ${theme.spacing(1.5)}`,
-}));
-
 export const NodeHeader = forwardRef<HTMLElement, NodeHeaderProps>(
   ({ className, ...props }, ref) => {
-    return <StyledHeader ref={ref} {...props} />;
+    return (
+      <header 
+        ref={ref} 
+        className={cn(
+          "flex items-center justify-between gap-2 p-1 text-slate",
+          className
+        )}
+        {...props} 
+      />
+    );
   }
 );
 
@@ -42,19 +43,16 @@ export const NodeHeaderTitle = forwardRef<
   NodeHeaderTitleProps
 >(({ className, asChild, children, ...props }, ref) => {
   return (
-    <Typography
+    <h3
       ref={ref}
-      variant="subtitle1"
-      component="h3"
-      sx={{
-        userSelect: "none",
-        flex: 1,
-        fontWeight: 600,
-      }}
+      className={cn(
+        "select-none flex-1 font-semibold text-base",
+        className
+      )}
       {...props}
     >
       {children}
-    </Typography>
+    </h3>
   );
 });
 
@@ -67,10 +65,12 @@ export type NodeHeaderIconProps = HTMLAttributes<HTMLSpanElement>;
 export const NodeHeaderIcon = forwardRef<HTMLSpanElement, NodeHeaderIconProps>(
   ({ className, ...props }, ref) => {
     return (
-      <Box
+      <span
         ref={ref}
-        component="span"
-        sx={{ "& > *": { width: 20, height: 20 } }}
+        className={cn(
+          "[&>*]:[width:20px] [&>*]:[height:20px]",
+          className
+        )}
         {...props}
       />
     );
@@ -88,15 +88,12 @@ export const NodeHeaderActions = forwardRef<
   NodeHeaderActionsProps
 >(({ className, ...props }, ref) => {
   return (
-    <Box
+    <div
       ref={ref}
-      sx={{
-        marginLeft: "auto",
-        display: "flex",
-        alignItems: "center",
-        gap: 0.5,
-        justifySelf: "flex-end",
-      }}
+      className={cn(
+        "ml-auto flex items-center gap-2 self-end",
+        className
+      )}
       {...props}
     />
   );
@@ -118,17 +115,21 @@ export const NodeHeaderAction = forwardRef<
   NodeHeaderActionProps
 >(({ className, label, children, ...props }, ref) => {
   return (
-    <IconButton
+    <button
       ref={ref}
-      size="small"
+      type="button"
       aria-label={label}
       title={label}
-      className="nodrag"
-      sx={{ padding: 0.5, width: 24, height: 24 }}
+      className={cn(
+        "nodrag inline-flex items-center justify-center rounded-full p-2 w-6 h-6 text-sm",
+        "hover:bg-black/5 dark:hover:bg-white/10",
+        "transition-colors",
+        className
+      )}
       {...props}
     >
       {children}
-    </IconButton>
+    </button>
   );
 });
 
@@ -147,31 +148,21 @@ export const NodeHeaderMenuAction = forwardRef<
   HTMLButtonElement,
   NodeHeaderMenuActionProps
 >(({ trigger, children, label = "More options", ...props }, ref) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
-
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
   return (
-    <>
-      <NodeHeaderAction
-        ref={ref}
-        onClick={handleClick}
-        label={label}
-        {...props}
-      >
-        {trigger ?? <MoreVertIcon />}
-      </NodeHeaderAction>
-      <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <NodeHeaderAction
+          ref={ref}
+          label={label}
+          {...props}
+        >
+          {trigger ?? <MoreVertIcon />}
+        </NodeHeaderAction>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
         {children}
-      </Menu>
-    </>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 });
 
@@ -184,17 +175,19 @@ export const NodeHeaderDeleteAction = () => {
   const { setNodes } = useReactFlow();
 
   const handleClick = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>) => {
-      event.stopPropagation();
+    () => {
       setNodes((prevNodes) => prevNodes.filter((node) => node.id !== id));
     },
     [id, setNodes]
   );
 
   return (
-    <NodeHeaderAction onClick={handleClick} label="Delete node">
-      <DeleteIcon />
-    </NodeHeaderAction>
+    <DropdownMenuItem onClick={handleClick} className="text-red-600">
+      <div className="flex items-center gap-2">
+        <DeleteIcon fontSize="small" />
+        <span>Delete</span>
+      </div>
+    </DropdownMenuItem>
   );
 };
 
