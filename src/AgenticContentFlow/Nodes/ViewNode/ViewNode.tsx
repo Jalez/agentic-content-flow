@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { NodeProps } from '@xyflow/react';
-//Get an icon suitable for view nodes
 import ViewQuiltIcon from '@mui/icons-material/ViewQuilt';
-import { MenuItem } from '@mui/material';
+import InputIcon from '@mui/icons-material/Input';
+import OutputIcon from '@mui/icons-material/Output';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { ViewNodeContainer } from './ViewNodeStyles';
 import {
   NodeHeader,
   NodeHeaderMenuAction,
   NodeHeaderDeleteAction
 } from '../common/NodeHeader';
-import { useNodeHistoryState } from '../../Node/hooks/useNodeState';
 import { useUpdateNodeInternals, useReactFlow } from '@xyflow/react';
 import { LAYOUT_CONSTANTS } from '../../Layout/utils/layoutUtils';
 import CornerResizer from '../common/CornerResizer';
 import ScrollingText from '../common/ScrollingText';
-import { ViewNodeContainer } from './ViewNodeStyles';
 import ConnectionHandles from '../common/ConnectionHandles';
 import ExpandCollapseButton from '../common/ExpandCollapseButton';
+import EyeIcon from '@/components/icons/eye';
 /**
  * Data Node Component
  * 
@@ -25,7 +28,6 @@ import ExpandCollapseButton from '../common/ExpandCollapseButton';
  * Also maintains top/bottom connections for sibling/conditional communication.
  */
 export const ViewNode: React.FC<NodeProps> = ({ id, data, selected }) => {
-  const { updateNode } = useNodeHistoryState();
   const updateNodeInternals = useUpdateNodeInternals();
   const { getNode } = useReactFlow();
   const nodeInFlow = getNode(id);
@@ -68,15 +70,15 @@ export const ViewNode: React.FC<NodeProps> = ({ id, data, selected }) => {
 
   // Custom menu items for file operations
   const fileNodeMenuItems = [
-    <MenuItem key="open" onClick={() => console.log('Open file')}>
+    <DropdownMenuItem key="open" onClick={() => console.log('Open file')}>
       Open File
-    </MenuItem>,
-    <MenuItem key="download" onClick={() => console.log('Download file')}>
+    </DropdownMenuItem>,
+    <DropdownMenuItem key="download" onClick={() => console.log('Download file')}>
       Download
-    </MenuItem>,
-    <MenuItem key="share" onClick={() => console.log('Share file')}>
+    </DropdownMenuItem>,
+    <DropdownMenuItem key="share" onClick={() => console.log('Share file')}>
       Share
-    </MenuItem>
+    </DropdownMenuItem>
   ];
 
 
@@ -94,34 +96,33 @@ export const ViewNode: React.FC<NodeProps> = ({ id, data, selected }) => {
         onTransitionEnd={() => updateNodeInternals(id)}
         selected={selected}
         color={color}
-        isCollapsed={!isExpanded}
-        sx={{
+        className="w-full h-full flex flex-col select-none transition-[width,height] duration-200 ease-in-out"
+        style={{
           width: nodeInFlow?.width || collapsedDimensions.width,
           height: nodeInFlow?.height || (isExpanded ? expandedDimensions.height : collapsedDimensions.height),
           backgroundColor: color,
-          display: "flex",
-          flexDirection: "column",
-          userSelect: "none",
-          transition: "width 0.2s ease, height 0.2s ease",
         }}
       >
         {/* Connection handles */}
-        <ConnectionHandles color={color} />
+        <ConnectionHandles 
+          color={color} 
+          icons={{
+            left: <InputIcon />,
+            right: <OutputIcon />,
+            top: <ArrowUpwardIcon />,
+            bottom: <ArrowDownwardIcon/>
+          }}
+        />
 
         {/* Input handle at the top */}
         <NodeHeader className="dragHandle">
 
-          <ViewQuiltIcon
-            sx={{
-              color: 'primary.secondary',
-              position: isExpanded ? 'relative' : 'absolute',
-              //When it is not expanded, center the icon 
-              left: isExpanded ? '0' : '50%',
-              top: isExpanded ? '0' : '50%',
-              transform: isExpanded ? 'none' : 'translate(-50%, -50%)',
-              //Make it larger when not expanded
-              fontSize: isExpanded ? '1.5rem' : '5rem',
-            }}
+          <EyeIcon
+            className={`
+              ${isExpanded ? 'relative w-6 h-6' : 'absolute w-16 h-16'} 
+              ${isExpanded ? '' : 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'}
+              stroke-slate
+            `}
           />
           <ScrollingText
             text={nodeLabel}

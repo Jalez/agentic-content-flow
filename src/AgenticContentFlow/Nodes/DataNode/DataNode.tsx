@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { NodeProps } from '@xyflow/react';
-import { MenuItem } from '@mui/material';
 import { DataNodeContainer } from './DataNodeStyles';
 import {
     NodeHeader,
@@ -10,11 +9,21 @@ import {
 import { useUpdateNodeInternals, useReactFlow } from '@xyflow/react';
 import { LAYOUT_CONSTANTS } from '../../Layout/utils/layoutUtils';
 import CornerResizer from '../common/CornerResizer';
-import StorageIcon from '@mui/icons-material/Storage';
-import ScrollingText from '../common/ScrollingText';
 import ConnectionHandles from '../common/ConnectionHandles';
 import ExpandCollapseButton from '../common/ExpandCollapseButton';
 import { colorByDepth } from '../common/utils/colorByDepth';
+
+// Import icons directly (we'll convert the styling later)
+import InputIcon from '@mui/icons-material/Input';
+import OutputIcon from '@mui/icons-material/Output';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+
+// Components that might need conversion but are used as-is for now
+import ScrollingText from '../common/ScrollingText';
+import CircleStackIcon from '@/components/icons/circle-stack';
+
 /**
  * Data Node Component
  * 
@@ -61,15 +70,15 @@ export const DataNode: React.FC<NodeProps> = ({ id, data, selected }) => {
     const nodeLabel = data?.label ? String(data.label) : 'Files';
     // Custom menu items for file operations
     const fileNodeMenuItems = [
-        <MenuItem key="open" onClick={() => console.log('Open file')}>
+        <DropdownMenuItem key="open" onClick={() => console.log('Open file')}>
             Open File
-        </MenuItem>,
-        <MenuItem key="download" onClick={() => console.log('Download file')}>
+        </DropdownMenuItem>,
+        <DropdownMenuItem key="download" onClick={() => console.log('Download file')}>
             Download
-        </MenuItem>,
-        <MenuItem key="share" onClick={() => console.log('Share file')}>
+        </DropdownMenuItem>,
+        <DropdownMenuItem key="share" onClick={() => console.log('Share file')}>
             Share
-        </MenuItem>
+        </DropdownMenuItem>
     ];
 
 
@@ -90,33 +99,32 @@ export const DataNode: React.FC<NodeProps> = ({ id, data, selected }) => {
                 selected={selected}
                 color={color}
                 isCollapsed={!isExpanded}
-                sx={{
+                className="w-full h-full flex flex-col select-none transition-[width,height] duration-200 ease-in-out"
+                style={{
                     width: nodeInFlow?.width || collapsedDimensions.width,
                     height: nodeInFlow?.height || (isExpanded ? expandedDimensions.height : collapsedDimensions.height),
                     backgroundColor: color,
-                    display: "flex",
-                    flexDirection: "column",
-                    userSelect: "none",
-                    transition: "width 0.2s ease, height 0.2s ease",
                 }}
             >
                 {/* Connection handles */}
-                <ConnectionHandles color={color} />
-
+                <ConnectionHandles 
+                    color={color} 
+                    icons={{
+                        left: <InputIcon />,
+                        right: <OutputIcon />,
+                        top: <ArrowUpwardIcon />,
+                        bottom: <ArrowDownwardIcon />
+                    }}
+                />
 
                 <NodeHeader className="dragHandle">
 
-                    <StorageIcon
-                        sx={{
-                            color: 'primary.secondary',
-                            position: isExpanded ? 'relative' : 'absolute',
-                            //When it is not expanded, center the icon 
-                            left: isExpanded ? '0' : '50%',
-                            top: isExpanded ? '0' : '50%',
-                            transform: isExpanded ? 'none' : 'translate(-50%, -50%)',
-                            //Make it larger when not expanded
-                            fontSize: isExpanded ? '1.5rem' : '5rem',
-                        }}
+                    <CircleStackIcon
+                        className={`
+                            ${isExpanded ? 'relative w-6 h-6' : 'absolute w-16 h-16'} 
+                            ${isExpanded ? '' : 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'}
+                            stroke-slate
+                        `}
                     />
                     <ScrollingText
                         text={nodeLabel}

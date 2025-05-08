@@ -1,24 +1,39 @@
-import { styled } from "@mui/material/styles";
+import { cn } from "@/lib/utils";
+import { ReactNode } from "react";
 import { BaseNodeContainer } from "../common/NodeStyles";
 
 // Define additional props interface for the ViewNodeContainer
 interface ViewNodeProps {
-  isCollapsed?: boolean;
+  color?: string;
+  selected?: boolean;
+  isExpanded?: boolean;
+  className?: string;
+  children?: ReactNode;
+  style?: React.CSSProperties;
+  onTransitionEnd?: () => void;
 }
 
-// Custom container for ViewNode with dashboard-like appearance incorporating DataNode's style elements
-// Custom container for DataNode with file/folder appearance
-export const ViewNodeContainer = styled(BaseNodeContainer)<ViewNodeProps>(({ }) => ({
-  position: 'relative',
-  padding: 0,
-  overflow: 'visible',
-  zIndex: 0,
-  borderRadius: '6px',
-  //boxShadow: '0 10px 20px rgba(0,0,0,0.15)',
-  border: `2px solid black`,
-  //borderTop: `10px solid black`,
-  marginTop: '20px', // Add space for the tab that will contain the label
-  //Add thick shadow to the top
-  boxShadow: `5px -2px black`,
-
-}));
+// Custom container for ViewNode with dashboard-like appearance
+export function ViewNodeContainer({
+  color,
+  selected,
+  className,
+  children,
+  style,
+  ...props
+}: ViewNodeProps) {
+  return (
+    <BaseNodeContainer
+      color={color}
+      selected={selected}
+      className={cn(
+        "relative p-0 overflow-visible z-0 rounded-md border-2 border-solid border-black shadow-[5px_-2px_black]",
+        className
+      )}
+      style={style}
+      {...props}
+    >
+      {children}
+    </BaseNodeContainer>
+  );
+}

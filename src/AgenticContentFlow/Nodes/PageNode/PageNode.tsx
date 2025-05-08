@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { NodeProps } from '@xyflow/react';
-import LanguageIcon from '@mui/icons-material/Language';
-import { MenuItem } from '@mui/material';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { PageNodeContainer } from './PageNodeStyles';
 import {
   NodeHeader,
-  NodeHeaderTitle,
-  NodeHeaderActions,
-  NodeHeaderMenuAction,
-  NodeHeaderDeleteAction
+  NodeHeaderActions
 } from '../common/NodeHeader';
 import { useUpdateNodeInternals, useReactFlow } from '@xyflow/react';
 import { LAYOUT_CONSTANTS } from '../../Layout/utils/layoutUtils';
@@ -16,17 +13,17 @@ import ExpandCollapseButton from '../common/ExpandCollapseButton';
 import ConnectionHandles from '../common/ConnectionHandles';
 import CornerResizer from '../common/CornerResizer';
 import { colorByDepth } from '../common/utils/colorByDepth';
+import ScrollingText from '../common/ScrollingText';
+import CircleStackIcon from '@/components/icons/circle-stack';
+import WebIcon from '@/components/icons/web';
+import ChartIcon from '@/components/icons/chart';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useSelect } from '../../Select/contexts/SelectContext';
 
-
-/**
- * Page Node Component
- * 
- * Represents an HTML page in a flow diagram.
- * Features a minimal design with distinctive page appearance.
- */
 export const PageNode: React.FC<NodeProps> = ({ id, data, selected }) => {
   const updateNodeInternals = useUpdateNodeInternals();
   const { getNode } = useReactFlow();
+  const { deleteSelected } = useSelect();
   const nodeInFlow = getNode(id);
 
   const [isExpanded, setIsExpanded] = useState(nodeInFlow?.data.expanded || false);
@@ -45,7 +42,6 @@ export const PageNode: React.FC<NodeProps> = ({ id, data, selected }) => {
     return null;
   }
 
-  // Default dimensions for the container
   const collapsedDimensions = {
     width: 300,
     height: 200,
@@ -56,22 +52,10 @@ export const PageNode: React.FC<NodeProps> = ({ id, data, selected }) => {
     height: nodeInFlow?.height || collapsedDimensions.height,
   };
 
-
-  // Type checking for data properties
   const nodeLabel = data?.label ? String(data.label) : 'Page';
-  const nodeDetails = data?.details ? String(data.details) : undefined;
 
-
-  // Additional menu items specific to page nodes
-  const pageNodeMenuItems = [
-    <MenuItem key="edit" onClick={() => console.log('Edit page content')}>
-      Edit HTML
-    </MenuItem>,
-    <MenuItem key="preview" onClick={() => console.log('View page preview')}>
-      Preview Page
-    </MenuItem>
-  ];
-
+  const handleEditContent = () => console.log('Edit page content');
+  const handlePreview = () => console.log('View page preview');
 
   return (
     <>
@@ -87,46 +71,67 @@ export const PageNode: React.FC<NodeProps> = ({ id, data, selected }) => {
         isExpanded={isExpanded as boolean}
         selected={selected}
         color={color}
-        sx={{
+        className="w-full h-full flex flex-col select-none transition-[width,height] duration-200 ease-in-out"
+        style={{
           width: nodeInFlow?.width,
           height: nodeInFlow?.height,
           backgroundColor: color,
-
-          display: "flex",
-          flexDirection: "column",
-          userSelect: "none",
-          transition: "width 0.2s ease, height 0.2s ease",
         }}
       >
-        {/* Connection handles */}
-        <ConnectionHandles color={color} />
+        <ConnectionHandles 
+          color={color} 
+          icons={{
+            left: <CircleStackIcon />,
+            right: <ChartIcon />,
+            top: <ArrowUpwardIcon/>,
+            bottom: <ArrowDownwardIcon />
+          }}
+        />
         <NodeHeader className="dragHandle">
-          <LanguageIcon sx={{
-            color: 'primary.secondary',
-            position: isExpanded ? 'relative' : 'absolute',
-            //When it is not expanded, center the icon 
-            left: isExpanded ? '0' : '50%',
-            top: isExpanded ? '0' : '50%',
-            transform: isExpanded ? 'none' : 'translate(-50%, -50%)',
-            //Make it larger when not expanded
-            fontSize: isExpanded ? '2rem' : '5rem',
-          }} />
-
-          <NodeHeaderTitle>{nodeLabel}</NodeHeaderTitle>
+          <WebIcon
+            className={`
+              ${isExpanded ? 'relative w-6 h-6' : 'absolute w-16 h-16'} 
+              ${isExpanded ? '' : 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'}
+              stroke-slate
+            `}
+          />
+          <ScrollingText
+            text={nodeLabel}
+            variant="subtitle1"
+            maxWidth="100%"
+            sx={{
+              flex: 1,
+              fontWeight: 600,
+              position: 'relative',
+            }}
+          />
           <NodeHeaderActions>
             <ExpandCollapseButton
               collapsedDimensions={collapsedDimensions}
               expandedDimensions={expandedDimensions}
               nodeInFlow={nodeInFlow}
             />
-            <NodeHeaderMenuAction label="Page Options">
-              {pageNodeMenuItems}
-              <NodeHeaderDeleteAction />
-            </NodeHeaderMenuAction>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-800">
+                <span className="sr-only">Page options</span>
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
+                  <path d="M3 7.5C3 8.32843 2.32843 9 1.5 9C0.671573 9 0 8.32843 0 7.5C0 6.67157 0.671573 6 1.5 6C2.32843 6 3 6.67157 3 7.5ZM8.5 7.5C8.5 8.32843 7.82843 9 7 9C6.17157 9 5.5 8.32843 5.5 7.5C5.5 6.67157 6.17157 6 7 6C7.82843 6 8.5 6.67157 8.5 7.5ZM14 7.5C14 8.32843 13.3284 9 12.5 9C11.6716 9 11 8.32843 11 7.5C11 6.67157 11.6716 6 12.5 6C13.3284 6 14 6.67157 14 7.5Z" fill="currentColor" />
+                </svg>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={handleEditContent}>
+                  Edit HTML
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handlePreview}>
+                  Preview Page
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => deleteSelected()} className="text-red-600">
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </NodeHeaderActions>
         </NodeHeader>
-
-
       </PageNodeContainer>
     </>
   );

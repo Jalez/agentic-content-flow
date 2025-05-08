@@ -1,10 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { NodeProps } from '@xyflow/react';
+import { NodeProps, Node } from '@xyflow/react';
 import ViewQuiltIcon from '@mui/icons-material/ViewQuilt';
-import { Box, MenuItem } from '@mui/material';
 import { InvisibleNodeContainer } from './InvisibleNodeStyles';
 import {
-  NodeHeader,
   NodeHeaderTitle,
   NodeHeaderActions,
   NodeHeaderMenuAction,
@@ -13,12 +11,21 @@ import {
 import { useUpdateNodeInternals, useReactFlow } from '@xyflow/react';
 import { LAYOUT_CONSTANTS } from '../../Layout/utils/layoutUtils';
 import ExpandCollapseButton from '../common/ExpandCollapseButton';
-import ConnectionHandles from '../common/ConnectionHandles';
 import CornerResizer from '../common/CornerResizer';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 interface InvisibleNodeProps extends NodeProps {
   isExpanded?: boolean;
 }
+
+// Extended type that includes Node type and our custom data
+type NodeFlowData = Node & {
+  data: {
+    expanded?: boolean;
+  };
+  width?: number;
+  height?: number;
+};
 
 /**
  * Invisible Node Component
@@ -29,11 +36,11 @@ interface InvisibleNodeProps extends NodeProps {
 export const InvisibleNode: React.FC<InvisibleNodeProps> = ({ id, data, selected }) => {
   const updateNodeInternals = useUpdateNodeInternals();
   const { getNode } = useReactFlow();
-  const nodeInFlow = getNode(id);
+  const nodeInFlow = getNode(id) as NodeFlowData | null;
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const [isExpanded, setIsExpanded] = useState(nodeInFlow?.data.expanded || false);
+  const [isExpanded, setIsExpanded] = useState<boolean>(nodeInFlow?.data.expanded || false);
 
   useEffect(() => {
     if (nodeInFlow) {
@@ -80,13 +87,6 @@ export const InvisibleNode: React.FC<InvisibleNodeProps> = ({ id, data, selected
   // Type checking for data properties
   const nodeLabel = data?.label ? String(data.label) : 'Container';
 
-  // Additional menu items specific to invisible nodes
-  const invisibleNodeMenuItems = [
-    <MenuItem key="toggle" onClick={() => console.log('Toggle visibility')}>
-      Toggle Container Visibility
-    </MenuItem>
-  ];
-
   return (
     <>
       <CornerResizer
@@ -101,49 +101,40 @@ export const InvisibleNode: React.FC<InvisibleNodeProps> = ({ id, data, selected
         onTransitionEnd={() => updateNodeInternals(id)}
         selected={selected}
         color={color}
-        isExpanded={isExpanded as boolean}
-        sx={{
-          width: nodeInFlow?.width,
-          height: nodeInFlow?.height,
-          display: "flex",
-          flexDirection: "column",
-          userSelect: "none",
-          transition: "width 0.2s ease, height 0.2s ease",
-          borderColor: (!isExpanded || isHovered) ? 'black' : 'transparent',
-
-        }}
+        isExpanded={isExpanded}
+        isHovered={isHovered}
       >
-        <Box
-          className="dragHandle"
-          component={NodeHeader}
-        >
-          { (!isExpanded || isHovered)  && (
+        <div className="dragHandle">
+          {(!isExpanded || isHovered) && (
             <>
-              <ViewQuiltIcon sx={{
-                color: 'primary.secondary',
-                position: isExpanded ? 'relative' : 'absolute',
-                left: isExpanded ? '0' : '50%',
-                top: isExpanded ? '0' : '50%',
-                transform: isExpanded ? 'none' : 'translate(-50%, -50%)',
-                fontSize: isExpanded ? '1.5rem' : '5rem',
-                //show only when collapsed
-              }} />
+              <ViewQuiltIcon
+                sx={{
+                  color: 'primary.secondary',
+                  position: isExpanded ? 'relative' : 'absolute',
+                  left: isExpanded ? '0' : '50%',
+                  top: isExpanded ? '0' : '50%',
+                  transform: isExpanded ? 'none' : 'translate(-50%, -50%)',
+                  fontSize: isExpanded ? '1.5rem' : '5rem',
+                }}
+              />
 
               <NodeHeaderTitle>{nodeLabel}</NodeHeaderTitle>
-          <NodeHeaderActions>
-            <ExpandCollapseButton
-              collapsedDimensions={collapsedDimensions}
-              expandedDimensions={expandedDimensions}
-              nodeInFlow={nodeInFlow}
-              />
-            <NodeHeaderMenuAction label="Container Options">
-              {invisibleNodeMenuItems}
-              <NodeHeaderDeleteAction />
-            </NodeHeaderMenuAction>
-          </NodeHeaderActions>
-              </>
-            )}
-        </Box>
+              <NodeHeaderActions>
+                <ExpandCollapseButton
+                  collapsedDimensions={collapsedDimensions}
+                  expandedDimensions={expandedDimensions}
+                  nodeInFlow={nodeInFlow}
+                />
+                <NodeHeaderMenuAction label="Container Options">
+                  <DropdownMenuItem onClick={() => console.log('Toggle visibility')}>
+                    Toggle Container Visibility
+                  </DropdownMenuItem>
+                  <NodeHeaderDeleteAction />
+                </NodeHeaderMenuAction>
+              </NodeHeaderActions>
+            </>
+          )}
+        </div>
       </InvisibleNodeContainer>
     </>
   );
