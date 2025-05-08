@@ -83,7 +83,7 @@ export const PageNode: React.FC<NodeProps> = ({ id, data, selected }) => {
           icons={{
             left: <CircleStackIcon />,
             right: <ChartIcon />,
-            top: <ArrowUpwardIcon/>,
+            top: <ArrowDownwardIcon />,
             bottom: <ArrowDownwardIcon />
           }}
         />
