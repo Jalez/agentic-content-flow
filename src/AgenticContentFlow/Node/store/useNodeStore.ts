@@ -475,17 +475,13 @@ export const useNodeStore = create<NodeStoreState>()(
               console.error("Node not found in the childNodes:", node.id);
             }
           } else {
-            console.log("newNodeParentIdMapWithChildIdSet", newNodeParentIdMapWithChildIdSet);
-            console.log("newNodeMap", newNodeMap);
             newParentNodes = organizeNodeParents(
               newNodeParentIdMapWithChildIdSet,
               newNodeMap
             );
-            console.log("New parent nodes:", newParentNodes);
           }
         });
         newNodes = [...newParentNodes, ...newChildNodes];
-        console.log("New nodes:", newNodes);
         return {
           nodes: newNodes,
           nodeMap: newNodeMap,
@@ -509,10 +505,24 @@ export const useNodeStore = create<NodeStoreState>()(
     }),
     onRehydrateStorage: () => (state) => {
       if (state) {
+        // When rehydrating, ensure we rebuild all the necessary maps
         const { nodeMap, nodeParentMap, nodeParentIdMapWithChildIdSet } = rebuildStoreState(state.nodes);
         state.nodeMap = nodeMap;
         state.nodeParentMap = nodeParentMap;
         state.nodeParentIdMapWithChildIdSet = nodeParentIdMapWithChildIdSet;
+        
+        // Ensure parent and child nodes are correctly categorized
+        const parentNodes = state.nodes.filter(node => 
+          node.type && isParentNodeType(node.type)
+        );
+        const childNodes = state.nodes.filter(node => 
+          !node.type || !isParentNodeType(node.type)
+        );
+        
+        state.parentNodes = parentNodes;
+        state.childNodes = childNodes;
+        
+        console.log("Store rehydrated with", state.nodes.length, "nodes");
       }
     },
   }

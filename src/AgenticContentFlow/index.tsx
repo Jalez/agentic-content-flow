@@ -63,26 +63,22 @@ export function AgenticContentFlowContent() {
       document.exitFullscreen();
     }
   }, [flowWrapper]);
-const testCallNodes = useCallback((nodes: Node[]) => {
-  console.log("testCallNodes:", nodes);
-  updateNodes(nodes);
-}, [updateNodes])
-  
-const testCallEdges = useCallback((edges: Edge[]) => {
-  console.log("testCallEdges:", edges);
-  handleUpdateEdges(edges);
-}, [handleUpdateEdges]);
-  useEffect(() => {
-    //console log when nodeMap changes
-    console.log("nodeMap changed:", nodeMap);
+  const testCallNodes = useCallback((nodes: Node[]) => {
+    //console.log("testCallNodes:", nodes);
+    updateNodes(nodes);
+  }, [updateNodes])
 
-  }, [nodeMap]);
+  const testCallEdges = useCallback((edges: Edge[]) => {
+    //console.log("testCallEdges:", edges);
+    handleUpdateEdges(edges);
+  }, [handleUpdateEdges]);
+
   return (
     <LayoutProvider
       initialDirection="DOWN"
       initialAutoLayout={true}
       initialPadding={20}
-      initialSpacing={{ node: 80, layer: 80  }}
+      initialSpacing={{ node: 80, layer: 80 }}
       initialParentResizingOptions={{
         padding: {
           horizontal: 50,
@@ -91,7 +87,7 @@ const testCallEdges = useCallback((edges: Edge[]) => {
         minWidth: 100,
         minHeight: 100,
       }}
-       initialNodeDimensions={{
+      initialNodeDimensions={{
         width: 300,
         height: 200,
       }}
