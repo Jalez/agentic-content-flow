@@ -522,7 +522,6 @@ export const useNodeStore = create<NodeStoreState>()(
         state.parentNodes = parentNodes;
         state.childNodes = childNodes;
         
-        console.log("Store rehydrated with", state.nodes.length, "nodes");
       }
     },
   }
