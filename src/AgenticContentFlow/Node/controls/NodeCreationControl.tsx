@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { useReactFlow } from "@xyflow/react";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import ControlButton from "../../Controls/Components/ControlButton";
+import ControlDropdown from "../../Controls/Components/ControlDropdown";
 import { createNodeFromTemplate } from "../registry/nodeTypeRegistry";
 import { useNodeStore } from "../store/useNodeStore";
 import { useSelect } from "../../Select/contexts/SelectContext";
 import { useEdgeStore } from "../../stores";
 import { useTrackableState, useTransaction } from "@jalez/react-state-history";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface NodeCreationControlProps {
   availableNodeTypes: string[];
@@ -48,13 +47,7 @@ const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
       position: center,
       details: "Add details about this concept",
     });
-    //If there are selected nodes and these nodes are not containers, connect the new node to the first selected node as a child
 
-    //  const newEdge = {
-    //       id: `e-${connectionState.fromNode.id}-${newNodeId}`,
-    //       source: connectionState.fromNode.id,
-    //       target: newNodeId,
-    //     };
     withTransaction(() => {
       for (const selectedNode of selectedNodes) {
         if (!selectedNode.data.isContainer) {
@@ -76,24 +69,17 @@ const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
   };
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
-        <span>
-          <ControlButton
-            tooltip="Create New Node"
-            onClick={(e) => e.preventDefault()}
-            icon={<AddCircleOutlineIcon />}
-          />
-        </span>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        {availableNodeTypes.map((nodeType) => (
-          <DropdownMenuItem key={nodeType} onClick={() => handleNodeTypeSelect(nodeType)}>
-            {nodeType}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <ControlDropdown
+      tooltip="Create New Node"
+      icon={<AddCircleOutlineIcon />}
+      items={availableNodeTypes.map((nodeType) => ({
+        key: nodeType,
+        label: nodeType,
+        onClick: () => handleNodeTypeSelect(nodeType)
+      }))}
+      open={open}
+      onOpenChange={setOpen}
+    />
   );
 };
 

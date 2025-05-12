@@ -3,7 +3,7 @@ import { useEffect, useMemo } from "react";
 import { useMinimapStore } from "./store/useMinimapStore";
 import { MiniMap } from "@xyflow/react";
 import { registerControl } from "../Controls";
-import MinimapToggle from "./button/MinimapToggle";
+import MinimapToggle from "./Controls/MinimapToggle";
 import { CONTROL_PRIORITIES, CONTROL_TYPES } from "../constants";
 
 const Minimap = () => {

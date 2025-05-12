@@ -1,9 +1,8 @@
 /** @format */
-import ControlButton from "../Controls/Components/ControlButton";
+import ControlDropdown from "../Controls/Components/ControlDropdown";
 import DataObjectIcon from "@mui/icons-material/DataObject";
 import { useEdgeStore } from "../Edge/store/useEdgeStore";
 import { useNodeStore } from "../Node/store/useNodeStore";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 // Import test data sets
 import { childNodesData, parentNodesData } from "./default/nodesData";
@@ -56,31 +55,34 @@ export const TestDataSwitcher = () => {
     }
   };
 
+  const testDataItems = [
+    {
+      key: "default",
+      label: "Default Example Data",
+      onClick: () => switchToDataSet("default")
+    },
+    {
+      key: "simple",
+      label: "Simple Example Data",
+      onClick: () => switchToDataSet("simple")
+    },
+    {
+      key: "simplest",
+      label: "LMS Simple Example Data",
+      onClick: () => switchToDataSet("simplest")
+    },
+    {
+      key: "lms",
+      label: "LMS Basic Example Data",
+      onClick: () => switchToDataSet("lms")
+    }
+  ];
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <span>
-          <ControlButton
-            tooltip="Load Test Data"
-            icon={<DataObjectIcon />}
-            onClick={(e) => e.preventDefault()}
-          />
-        </span>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => switchToDataSet("default")}>
-          Default Example Data
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => switchToDataSet("simple")}>
-          Simple Example Data
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => switchToDataSet("simplest")}>
-          LMS Simple Example Data
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => switchToDataSet("lms")}>
-          LMS Basic Example Data
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <ControlDropdown
+      tooltip="Load Test Data"
+      icon={<DataObjectIcon />}
+      items={testDataItems}
+    />
   );
 };

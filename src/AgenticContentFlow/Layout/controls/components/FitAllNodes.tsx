@@ -1,9 +1,9 @@
 import React, { useCallback } from "react";
-import { IconButton, Tooltip } from "@mui/material";
 import FitScreenIcon from "@mui/icons-material/FitScreen";
 import { useReactFlow } from "@xyflow/react";
 import { useLayoutContext } from "@jalez/react-flow-automated-layout";
 import { VIEWPORT_CONSTRAINTS } from "../../../constants";
+import ControlButton from "../../../Controls/Components/ControlButton";
 
 const FitAllNodes: React.FC = () => {
   const reactFlowInstance = useReactFlow();
@@ -17,17 +17,12 @@ const FitAllNodes: React.FC = () => {
   }, [reactFlowInstance]);
 
   return (
-    <Tooltip title="Fit All Nodes">
-      <span>
-        <IconButton
-          onClick={handleFitAllNodes}
-          color="inherit"
-          disabled={layoutInProgress}
-        >
-          <FitScreenIcon />
-        </IconButton>
-      </span>
-    </Tooltip>
+    <ControlButton
+      tooltip="Fit All Nodes"
+      onClick={handleFitAllNodes}
+      icon={<FitScreenIcon />}
+      disabled={layoutInProgress}
+    />
   );
 };
 

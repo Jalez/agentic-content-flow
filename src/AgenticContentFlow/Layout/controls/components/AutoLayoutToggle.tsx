@@ -1,7 +1,7 @@
 import React, { useCallback } from "react";
-import { IconButton, Tooltip } from "@mui/material";
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import { useLayoutContext } from "@jalez/react-flow-automated-layout";
+import ControlButton from "../../../Controls/Components/ControlButton";
 
 const AutoLayoutToggle: React.FC = () => {
   const { autoLayout, setAutoLayout } = useLayoutContext();
@@ -11,14 +11,12 @@ const AutoLayoutToggle: React.FC = () => {
   }, [autoLayout, setAutoLayout]);
 
   return (
-    <Tooltip title={autoLayout ? "Disable Auto Layout" : "Enable Auto Layout"}>
-      <IconButton
-        onClick={handleAutoLayoutToggle}
-        color={autoLayout ? "primary" : "inherit"}
-      >
-        <AutorenewIcon />
-      </IconButton>
-    </Tooltip>
+    <ControlButton
+      tooltip={autoLayout ? "Disable Auto Layout" : "Enable Auto Layout"}
+      onClick={handleAutoLayoutToggle}
+      icon={<AutorenewIcon />}
+      active={autoLayout}
+    />
   );
 };
 

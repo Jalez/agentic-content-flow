@@ -1,6 +1,5 @@
 /** @format */
 import React from "react";
-import { Divider } from "@mui/material";
 
 // Import components
 import DirectionControls from "./components/DirectionControls";
@@ -13,13 +12,9 @@ const LayoutControls: React.FC = () => {
   return (
     <>
       <ApplyLayout />
-      <Divider />
       <FitAllNodes />
-      <Divider />
       <DirectionControls />
-      <Divider />
       <SpacingControls />
-      <Divider />
       <AutoLayoutToggle />
     </>
   );

@@ -8,11 +8,9 @@ import UnifiedControlsPanel from "./registry/UnifiedControlsPanel";
 
 // Import our control components
 import NavigationControls from "./Components/NavigationControls";
-import ViewSettingsControls from "./Components/ViewSettingsControls";
 import { CONTROL_IDS, CONTROL_PRIORITIES, CONTROL_TYPES } from "../constants";
 
 interface UnifiedControlsProps {
-  onFitView: () => void;
   onToggleFullscreen: () => void;
 }
 
@@ -21,7 +19,6 @@ interface UnifiedControlsProps {
  * This component is wrapped by ControlsProvider, so it has access to the context
  */
 const ControlsRegistration = memo<UnifiedControlsProps>(({
-  onFitView,
   onToggleFullscreen,
 }) => {
   const { showShortcuts, toggleShortcuts } = useControls();
@@ -29,12 +26,11 @@ const ControlsRegistration = memo<UnifiedControlsProps>(({
   // Memoize the navigation controls component creation
   const NavControlsWithProps = useCallback(() => (
     <NavigationControls
-      onFitView={onFitView}
       onToggleFullscreen={onToggleFullscreen}
       showShortcuts={showShortcuts}
       onToggleShortcuts={toggleShortcuts}
     />
-  ), [onFitView, onToggleFullscreen, showShortcuts, toggleShortcuts]);
+  ), [onToggleFullscreen, showShortcuts, toggleShortcuts]);
 
   // Register the default navigation controls
   React.useEffect(() => {
@@ -56,15 +52,6 @@ const ControlsRegistration = memo<UnifiedControlsProps>(({
 
   // Register view settings controls - only once
   React.useEffect(() => {
-    // The ViewSettingsControl will receive its props from the ControlsContext
-    registerControl(
-      CONTROL_TYPES.VIEW_SETTINGS,
-      CONTROL_TYPES.MINDMAP,
-      CONTROL_IDS.VIEW_SETTINGS_CONTROLS,
-      ViewSettingsControls,
-      {},
-      CONTROL_PRIORITIES.VIEW_SETTINGS
-    );
 
     // Clean up when unmounted
     return () => {
@@ -89,25 +76,18 @@ ControlsRegistration.displayName = 'ControlsRegistration';
  * Registers the default controls and provides the context for all controls.
  */
 const UnifiedControls = memo<UnifiedControlsProps>(({
-  onFitView,
   onToggleFullscreen,
 }) => {
-  // Memoize the callback functions to ensure stable references
-  const memoizedFitView = useCallback(() => {
-    onFitView();
-  }, [onFitView]);
-  
+
   const memoizedToggleFullscreen = useCallback(() => {
     onToggleFullscreen();
   }, [onToggleFullscreen]);
   
   return (
     <ControlsProvider
-      onFitView={memoizedFitView}
       onToggleFullscreen={memoizedToggleFullscreen}
     >
       <ControlsRegistration
-        onFitView={memoizedFitView}
         onToggleFullscreen={memoizedToggleFullscreen}
       />
     </ControlsProvider>

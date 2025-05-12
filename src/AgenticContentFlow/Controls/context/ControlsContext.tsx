@@ -17,7 +17,6 @@ interface ControlsContextValue {
   showShortcuts: boolean;
   toggleShortcuts: () => void;
 
-  fitView: () => void;
   toggleFullscreen: () => void;
 }
 
@@ -28,7 +27,6 @@ const ControlsContext = createContext<ControlsContextValue | undefined>(
 
 interface ControlsProviderProps {
   children: React.ReactNode;
-  onFitView: () => void;
   onToggleFullscreen: () => void;
 }
 
@@ -37,7 +35,6 @@ interface ControlsProviderProps {
  */
 export const ControlsProvider: React.FC<ControlsProviderProps> = ({
   children,
-  onFitView,
   onToggleFullscreen,
 }) => {
   // Local UI state
@@ -71,7 +68,6 @@ export const ControlsProvider: React.FC<ControlsProviderProps> = ({
     showShortcuts,
     toggleShortcuts,
     // Navigation
-    fitView: onFitView,
     toggleFullscreen: onToggleFullscreen,
   };
 

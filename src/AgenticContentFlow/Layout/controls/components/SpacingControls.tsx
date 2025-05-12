@@ -1,18 +1,18 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { 
-  IconButton, 
-  Tooltip, 
   Box, 
   Typography,
   Slider,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Button
 } from "@mui/material";
 import SpaceBarIcon from '@mui/icons-material/SpaceBar';
 import { useLayoutContext } from "@jalez/react-flow-automated-layout";
+import ControlButton from "../../../Controls/Components/ControlButton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 const SpacingControls: React.FC = () => {
   const { 
@@ -25,12 +25,10 @@ const SpacingControls: React.FC = () => {
   } = useLayoutContext();
 
   const [open, setOpen] = useState(false);
-  
-  // Keep local state that only updates the context when applied
   const [localNodeSpacing, setLocalNodeSpacing] = useState(nodeSpacing);
   const [localLayerSpacing, setLocalLayerSpacing] = useState(layerSpacing);
 
-  // Update local state when context values change or dialog opens
+  // Update local state when context values change or dropdown opens
   useEffect(() => {
     if (open) {
       setLocalNodeSpacing(nodeSpacing);
@@ -38,116 +36,102 @@ const SpacingControls: React.FC = () => {
     }
   }, [open, nodeSpacing, layerSpacing]);
 
-  const handleOpen = useCallback(() => {
-    setOpen(true);
+  const handleOpenChange = useCallback((isOpen: boolean) => {
+    setOpen(isOpen);
+    
+    // Apply changes when closing the dropdown
+    if (!isOpen && (localNodeSpacing !== nodeSpacing || localLayerSpacing !== layerSpacing)) {
+      setNodeSpacing(localNodeSpacing);
+      setLayerSpacing(localLayerSpacing);
+      
+      if (algorithm !== "mrtree") {
+        applyLayout();
+      }
+    }
+  }, [localNodeSpacing, localLayerSpacing, nodeSpacing, layerSpacing, setNodeSpacing, setLayerSpacing, algorithm, applyLayout]);
+
+  const handleNodeSpacingChange = useCallback((event: Event, value: number | number[]) => {
+    event.stopPropagation(); // Prevent closing the dropdown
+    setLocalNodeSpacing(value as number);
   }, []);
 
-  const handleClose = useCallback(() => {
-    setOpen(false);
+  const handleLayerSpacingChange = useCallback((event: Event, value: number | number[]) => {
+    event.stopPropagation(); // Prevent closing the dropdown
+    setLocalLayerSpacing(value as number);
   }, []);
-
-  const handleApply = useCallback(() => {
-    // Apply changes to the layout context
+  
+  const handleApply = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent closing the dropdown
     setNodeSpacing(localNodeSpacing);
     setLayerSpacing(localLayerSpacing);
     
     if (algorithm !== "mrtree") {
       applyLayout();
     }
-    
-    // Keep the dialog open
-  }, [localNodeSpacing, localLayerSpacing, algorithm, setNodeSpacing, setLayerSpacing, applyLayout]);
-
-  const handleDone = useCallback(() => {
-    // Apply changes
-    handleApply();
-    // Close dialog
-    handleClose();
-  }, [handleApply, handleClose]);
-
-  const handleNodeSpacingChange = useCallback((event: Event, value: number | number[]) => {
-    setLocalNodeSpacing(value as number);
-  }, []);
-
-  const handleLayerSpacingChange = useCallback((event: Event, value: number | number[]) => {
-    setLocalLayerSpacing(value as number);
-  }, []);
+  }, [localNodeSpacing, localLayerSpacing, setNodeSpacing, setLayerSpacing, algorithm, applyLayout]);
 
   return (
-    <>
-      <Tooltip 
-        title="Node Spacing" 
-        arrow
-        placement="bottom"
-      >
+    <DropdownMenu open={open} onOpenChange={handleOpenChange}>
+      <DropdownMenuTrigger asChild>
         <span>
-          <IconButton 
-            onClick={handleOpen}
-            color="inherit"
-          >
-            <SpaceBarIcon />
-          </IconButton>
+          <ControlButton
+            tooltip="Node Spacing"
+            onClick={(e) => e.preventDefault()}
+            icon={<SpaceBarIcon />}
+          />
         </span>
-      </Tooltip>
-      
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        maxWidth="xs"
-        fullWidth={false}
-        PaperProps={{
-          style: { width: '300px' }
-        }}
-      >
-        <DialogTitle>Adjust Spacing</DialogTitle>
-        <DialogContent>
-          <Box sx={{ my: 2 }}>
-            <Typography id="node-spacing-slider" gutterBottom variant="body2">
-              Node Spacing: {localNodeSpacing}px
-            </Typography>
-            <Slider
-              aria-labelledby="node-spacing-slider"
-              value={localNodeSpacing}
-              onChange={handleNodeSpacingChange}
-              min={50}
-              max={300}
-              step={10}
-              valueLabelDisplay="auto"
-              sx={{ mb: 3 }}
-            />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="p-0 w-[280px]">
+        <Box sx={{ p: 2, width: '100%' }} onClick={(e) => e.stopPropagation()}>
+          <Typography id="node-spacing-slider" gutterBottom variant="body2" sx={{ fontWeight: 600 }}>
+            Node Spacing: {localNodeSpacing}px
+          </Typography>
+          <Slider
+            aria-labelledby="node-spacing-slider"
+            value={localNodeSpacing}
+            onChange={handleNodeSpacingChange}
+            min={50}
+            max={300}
+            step={10}
+            valueLabelDisplay="auto"
+            sx={{ mb: 3 }}
+          />
 
-            {algorithm !== "mrtree" && (
-              <>
-                <Typography
-                  id="layer-spacing-slider"
-                  gutterBottom
-                  variant="body2"
-                >
-                  Layer Spacing: {localLayerSpacing}px
-                </Typography>
-                <Slider
-                  aria-labelledby="layer-spacing-slider"
-                  value={localLayerSpacing}
-                  onChange={handleLayerSpacingChange}
-                  min={50}
-                  max={300}
-                  step={10}
-                  valueLabelDisplay="auto"
-                />
-              </>
-            )}
+          {algorithm !== "mrtree" && (
+            <>
+              <Typography
+                id="layer-spacing-slider"
+                gutterBottom
+                variant="body2"
+                sx={{ fontWeight: 600 }}
+              >
+                Layer Spacing: {localLayerSpacing}px
+              </Typography>
+              <Slider
+                aria-labelledby="layer-spacing-slider"
+                value={localLayerSpacing}
+                onChange={handleLayerSpacingChange}
+                min={50}
+                max={300}
+                step={10}
+                valueLabelDisplay="auto"
+              />
+            </>
+          )}
+          
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+            <Button 
+              onClick={handleApply}
+              color="primary"
+              size="small"
+              variant="contained"
+            >
+              Apply
+            </Button>
           </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleApply} color="primary">
-            Apply
-          </Button>
-          <Button onClick={handleDone} color="primary">
-            Done
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
+        </Box>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
