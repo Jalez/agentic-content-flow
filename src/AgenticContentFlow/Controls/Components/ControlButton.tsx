@@ -1,5 +1,11 @@
-import { IconButton, Tooltip } from "@mui/material";
 import { ReactElement } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Reusable control button component
 interface ControlButtonProps {
@@ -17,23 +23,32 @@ const ControlButton: React.FC<ControlButtonProps> = ({
   disabled = false,
   active = false,
 }) => {
-  // This fixes the MUI warning: "You are providing a disabled `button` child to the Tooltip component"
-  // By wrapping the disabled button in a span, the tooltip can listen to events on the span
-  const buttonElement = (
-    <IconButton
-      size="small"
-      onClick={onClick}
-      disabled={disabled}
-      color={active ? "primary" : "default"}
-    >
-      {icon}
-    </IconButton>
-  );
-
   return (
-    <Tooltip title={tooltip} arrow>
-      {disabled ? <span>{buttonElement}</span> : buttonElement}
-    </Tooltip>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            size="icon"
+            variant={active ? "default" : "secondary"}
+            onClick={onClick}
+            disabled={disabled}
+            //no background color, no border, no padding, no shadow
+            className={`flex items-center justify-center, 
+               shadow-none rounded-full text-gray-500 hover:bg-gray-100
+               
+               ${
+              active ? "bg-gray-200" : "bg-transparent"
+            } ${disabled ? "cursor-not-allowed" : ""}`}
+          >
+            {icon}
+            <span className="sr-only">{tooltip}</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{tooltip}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
 
