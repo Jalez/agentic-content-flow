@@ -1,6 +1,6 @@
 /** @format */
+import { LayoutDirection } from "@jalez/react-flow-automated-layout";
 import { Position } from "@xyflow/react";
-import { LayoutDirection } from "../store/useLayoutStore";
 import { Edge, Node } from "@xyflow/react";
 
 export const LAYOUT_CONSTANTS = {
@@ -10,10 +10,7 @@ export const LAYOUT_CONSTANTS = {
   CONTAINER_PADDING: 20, // Padding inside container nodes
   HEADER_HEIGHT: 48,
   HEADER_SPACING: 5, // Reduced from 10 to 5
-  CONTAINER_PADDING: {
-    HORIZONTAL: 80,
-    VERTICAL: 48, // Reduced from 80 to match header height
-  },
+
 } as const;
 
 export interface CustomElkNodeData {

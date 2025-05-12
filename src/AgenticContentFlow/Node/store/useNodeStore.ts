@@ -129,7 +129,7 @@ export const useNodeStore = create<NodeStoreState>()(
     },
 
 
-    addNodeToStore: (node) => {
+    addNodeToStore: (node) => { 
       set((state) => {
         // If node exists, throw an error
         if (state.nodeMap.has(node.id)) {

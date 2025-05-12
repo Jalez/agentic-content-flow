@@ -1,18 +1,17 @@
 /** @format */
 import {
   Background,
-  BackgroundVariant,
   Edge,
   Node,
   ReactFlowProvider,
-  useReactFlow,
+  
 } from "@xyflow/react";
 import { SelectProvider } from "./Select/contexts/SelectContext";
 import { useTheme } from "@mui/material";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { useNodeStore, useViewPreferencesStore } from "./stores";
 import { useViewportManager } from "./Flow/hooks/useViewportManager";
-import { GRID_SETTINGS, VIEWPORT_CONSTRAINTS } from "./constants";
+import { GRID_SETTINGS } from "./constants";
 import { FlowContainer } from "./Flow/FlowContainer";
 import Flow from "./Flow/Flow";
 import UnifiedControls from "./Controls";
@@ -34,8 +33,7 @@ ensureNodeTypesRegistered();
 export function AgenticContentFlowContent() {
   const theme = useTheme();
   const flowWrapper = useRef<HTMLDivElement>(null);
-  const { showGrid } = useViewPreferencesStore();
-  const reactFlowInstance = useReactFlow();
+  const { showGrid, gridVariant } = useViewPreferencesStore();
   const { nodeMap, nodeParentIdMapWithChildIdSet } = useNodeStore();
 
   const {
@@ -47,14 +45,6 @@ export function AgenticContentFlowContent() {
   // Use custom hooks for functionality
   const { handleWheel } = useViewportManager(flowWrapper);
 
-  // Viewport control functions
-  const fitView = useCallback(() => {
-    reactFlowInstance?.fitView({
-      padding: VIEWPORT_CONSTRAINTS.FIT_VIEW_PADDING,
-      includeHiddenNodes: false,
-      duration: VIEWPORT_CONSTRAINTS.CENTER_ANIMATION_DURATION,
-    });
-  }, [reactFlowInstance]);
 
   const handleToggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
@@ -99,12 +89,11 @@ export function AgenticContentFlowContent() {
       <FlowContainer ref={flowWrapper} onWheel={handleWheel}>
         <Flow>
           <UnifiedControls
-            onFitView={fitView}
             onToggleFullscreen={handleToggleFullscreen}
           />
           {showGrid && (
             <Background
-              variant={BackgroundVariant.Lines}
+              variant={gridVariant}
               gap={GRID_SETTINGS.BACKGROUND_GAP}
               size={GRID_SETTINGS.BACKGROUND_SIZE}
               color={theme.palette.divider}

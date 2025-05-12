@@ -1,4 +1,4 @@
-import { MarkerType, ReactFlow, SelectionMode, Node } from "@xyflow/react";
+import { MarkerType, ReactFlow, SelectionMode } from "@xyflow/react";
 import { memo, useEffect, useCallback, useRef, useMemo } from "react";
 import { useEdgeState } from "../Edge/hooks/useEdgeState";
 import useNodeSelection from "../Node/hooks/useNodeSelect";
@@ -10,6 +10,8 @@ import { ensureNodeTypesRegistered } from "../Nodes/registerBasicNodeTypes";
 import { useSelect } from "../Select/contexts/SelectContext";
 import { useNodeStore } from "../stores";
 import { useNodeHistoryState } from "../Node/hooks/useNodeState";
+// Import the grid controls registration
+import GridControlsRegistration from "./controls/GridControlsRegistration";
 
 
 const defaultEdgeOptions = {
@@ -86,48 +88,53 @@ console.log("Filtered Nodes length:", filteredNodes.length);
 
 
   return (
-    <ReactFlow
-      nodeTypes={nodeTypes}
-      defaultEdgeOptions={defaultEdgeOptions}
-      nodes={filteredNodes}
-      onNodesDelete={onNodesDelete}
-      onNodesChange={onNodesChange}
-      onNodeDragStart={onNodeDragStart}
-      onNodeDrag={onNodeDrag}
-      onNodeDragStop={onNodeDragStop}
-      onNodeClick={DetermineNodeClickFunction}
-      onNodeDoubleClick={DetermineNodeClickFunction}
-      edges={visibleEdges}
-      onEdgesChange={onEdgesChange}
-      onEdgeClick={DetermineEdgeClickFunction}
-      onEdgeDoubleClick={DetermineEdgeClickFunction}
-      onEdgesDelete={onEdgeRemove}
-      onConnect={onConnect}
-      onConnectEnd={onConnectEnd}
-      // Enable node functionality
-      nodesFocusable={true}
-      nodesConnectable={true}
-      elementsSelectable={true}
-      selectionMode={SelectionMode.Partial}
-      selectNodesOnDrag={true}
-      onSelectionStart={handleSelectionDragStart}
-      onSelectionEnd={handleSelectionEnd}
-      selectionKeyCode="Control"
-      multiSelectionKeyCode="Control"
-      fitView
-      zoomOnScroll={true}
-      zoomOnPinch={true}
-      minZoom={VIEWPORT_CONSTRAINTS.MIN_ZOOM}
-      maxZoom={VIEWPORT_CONSTRAINTS.MAX_ZOOM}
-      onMoveStart={handlePanStart}
-      onMoveEnd={handlePanEnd}
-      panOnScroll={false}
-      // Add this handler:
-      onPaneClick={handleClearSelection}
-    >
-      {children}
-      {/* Add any additional components or overlays here */}
-    </ReactFlow>
+    <>
+      {/* Register the grid controls */}
+      <GridControlsRegistration />
+      
+      <ReactFlow
+        nodeTypes={nodeTypes}
+        defaultEdgeOptions={defaultEdgeOptions}
+        nodes={filteredNodes}
+        onNodesDelete={onNodesDelete}
+        onNodesChange={onNodesChange}
+        onNodeDragStart={onNodeDragStart}
+        onNodeDrag={onNodeDrag}
+        onNodeDragStop={onNodeDragStop}
+        onNodeClick={DetermineNodeClickFunction}
+        onNodeDoubleClick={DetermineNodeClickFunction}
+        edges={visibleEdges}
+        onEdgesChange={onEdgesChange}
+        onEdgeClick={DetermineEdgeClickFunction}
+        onEdgeDoubleClick={DetermineEdgeClickFunction}
+        onEdgesDelete={onEdgeRemove}
+        onConnect={onConnect}
+        onConnectEnd={onConnectEnd}
+        // Enable node functionality
+        nodesFocusable={true}
+        nodesConnectable={true}
+        elementsSelectable={true}
+        selectionMode={SelectionMode.Partial}
+        selectNodesOnDrag={true}
+        onSelectionStart={handleSelectionDragStart}
+        onSelectionEnd={handleSelectionEnd}
+        selectionKeyCode="Control"
+        multiSelectionKeyCode="Control"
+        fitView
+        zoomOnScroll={true}
+        zoomOnPinch={true}
+        minZoom={VIEWPORT_CONSTRAINTS.MIN_ZOOM}
+        maxZoom={VIEWPORT_CONSTRAINTS.MAX_ZOOM}
+        onMoveStart={handlePanStart}
+        onMoveEnd={handlePanEnd}
+        panOnScroll={false}
+        // Add this handler:
+        onPaneClick={handleClearSelection}
+      >
+        {children}
+        {/* Add any additional components or overlays here */}
+      </ReactFlow>
+    </>
   );
 }
 
