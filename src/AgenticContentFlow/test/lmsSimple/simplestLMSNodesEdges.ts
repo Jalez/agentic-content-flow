@@ -25,16 +25,16 @@ export const testNodesMinimalSiblingNested: Node[] = [
     id: 'node-blue-data',
     type: 'datanode',
     position: { x: 0, y: 0 }, // Positions inside container are relative after layout
-    data: { label: 'Data Node (Blue)', handles: { right: true } },
-    style: { width: 100, height: 50, backgroundColor: '#ADD8E6' },
+    data: { label: 'Data Node (Blue)',  },
+    style: { width: 250, height: 100 }, // Container needs initial dimensions for rendering
     parentId: 'container-sibling-lr', // *** Set the parentId ***
   },
   {
     id: 'node-orange-view',
     type: 'viewnode',
     position: { x: 0, y: 0 }, // Positions inside container are relative after layout
-    data: { label: 'View Node (Orange)', handles: { left: true } },
-    style: { width: 100, height: 50, backgroundColor: '#FFA500' },
+    data: { label: 'View Node (Orange)'},
+    style: { width: 250, height: 100 }, // Container needs initial dimensions for rendering
     parentId: 'container-sibling-lr', // *** Set the parentId ***
   },
 ];
