@@ -93,6 +93,7 @@ export const useNodeStore = create<NodeStoreState>()(
       }
       const { nodeMap, nodeParentMap, nodeParentIdMapWithChildIdSet } = rebuildStoreState(nodes);
       
+      
       // Split the nodes into parent and child arrays
       const parentNodes = nodes.filter(node => 
         node.type && isParentNodeType(node.type)
@@ -390,7 +391,7 @@ export const useNodeStore = create<NodeStoreState>()(
             newNodes = [...newParentNodes, ...state.childNodes];
           }
         }
-        
+
         return {
           nodes: newNodes,
           nodeMap: newNodeMap,
@@ -471,16 +472,15 @@ export const useNodeStore = create<NodeStoreState>()(
             const index = newChildNodes.findIndex((child) => child.id === node.id);
             if (index !== -1) {
               newChildNodes[index] = node;
-            } else {
-              console.error("Node not found in the childNodes:", node.id);
-            }
-          } else {
-            newParentNodes = organizeNodeParents(
-              newNodeParentIdMapWithChildIdSet,
-              newNodeMap
-            );
+            } 
           }
         });
+        newParentNodes = organizeNodeParents(
+          newNodeParentIdMapWithChildIdSet,
+          newNodeMap
+        );
+  
+        
         newNodes = [...newParentNodes, ...newChildNodes];
         return {
           nodes: newNodes,
@@ -512,11 +512,12 @@ export const useNodeStore = create<NodeStoreState>()(
         state.nodeParentIdMapWithChildIdSet = nodeParentIdMapWithChildIdSet;
         
         // Ensure parent and child nodes are correctly categorized
-        const parentNodes = state.nodes.filter(node => 
-          node.type && isParentNodeType(node.type)
+        const parentNodes = organizeNodeParents(
+          nodeParentIdMapWithChildIdSet,
+          nodeMap
         );
         const childNodes = state.nodes.filter(node => 
-          !node.type || !isParentNodeType(node.type)
+          !parentNodes.some(parentNode => parentNode.id === node.id)
         );
         
         state.parentNodes = parentNodes;

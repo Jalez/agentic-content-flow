@@ -44,14 +44,6 @@ export const organizeNodeParents = (
     // Get all parent node IDs and precompute levels in one pass
     const parentIds = Array.from(nodeParentIdMapWithChildIdSet.keys());
     
-    // Pre-fill cache with obvious cases - root nodes are level 0
-    for (const id of parentIds) {
-        const node = poolOfAllNodes.get(id);
-        if (node && !node.parentId) {
-            levelCache.set(id, 0);
-        }
-    }
-    
     // Compute levels for all parent nodes
     for (const id of parentIds) {
         if (!globalVisited.has(id)) {

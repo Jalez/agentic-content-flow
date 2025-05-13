@@ -23,6 +23,13 @@ const ControlButton: React.FC<ControlButtonProps> = ({
   disabled = false,
   active = false,
 }) => {
+
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (onClick) {
+      onClick(event);
+    }
+  };
+
   return (
     <TooltipProvider>
       <Tooltip>
@@ -30,7 +37,7 @@ const ControlButton: React.FC<ControlButtonProps> = ({
           <Button
             size="icon"
             variant={active ? "default" : "secondary"}
-            onClick={onClick}
+            onClick={handleClick}
             disabled={disabled}
             //no background color, no border, no padding, no shadow
             className={`flex items-center justify-center, 
