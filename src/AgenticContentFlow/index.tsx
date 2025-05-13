@@ -45,7 +45,7 @@ export function AgenticContentFlowContent() {
   // Use custom hooks for functionality
   const { handleWheel } = useViewportManager(flowWrapper);
 
-
+  
   const handleToggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
       flowWrapper.current?.requestFullscreen();
@@ -54,12 +54,10 @@ export function AgenticContentFlowContent() {
     }
   }, [flowWrapper]);
   const testCallNodes = useCallback((nodes: Node[]) => {
-    //console.log("testCallNodes:", nodes);
     updateNodes(nodes);
   }, [updateNodes])
 
   const testCallEdges = useCallback((edges: Edge[]) => {
-    //console.log("testCallEdges:", edges);
     handleUpdateEdges(edges);
   }, [handleUpdateEdges]);
 

@@ -276,7 +276,6 @@ export const useConnectionOperations = () => {
             x: globalPosition.x - cumulativeOffset.x,
             y: globalPosition.y - cumulativeOffset.y,
           };
-          console.log("Adjusted relative position:", position);
         }
 
         // Use the node registry to create a new node
@@ -299,7 +298,6 @@ export const useConnectionOperations = () => {
         // The edge should connect from the specific handle being dragged
         // to the appropriate corresponding handle on the new node
         const draggedHandle = connectionState.fromPosition;
-        console.log("Dragged handle:", connectionState);
         
         // Determine whether the dragged handle should be source or target
         const isDraggedHandleSource = draggedHandle === 'right' || draggedHandle === 'bottom';

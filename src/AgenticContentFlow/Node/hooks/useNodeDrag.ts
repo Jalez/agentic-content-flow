@@ -163,7 +163,6 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
 
   // Handle drag end
   const onNodeDragStop = useCallback((_: React.MouseEvent, draggedNode: Node<NodeData>, draggedNodes: Node<NodeData>[]) => {
-    console.log("Drag stopped")
     setIsDragging(false);
     isDraggingRef.current = false;
 
@@ -172,7 +171,7 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
       if (dn.id) dragStartTimes.delete(dn.id);
     });
 
-    const updatedLocalNodes = [...localNodes];
+    const updatedLocalNodes = draggedNodes;
 
     const intersectingNodes = getIntersectingNodes(draggedNode);
 
@@ -187,7 +186,6 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
 
     // Update parent relationships for all dragged nodes
     if (potentialParentId && potentialParentId !== ROOT_INDICATOR) {
-      console.log("Potential parent", potentialParentId )
       // Clear highlight on the candidate
       updatedLocalNodes.forEach(localNode => {
         if (localNode.id === potentialParentId) {
@@ -201,7 +199,6 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
       });
       setCurrentParentCandidateId(null);
     } else {
-      console.log("potential parent is flow itself")
       // If no parent candidate, make each dragged node a root
       updatedLocalNodes.forEach(localNode => {
         if (draggedNodes.some(dn => dn.id === localNode.id) && localNode.parentId) {

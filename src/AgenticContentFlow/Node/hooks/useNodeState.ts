@@ -72,7 +72,6 @@ export const useNodeHistoryState = () => {
 
   const handleUpdateNode = useCallback(
     (updatedNode: Node) => {
-      console.log("Node updated:", updatedNode);
       trackUpdateNode(updatedNode, nodes);
     },
     [nodes, trackUpdateNode]
@@ -82,7 +81,6 @@ export const useNodeHistoryState = () => {
   const onNodesDelete = useCallback(
     (nodesToRemove: Node<NodeData>[]) => {
       // Handle node deletion
-      console.log("Nodes deleted:", nodes);
       trackRemoveNodes(nodesToRemove, nodes);
       
     },

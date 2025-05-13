@@ -60,6 +60,7 @@ function Flow({ children }: { children?: React.ReactNode }) {
   }
   , [clearSelection]);
   const { nodeTypes } = useNodeTypeRegistry();
+  const memoizedNodeTypes = useMemo(() => nodeTypes, [nodeTypes]);
 
   // Ensure node types are registered on component mount
   useEffect(() => {
@@ -84,16 +85,13 @@ const filteredNodes = useMemo(() => {
   return sourceNodes.filter(node => !node.hidden);
 }, [nodes, localNodes, isDragging]);
 
-console.log("Filtered Nodes length:", filteredNodes.length);
-
-
   return (
     <>
       {/* Register the grid controls */}
       <GridControlsRegistration />
       
       <ReactFlow
-        nodeTypes={nodeTypes}
+        nodeTypes={memoizedNodeTypes}
         defaultEdgeOptions={defaultEdgeOptions}
         nodes={filteredNodes}
         onNodesDelete={onNodesDelete}
