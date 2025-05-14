@@ -1,19 +1,19 @@
 /** @format */
 import { useState, memo, useEffect } from "react";
 import { useReactFlow, Node, Position } from "@xyflow/react";
-import { ChevronDown } from "lucide-react"; // Replace MUI's ExpandMoreIcon
 import { CellNodeMenu } from "./CellNodeMenu";
 import { CourseNodeData } from "../../types";
-import {
-  StyledNodeCard,
-  StyledAccordion,
-  StyledAccordionDetails,
-  AccordionSummary,
-} from "./CellNodeStyles";
 import { StyledCellHandle } from "./CellNodeHandleStyles";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from "@/components/ui/accordion";
+import { cn } from "@/lib/utils";
 
 const CellComponent = (node: Node<CourseNodeData>) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState<string | undefined>(undefined);
   const [contextMenuAnchor, setContextMenuAnchor] =
     useState<HTMLElement | null>(null);
   const reactFlowInstance = useReactFlow();
@@ -26,22 +26,28 @@ const CellComponent = (node: Node<CourseNodeData>) => {
     }
   }, [isExpanded, node.id, reactFlowInstance]);
 
-  const handleExpandIconClick = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    setIsExpanded((prev) => !prev);
-  };
-
   const handleContextMenu = (event: React.MouseEvent) => {
     event.preventDefault();
     setContextMenuAnchor(event.currentTarget as HTMLElement);
   };
   const courseColor = "#FF5733"; // Replace with your logic to get the course color
 
+  // Handle accordion value change
+  const handleAccordionChange = (value: string) => {
+    setIsExpanded(value === "" ? undefined : value);
+  };
+
   return (
     <>
-      <StyledNodeCard
-        courseColor={courseColor}
-        selected={Boolean(node.selected)}
+      <div
+        className={cn(
+          "inline-block w-[172px] overflow-hidden bg-card cursor-grab active:cursor-grabbing select-none transition-all rounded-lg",
+          node.selected ? "shadow-[0_0_0_2px_var(--color-primary),_0_0_10px_2px_var(--color-primary)]" : "shadow-none",
+          "hover:shadow-md"
+        )}
+        style={{
+          borderLeft: `4px solid ${courseColor}`,
+        }}
         onContextMenu={handleContextMenu}
       >
         <StyledCellHandle
@@ -51,64 +57,54 @@ const CellComponent = (node: Node<CourseNodeData>) => {
           className="target-handle"
           color={courseColor}
         />
-        <StyledAccordion
-          expanded={isExpanded}
-          disableGutters
-          courseColor={courseColor}
-          isExpanded={isExpanded}
-          nodeSelected={node.selected || false}
-        >
-          <AccordionSummary
-            expandIcon={
-              node.data.details ? (
-                <div
-                  onClick={handleExpandIconClick}
-                  className="flex items-center"
-                  role="button"
-                  aria-label="Toggle details"
-                >
-                  <ChevronDown 
-                    className="size-4 transition-transform" 
-                    style={{ color: courseColor }}
-                  />
-                </div>
-              ) : null
-            }
-          >
-            <div className="flex flex-col min-w-0">
-              {node.data?.courseCode && (
-                <span
-                  className="block whitespace-nowrap text-xs font-bold"
-                  style={{ color: courseColor }}
-                >
-                  {node.data?.courseCode}
-                </span>
-              )}
-              <div className="flex flex-row gap-1">
-                <span
-                  className="text-sm font-medium text-foreground"
-                >
-                  {node.data?.label}
-                </span>
-              </div>
-            </div>
-          </AccordionSummary>
-          {node.data.details && (
-            <StyledAccordionDetails>
-              <p
-                className="text-sm text-muted-foreground m-0"
-              >
-                {node.data.details}
-              </p>
-              {/* <SubjectIcon
-                className="subject-icon"
-                src={config.icon}
-                alt={subject}
-                courseColor={courseColor}
-              /> */}
-            </StyledAccordionDetails>
+        
+        <Accordion
+          type="single"
+          collapsible
+          className={cn(
+            "rounded-[var(--radius)] bg-transparent z-[1] p-0.5 transition-colors",
+            node.selected ? `bg-opacity-20` : "bg-transparent",
+            "hover:bg-opacity-10"
           )}
-        </StyledAccordion>
+          style={{
+            backgroundColor: isExpanded ? `${courseColor}08` : node.selected ? `${courseColor}20` : "transparent",
+          }}
+          value={isExpanded}
+          onValueChange={handleAccordionChange}
+        >
+          <AccordionItem value="content" className="border-none">
+            <AccordionTrigger 
+              className="py-1 px-0"
+              disabled={!node.data.details}
+              iconColor={courseColor}
+            >
+              <div className="flex flex-col min-w-0">
+                {node.data?.courseCode && (
+                  <span
+                    className="block whitespace-nowrap text-xs font-bold"
+                    style={{ color: courseColor }}
+                  >
+                    {node.data?.courseCode}
+                  </span>
+                )}
+                <div className="flex flex-row gap-1">
+                  <span className="text-sm font-medium text-foreground">
+                    {node.data?.label}
+                  </span>
+                </div>
+              </div>
+            </AccordionTrigger>
+            
+            {node.data.details && (
+              <AccordionContent className="border-t border-border pt-1">
+                <p className="text-sm text-muted-foreground m-0">
+                  {node.data.details}
+                </p>
+              </AccordionContent>
+            )}
+          </AccordionItem>
+        </Accordion>
+        
         <StyledCellHandle
           type="source"
           id="source-handle"
@@ -116,7 +112,7 @@ const CellComponent = (node: Node<CourseNodeData>) => {
           className="source-handle"
           color={courseColor}
         />
-      </StyledNodeCard>
+      </div>
 
       <CellNodeMenu
         anchorEl={contextMenuAnchor}
