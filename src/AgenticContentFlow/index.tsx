@@ -4,10 +4,8 @@ import {
   Edge,
   Node,
   ReactFlowProvider,
-  
 } from "@xyflow/react";
 import { SelectProvider } from "./Select/contexts/SelectContext";
-import { useTheme } from "@mui/material";
 import { useCallback, useRef } from "react";
 import { useNodeStore, useViewPreferencesStore } from "./stores";
 import { useViewportManager } from "./Flow/hooks/useViewportManager";
@@ -31,7 +29,6 @@ import { useEdgeState } from "./Edge/hooks/useEdgeState";
 ensureNodeTypesRegistered();
 
 export function AgenticContentFlowContent() {
-  const theme = useTheme();
   const flowWrapper = useRef<HTMLDivElement>(null);
   const { showGrid, gridVariant } = useViewPreferencesStore();
   const { nodeMap, nodeParentIdMapWithChildIdSet } = useNodeStore();
@@ -94,7 +91,7 @@ export function AgenticContentFlowContent() {
               variant={gridVariant}
               gap={GRID_SETTINGS.BACKGROUND_GAP}
               size={GRID_SETTINGS.BACKGROUND_SIZE}
-              color={theme.palette.divider}
+              color="var(--color-border)"
             />
           )}
           <SelectLogic />
