@@ -1,8 +1,8 @@
 /** @format */
 import React from "react";
-import { Box, Paper, Typography, useTheme } from "@mui/material";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useControls } from "../Controls/context/ControlsContext";
+import { cn } from "@/lib/utils";
 
 interface KeyboardShortcut {
   key: string;
@@ -24,54 +24,43 @@ const KeyboardShortcutPanel: React.FC<KeyboardShortcutPanelProps> = ({
     { key: "M", description: "Toggle mini-map" },
   ],
 }) => {
-  const theme = useTheme();
-
   const {
-    fitView,
-    centerSelected, // renamed from centerOnSelected
-    showMiniMap,
-    setShowMiniMap,
+    showGrid,
+    setShowGrid,
+    snapToGrid,
+    setSnapToGrid,
+    showShortcuts,
+    toggleShortcuts,
+    toggleFullscreen
   } = useControls();
 
   // Use keyboard shortcuts
   useKeyboardShortcuts({
-    fitView,
-    centerSelected, // updated property
-    showMiniMap,
-    setShowMiniMap,
+    showGrid,
+    setShowGrid,
+    snapToGrid,
+    setSnapToGrid,
+    showShortcuts,
+    toggleShortcuts,
+    toggleFullscreen
   });
 
   return (
-    <Paper
-      elevation={3}
-      sx={{
-        position: "absolute",
-        bottom: "20px",
-        left: "20px",
-        backgroundColor: theme.palette.background.paper,
-        padding: "10px",
-        // borderRadius: theme.shape.borderRadius,
-        fontSize: "12px",
-        maxWidth: "250px",
-        boxShadow: theme.shadows[2],
-        zIndex: 5,
-        color: theme.palette.text.primary,
-        border: `1px solid ${theme.palette.divider}`,
-      }}
+    <div
+      className={cn(
+        "absolute bottom-5 left-5 bg-background p-3 rounded-md text-sm",
+        "max-w-[250px] shadow-md z-10 border border-border"
+      )}
     >
-      <Typography variant="h6" sx={{ mb: 1 }}>
-        Keyboard Shortcuts
-      </Typography>
-      <Box component="ul" sx={{ m: "5px 0", pl: "20px" }}>
+      <h2 className="text-lg font-semibold mb-2">Keyboard Shortcuts</h2>
+      <ul className="my-1 pl-5 space-y-1">
         {shortcuts.map((shortcut, index) => (
-          <li key={index}>
-            <Typography variant="body2" component="span">
-              {shortcut.key}: {shortcut.description}
-            </Typography>
+          <li key={index} className="text-sm">
+            <span className="font-medium">{shortcut.key}</span>: {shortcut.description}
           </li>
         ))}
-      </Box>
-    </Paper>
+      </ul>
+    </div>
   );
 };
 

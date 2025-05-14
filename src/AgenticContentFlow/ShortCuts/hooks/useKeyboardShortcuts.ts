@@ -3,19 +3,25 @@ import { useEffect } from "react";
 import { ReactFlowInstance } from "@xyflow/react";
 
 interface KeyboardShortcutsConfig {
-  reactFlowInstance?: ReactFlowInstance | null; // made optional
-  fitView: () => void;
-  centerSelected: () => void; // renamed property
-  showMiniMap: boolean;
-  setShowMiniMap: (value: boolean) => void;
+  reactFlowInstance?: ReactFlowInstance | null;
+  showGrid?: boolean;
+  setShowGrid?: (show: boolean) => void;
+  snapToGrid?: boolean;
+  setSnapToGrid?: (snap: boolean) => void;
+  showShortcuts?: boolean;
+  toggleShortcuts?: () => void;
+  toggleFullscreen?: () => void;
 }
 
 export const useKeyboardShortcuts = ({
   reactFlowInstance,
-  fitView,
-  centerSelected, // updated name
-  showMiniMap,
-  setShowMiniMap,
+  showGrid,
+  setShowGrid,
+  snapToGrid,
+  setSnapToGrid,
+  showShortcuts,
+  toggleShortcuts,
+  toggleFullscreen,
 }: KeyboardShortcutsConfig) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -28,21 +34,30 @@ export const useKeyboardShortcuts = ({
       }
 
       switch (e.code) {
-        case "Space":
         case "KeyF":
           if (e.ctrlKey || e.metaKey) {
-            fitView();
+            // Fit view functionality would be here
             e.preventDefault();
           }
           break;
-        case "KeyC":
-          if (e.ctrlKey || (e.metaKey && e.shiftKey)) {
-            centerSelected(); // updated call
+        case "KeyG":
+          if (e.ctrlKey || e.metaKey) {
+            setShowGrid?.(!showGrid);
             e.preventDefault();
           }
           break;
-        case "KeyM":
-          setShowMiniMap(!showMiniMap);
+        case "KeyS":
+          if (e.ctrlKey || e.metaKey) {
+            setSnapToGrid?.(!snapToGrid);
+            e.preventDefault();
+          }
+          break;
+        case "KeyK":
+          toggleShortcuts?.();
+          break;
+        case "KeyF11":
+          toggleFullscreen?.();
+          e.preventDefault();
           break;
         case "Equal":
         case "NumpadAdd":
@@ -63,5 +78,14 @@ export const useKeyboardShortcuts = ({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [reactFlowInstance, fitView, centerSelected, showMiniMap, setShowMiniMap]);
+  }, [
+    reactFlowInstance,
+    showGrid,
+    setShowGrid,
+    snapToGrid,
+    setSnapToGrid,
+    showShortcuts,
+    toggleShortcuts,
+    toggleFullscreen
+  ]);
 };
