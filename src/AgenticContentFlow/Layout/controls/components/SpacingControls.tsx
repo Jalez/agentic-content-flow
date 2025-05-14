@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown } from "lucide-react";
+import { Move } from "lucide-react";
 
 const SpacingControls: React.FC = () => {
   const { 
@@ -52,7 +52,7 @@ const SpacingControls: React.FC = () => {
         <div>
           <ControlButton
             tooltip="Adjust Spacing"
-            icon={<ArrowUpDown className="size-4" />}
+            icon={<Move className="size-4" />}
             active={open}
             onClick={() => setOpen(!open)}
           />
