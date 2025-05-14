@@ -1,4 +1,3 @@
-import { useTheme } from "@mui/material";
 import { useEffect, useMemo } from "react";
 import { useMinimapStore } from "./store/useMinimapStore";
 import { MiniMap } from "@xyflow/react";
@@ -7,7 +6,6 @@ import MinimapToggle from "./Controls/MinimapToggle";
 import { CONTROL_PRIORITIES, CONTROL_TYPES } from "../constants";
 
 const Minimap = () => {
-  const theme = useTheme();
   const { showMiniMap } = useMinimapStore();
 
   useEffect(() => {
@@ -20,31 +18,33 @@ const Minimap = () => {
       CONTROL_PRIORITIES.NAVIGATION
     );
   }, []);
+  
   const miniMapComponent = useMemo(
     () =>
       showMiniMap ? (
         <MiniMap
           nodeStrokeWidth={4}
           nodeStrokeColor={(node) =>
-            node.selected ? theme.palette.primary.main : theme.palette.divider
+            node.selected ? 'var(--color-primary)' : 'var(--color-border)'
           }
           nodeColor={(node) =>
             node.selected
-              ? theme.palette.primary.light
-              : theme.palette.background.paper
+              ? 'var(--color-primary-foreground)'
+              : 'var(--color-card)'
           }
-          maskColor={`${theme.palette.background.default}CC`}
-          maskStrokeColor={theme.palette.divider}
+          maskColor="var(--color-background)CC"
+          maskStrokeColor="var(--color-border)"
           style={{
-            backgroundColor: theme.palette.background.default,
-            border: `1px solid ${theme.palette.divider}`,
+            backgroundColor: 'var(--color-background)',
+            border: '1px solid var(--color-border)',
           }}
           zoomable
           pannable
         />
       ) : null,
-    [showMiniMap, theme.palette]
+    [showMiniMap]
   );
+  
   return <>{miniMapComponent}</>;
 };
 
