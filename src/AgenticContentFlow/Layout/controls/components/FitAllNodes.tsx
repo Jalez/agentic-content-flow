@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import FitScreenIcon from "@mui/icons-material/FitScreen";
+import { Maximize2 } from "lucide-react"; // Replace MUI icon with Lucide icon
 import { useReactFlow } from "@xyflow/react";
 import { useLayoutContext } from "@jalez/react-flow-automated-layout";
 import { VIEWPORT_CONSTRAINTS } from "../../../constants";
@@ -20,7 +20,7 @@ const FitAllNodes: React.FC = () => {
     <ControlButton
       tooltip="Fit All Nodes"
       onClick={handleFitAllNodes}
-      icon={<FitScreenIcon />}
+      icon={<Maximize2 className="size-5" />} // Add size class for consistency
       disabled={layoutInProgress}
     />
   );

@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
+import { Wand2 } from "lucide-react"; // Replace MUI icon with Lucide icon
 import { useLayoutContext } from "@jalez/react-flow-automated-layout";
 import ControlButton from "../../../Controls/Components/ControlButton";
 
@@ -14,7 +14,7 @@ const ApplyLayout: React.FC = () => {
     <ControlButton
       tooltip="Apply Layout"
       onClick={handleApplyLayout}
-      icon={<AutoFixHighIcon />}
+      icon={<Wand2 className="size-5" />} // Add size class for consistency
       disabled={layoutInProgress}
     />
   );
