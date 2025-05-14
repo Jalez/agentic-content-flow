@@ -1,6 +1,6 @@
 /** @format */
 import ControlDropdown from "../Controls/Components/ControlDropdown";
-import DataObjectIcon from "@mui/icons-material/DataObject";
+import { Database } from "lucide-react"; // Replace MUI icon with Lucide icon
 import { useEdgeStore } from "../Edge/store/useEdgeStore";
 import { useNodeStore } from "../Node/store/useNodeStore";
 
@@ -81,7 +81,7 @@ export const TestDataSwitcher = () => {
   return (
     <ControlDropdown
       tooltip="Load Test Data"
-      icon={<DataObjectIcon />}
+      icon={<Database className="size-5" />}
       items={testDataItems}
     />
   );
