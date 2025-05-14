@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NodeProps } from '@xyflow/react';
-import ViewQuiltIcon from '@mui/icons-material/ViewQuilt';
-import InputIcon from '@mui/icons-material/Input';
-import OutputIcon from '@mui/icons-material/Output';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+// Replace MUI icons with Lucide icons
+import { ArrowLeft, ArrowRight, ArrowUp, ArrowDown } from 'lucide-react';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ViewNodeContainer } from './ViewNodeStyles';
 import {
@@ -15,10 +12,10 @@ import {
 import { useUpdateNodeInternals, useReactFlow } from '@xyflow/react';
 import { LAYOUT_CONSTANTS } from '../../Layout/utils/layoutUtils';
 import CornerResizer from '../common/CornerResizer';
-import ScrollingText from '../common/ScrollingText';
-import ConnectionHandles from '../common/ConnectionHandles';
 import ExpandCollapseButton from '../common/ExpandCollapseButton';
+import ConnectionHandles from '../common/ConnectionHandles';
 import EyeIcon from '@/components/icons/eye';
+
 /**
  * Data Node Component
  * 
@@ -60,13 +57,8 @@ export const ViewNode: React.FC<NodeProps> = ({ id, data, selected }) => {
     height: nodeInFlow?.height || 300,
   };
 
-
-
-
   // Type checking for data properties
   const nodeLabel = data?.label ? String(data.label) : 'Files';
-
-  // Generate mock file structure for the explorer view
 
   // Custom menu items for file operations
   const fileNodeMenuItems = [
@@ -80,8 +72,6 @@ export const ViewNode: React.FC<NodeProps> = ({ id, data, selected }) => {
       Share
     </DropdownMenuItem>
   ];
-
-
 
   return (
     <>
@@ -107,10 +97,10 @@ export const ViewNode: React.FC<NodeProps> = ({ id, data, selected }) => {
         <ConnectionHandles 
           color={color} 
           icons={{
-            left: <InputIcon />,
-            right: <OutputIcon />,
-            top: <ArrowUpwardIcon />,
-            bottom: <ArrowDownwardIcon/>
+            left: <ArrowLeft className="size-4" />,
+            right: <ArrowRight className="size-4" />,
+            top: <ArrowUp className="size-4" />,
+            bottom: <ArrowDown className="size-4" />
           }}
         />
 
@@ -124,16 +114,9 @@ export const ViewNode: React.FC<NodeProps> = ({ id, data, selected }) => {
               stroke-slate
             `}
           />
-          <ScrollingText
-            text={nodeLabel}
-            variant="subtitle1"
-            maxWidth="100%"
-            sx={{
-              flex: 1,
-              fontWeight: 600,
-              position: 'relative',
-            }}
-          />
+          <div className="flex-1 font-semibold relative text-ellipsis overflow-hidden whitespace-nowrap max-w-full">
+            {nodeLabel}
+          </div>
           <ExpandCollapseButton
             collapsedDimensions={collapsedDimensions}
             expandedDimensions={expandedDimensions}

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 interface InvisibleNodeProps extends BaseNodeProps {
   isExpanded?: boolean;
   isHovered?: boolean;
-  sx?: Record<string, any>;
+  // Remove sx prop as we'll use Tailwind classes instead
   onTransitionEnd?: () => void;
 }
 
@@ -16,7 +16,6 @@ export const InvisibleNodeContainer: React.FC<InvisibleNodeProps> = ({
   className,
   children,
   style,
-  sx = {},
   ...props
 }) => {
   return (
@@ -32,10 +31,7 @@ export const InvisibleNodeContainer: React.FC<InvisibleNodeProps> = ({
         isHovered ? "border-black" : "border-transparent",
         className
       )}
-      style={{
-        ...style,
-        ...sx
-      }}
+      style={style}
       {...props}
     >
       {children}

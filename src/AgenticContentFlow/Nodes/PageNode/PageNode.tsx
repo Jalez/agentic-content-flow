@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NodeProps } from '@xyflow/react';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+// Remove ArrowUp as it's not being used
+import { ArrowDown } from 'lucide-react';
 import { PageNodeContainer } from './PageNodeStyles';
 import {
   NodeHeader,
@@ -13,7 +13,6 @@ import ExpandCollapseButton from '../common/ExpandCollapseButton';
 import ConnectionHandles from '../common/ConnectionHandles';
 import CornerResizer from '../common/CornerResizer';
 import { colorByDepth } from '../common/utils/colorByDepth';
-import ScrollingText from '../common/ScrollingText';
 import CircleStackIcon from '@/components/icons/circle-stack';
 import WebIcon from '@/components/icons/web';
 import ChartIcon from '@/components/icons/chart';
@@ -83,28 +82,21 @@ export const PageNode: React.FC<NodeProps> = ({ id, data, selected }) => {
           icons={{
             left: <CircleStackIcon />,
             right: <ChartIcon />,
-            top: <ArrowDownwardIcon />,
-            bottom: <ArrowDownwardIcon />
+            top: <ArrowDown className="size-4" />,
+            bottom: <ArrowDown className="size-4" />
           }}
         />
         <NodeHeader className="dragHandle">
           <WebIcon
             className={`
-              ${isExpanded ? 'relative w-6 h-6' : 'absolute w-16 h-16'} 
+              ${isExpanded ? 'relative size-6' : 'absolute size-16'} 
               ${isExpanded ? '' : 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'}
               stroke-slate
             `}
           />
-          <ScrollingText
-            text={nodeLabel}
-            variant="subtitle1"
-            maxWidth="100%"
-            sx={{
-              flex: 1,
-              fontWeight: 600,
-              position: 'relative',
-            }}
-          />
+          <div className="flex-1 relative font-semibold text-sm text-ellipsis overflow-hidden whitespace-nowrap max-w-full">
+            {nodeLabel}
+          </div>
           <NodeHeaderActions>
             <ExpandCollapseButton
               collapsedDimensions={collapsedDimensions}

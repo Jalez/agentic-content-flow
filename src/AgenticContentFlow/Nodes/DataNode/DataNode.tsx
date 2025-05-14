@@ -13,15 +13,11 @@ import ConnectionHandles from '../common/ConnectionHandles';
 import ExpandCollapseButton from '../common/ExpandCollapseButton';
 import { colorByDepth } from '../common/utils/colorByDepth';
 
-// Import icons directly (we'll convert the styling later)
-import InputIcon from '@mui/icons-material/Input';
-import OutputIcon from '@mui/icons-material/Output';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+// Replace MUI icons with Lucide icons
+import { ArrowLeft, ArrowRight, ArrowUp, ArrowDown } from 'lucide-react';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 // Components that might need conversion but are used as-is for now
-import ScrollingText from '../common/ScrollingText';
 import CircleStackIcon from '@/components/icons/circle-stack';
 
 /**
@@ -110,10 +106,10 @@ export const DataNode: React.FC<NodeProps> = ({ id, data, selected }) => {
                 <ConnectionHandles 
                     color={color} 
                     icons={{
-                        left: <InputIcon />,
-                        right: <OutputIcon />,
-                        top: <ArrowUpwardIcon />,
-                        bottom: <ArrowDownwardIcon />
+                        left: <ArrowLeft className="size-4" />,
+                        right: <ArrowRight className="size-4" />,
+                        top: <ArrowUp className="size-4" />,
+                        bottom: <ArrowDown className="size-4" />
                     }}
                 />
 
@@ -126,16 +122,11 @@ export const DataNode: React.FC<NodeProps> = ({ id, data, selected }) => {
                             stroke-slate
                         `}
                     />
-                    <ScrollingText
-                        text={nodeLabel}
-                        variant="subtitle1"
-                        maxWidth="100%"
-                        sx={{
-                            flex: 1,
-                            fontWeight: 600,
-                            position: 'relative',
-                        }}
-                    />
+                    <div
+                        className="flex-1 font-semibold relative text-ellipsis overflow-hidden whitespace-nowrap"
+                    >
+                        {nodeLabel}
+                    </div>
                     <ExpandCollapseButton
                         collapsedDimensions={collapsedDimensions}
                         expandedDimensions={expandedDimensions}

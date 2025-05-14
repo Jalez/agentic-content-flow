@@ -1,18 +1,20 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { NodeProps, Node } from '@xyflow/react';
-import ViewQuiltIcon from '@mui/icons-material/ViewQuilt';
 import { InvisibleNodeContainer } from './InvisibleNodeStyles';
 import {
   NodeHeaderTitle,
   NodeHeaderActions,
   NodeHeaderMenuAction,
-  NodeHeaderDeleteAction
+  NodeHeaderDeleteAction,
+  NodeHeader
 } from '../common/NodeHeader';
 import { useUpdateNodeInternals, useReactFlow } from '@xyflow/react';
 import { LAYOUT_CONSTANTS } from '../../Layout/utils/layoutUtils';
 import ExpandCollapseButton from '../common/ExpandCollapseButton';
 import CornerResizer from '../common/CornerResizer';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+// Replace MUI icon with Lucide equivalent
+import { Grid } from 'lucide-react';
 
 interface InvisibleNodeProps extends NodeProps {
   isExpanded?: boolean;
@@ -107,16 +109,16 @@ export const InvisibleNode: React.FC<InvisibleNodeProps> = ({ id, data, selected
         <div className="dragHandle">
           {(!isExpanded || isHovered) && (
             <>
-              <ViewQuiltIcon
-                sx={{
-                  color: 'primary.secondary',
-                  position: isExpanded ? 'relative' : 'absolute',
-                  left: isExpanded ? '0' : '50%',
-                  top: isExpanded ? '0' : '50%',
-                  transform: isExpanded ? 'none' : 'translate(-50%, -50%)',
-                  fontSize: isExpanded ? '1.5rem' : '5rem',
-                }}
-              />
+                    <NodeHeader className="dragHandle">
+
+              
+              <Grid
+                className={`
+                  text-primary 
+                  ${isExpanded ? 'relative size-6' : 'absolute size-16'} 
+                  ${isExpanded ? '' : 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'}
+                  `}
+                  />
 
               <NodeHeaderTitle>{nodeLabel}</NodeHeaderTitle>
               <NodeHeaderActions>
@@ -124,7 +126,7 @@ export const InvisibleNode: React.FC<InvisibleNodeProps> = ({ id, data, selected
                   collapsedDimensions={collapsedDimensions}
                   expandedDimensions={expandedDimensions}
                   nodeInFlow={nodeInFlow}
-                />
+                  />
                 <NodeHeaderMenuAction label="Container Options">
                   <DropdownMenuItem onClick={() => console.log('Toggle visibility')}>
                     Toggle Container Visibility
@@ -132,6 +134,7 @@ export const InvisibleNode: React.FC<InvisibleNodeProps> = ({ id, data, selected
                   <NodeHeaderDeleteAction />
                 </NodeHeaderMenuAction>
               </NodeHeaderActions>
+                  </NodeHeader>
             </>
           )}
         </div>
