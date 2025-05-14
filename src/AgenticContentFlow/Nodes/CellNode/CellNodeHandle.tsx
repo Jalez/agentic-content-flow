@@ -1,12 +1,14 @@
 import { HandleType, Position } from "@xyflow/react";
-import { StyledCellHandle, getHandleStyles } from "./CellNodeHandleStyles";
+import { StyledCellHandle } from "./CellNodeHandleStyles";
+import { cn } from "@/lib/utils";
 
 interface CellNodeHandleProps {
   type: HandleType;
   id: string;
   position: Position;
-  className: string;
-  backgroundColor: string;
+  className?: string;
+  backgroundColor?: string;
+  color?: string;
   isConnectable?: boolean;
 }
 
@@ -16,22 +18,18 @@ const CellNodeHandle = ({
   position,
   className,
   backgroundColor,
+  color,
   isConnectable = true,
 }: CellNodeHandleProps) => {
-  // Get position-specific styles
-  const positionStyles = getHandleStyles(position);
-
   return (
     <StyledCellHandle
       type={type}
       id={id}
       position={position}
-      className={className}
+      className={cn(className)}
       isConnectable={isConnectable}
-      style={{
-        ...positionStyles,
-        backgroundColor,
-      }}
+      color={color || backgroundColor}
+      style={backgroundColor ? { backgroundColor } : undefined}
     />
   );
 };
