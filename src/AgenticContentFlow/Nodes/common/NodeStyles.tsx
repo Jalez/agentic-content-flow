@@ -11,6 +11,7 @@ export interface BaseNodeProps {
   children?: ReactNode;
   style?: React.CSSProperties;
   ref?: React.Ref<HTMLElement>;
+  onTransitionEnd?: () => void;
 }
 
 interface SelectableProps {

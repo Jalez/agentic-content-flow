@@ -84,7 +84,11 @@ export const ContainerNode = ({
     height: nodeInFlow?.height  || collapsedDimensions.height,
   };
   
-
+  // Create border style based on if it's a course node
+  const courseBorderStyle ={
+    border: '0.5em solid',
+    borderColor: (selected || data.highlighted) ? 'var(--color-primary)' : 'var(--color-border)'
+  }
   return (
     <>
       {selected && (
@@ -98,26 +102,19 @@ export const ContainerNode = ({
         onTransitionEnd={() => updateNodeInternals(id)}
         selected={selected}
         color={nodeColor}
-        sx={{
+        className="flex flex-col select-none"
+        style={{
           width: nodeInFlow?.width,
           height: nodeInFlow?.height,
-          backgroundColor: "background.default",
-          display: "flex",
-          flexDirection: "column",
-          userSelect: "none",
-          transition: "width 0.2s ease, height 0.2s ease",
-          ...(isCourse && {
-            border: "0.5em solid",
-            borderColor: (selected || data.highlighted) ? "primary.main" 
-            :
-             "divider",
-          }),
+          backgroundColor: 'var(--color-background)',
+          transition: 'width 0.2s ease, height 0.2s ease',
+          ...courseBorderStyle
         }}
       >
         <StyledHandle
           type="target"
           position={targetPosition || Position.Top}
-          color="grey.400"
+          color="var(--color-muted)"
         />
 
         <NodeHeader className="dragHandle">
