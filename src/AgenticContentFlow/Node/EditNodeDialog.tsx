@@ -1,17 +1,25 @@
 /** @format */
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Button,
-  Stack,
-  Typography,
-} from "@mui/material";
 import { NodeData } from "../types";
 import { useNodeEditForm } from "./hooks/useNodeEditForm";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
 
 interface EditNodeDialogProps {
   open: boolean;
@@ -35,30 +43,30 @@ export const EditNodeDialog = ({
     });
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="sm"
-      fullWidth
-      onKeyDown={handleKeyDown}
-    >
-      <DialogTitle>Edit Node</DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} sx={{ mt: 1 }}>
-          <TextField
-            autoFocus
-            label="Label"
-            fullWidth
-            value={formData.label || ""}
-            onChange={(e) => updateField("label", e.target.value)}
-            error={!formData.label?.trim()}
-            helperText={!formData.label?.trim() ? "Label is required" : ""}
-          />
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent className="sm:max-w-[425px]" onKeyDown={handleKeyDown}>
+        <DialogHeader>
+          <DialogTitle>Edit Node</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <Label htmlFor="label">Label</Label>
+            <Input
+              id="label"
+              autoFocus
+              className={cn(
+                !formData.label?.trim() && "border-red-500 focus-visible:ring-red-500"
+              )}
+              value={formData.label || ""}
+              onChange={(e) => updateField("label", e.target.value)}
+            />
+            {!formData.label?.trim() && (
+              <p className="text-sm text-red-500">Label is required</p>
+            )}
+          </div>
 
-          <div className="space-y-2">
-            <Typography variant="subtitle2" component="label" htmlFor="difficulty-level">
-              Difficulty Level
-            </Typography>
+          <div className="grid gap-2">
+            <Label htmlFor="difficulty-level">Difficulty Level</Label>
             <Select
               value={formData.nodeLevel as string || "basic"}
               onValueChange={(value) => updateField("nodeLevel", value)}
@@ -74,37 +82,38 @@ export const EditNodeDialog = ({
             </Select>
           </div>
 
-          <TextField
-            label="Details"
-            fullWidth
-            multiline
-            rows={4}
-            value={formData.details || ""}
-            onChange={(e) => updateField("details", e.target.value)}
-            error={formData.details !== undefined && !formData.details.trim()}
-            helperText={
-              formData.details !== undefined && !formData.details.trim()
-                ? "Details cannot be empty if provided"
-                : ""
-            }
-          />
-
-          <Typography variant="caption" color="text.secondary">
+          <div className="grid gap-2">
+            <Label htmlFor="details">Details</Label>
+            <Textarea
+              id="details"
+              className={cn(
+                formData.details !== undefined && !formData.details.trim() && "border-red-500 focus-visible:ring-red-500"
+              )}
+              rows={4}
+              value={formData.details || ""}
+              onChange={(e) => updateField("details", e.target.value)}
+            />
+            {formData.details !== undefined && !formData.details.trim() && (
+              <p className="text-sm text-red-500">Details cannot be empty if provided</p>
+            )}
+          </div>
+          
+          <p className="text-xs text-muted-foreground">
             Press Ctrl/⌘ + Enter to save
-          </Typography>
-        </Stack>
+          </p>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSave}
+            disabled={!isValid}
+          >
+            Save
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button
-          onClick={handleSave}
-          variant="contained"
-          color="primary"
-          disabled={!isValid}
-        >
-          Save
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 };
