@@ -1,8 +1,6 @@
 /** @format */
 import React from "react";
-import { Box } from "@mui/material";
-import OpenInFullIcon from "@mui/icons-material/OpenInFull";
-import KeyboardIcon from "@mui/icons-material/Keyboard";
+import { Maximize, Keyboard } from "lucide-react"; // Replace MUI icons
 import ControlButton from "../ControlButton";
 
 interface NavigationControlsProps {
@@ -17,27 +15,25 @@ const NavigationControls: React.FC<NavigationControlsProps> = ({
   showShortcuts,
 }) => {
   const controls = [
- 
-
     {
       tooltip: "Toggle Fullscreen",
-      icon: <OpenInFullIcon />,
+      icon: <Maximize className="size-5" />,
       onClick: onToggleFullscreen,
     },
     {
       tooltip: "Toggle Shortcuts",
-      icon: <KeyboardIcon />,
+      icon: <Keyboard className="size-5" />,
       onClick: onToggleShortcuts,
       active: showShortcuts,
     },
   ];
 
   return (
-    <Box sx={{ display: "flex", gap: 1 }}>
+    <div className="flex gap-1">
       {controls.map((control) => (
         <ControlButton key={control.tooltip} {...control} />
       ))}
-    </Box>
+    </div>
   );
 };
 
