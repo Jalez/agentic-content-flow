@@ -1,16 +1,14 @@
 /** @format */
 import { useState, memo, useEffect } from "react";
 import { useReactFlow, Node, Position } from "@xyflow/react";
-import { useTheme } from "@mui/material/styles";
-import { Box } from "@mui/material";
-import { AccordionSummary } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { ChevronDown } from "lucide-react"; // Replace MUI's ExpandMoreIcon
 import { CellNodeMenu } from "./CellNodeMenu";
 import { CourseNodeData } from "../../types";
 import {
   StyledNodeCard,
   StyledAccordion,
   StyledAccordionDetails,
+  AccordionSummary,
 } from "./CellNodeStyles";
 import { StyledCellHandle } from "./CellNodeHandleStyles";
 
@@ -19,7 +17,6 @@ const CellComponent = (node: Node<CourseNodeData>) => {
   const [contextMenuAnchor, setContextMenuAnchor] =
     useState<HTMLElement | null>(null);
   const reactFlowInstance = useReactFlow();
-  const theme = useTheme();
 
   useEffect(() => {
     if (isExpanded) {
@@ -64,58 +61,45 @@ const CellComponent = (node: Node<CourseNodeData>) => {
           <AccordionSummary
             expandIcon={
               node.data.details ? (
-                <Box
+                <div
                   onClick={handleExpandIconClick}
-                  sx={{ display: "flex", alignItems: "center" }}
+                  className="flex items-center"
                   role="button"
                   aria-label="Toggle details"
                 >
-                  <ExpandMoreIcon sx={{ color: courseColor }} />
-                </Box>
+                  <ChevronDown 
+                    className="size-4 transition-transform" 
+                    style={{ color: courseColor }}
+                  />
+                </div>
               ) : null
             }
           >
-            <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+            <div className="flex flex-col min-w-0">
               {node.data?.courseCode && (
-                <Box
-                  component="span"
-                  sx={{
-                    color: courseColor,
-                    typography: "caption",
-                    fontWeight: "bold",
-                    display: "block",
-                    whiteSpace: "nowrap",
-                  }}
+                <span
+                  className="block whitespace-nowrap text-xs font-bold"
+                  style={{ color: courseColor }}
                 >
                   {node.data?.courseCode}
-                </Box>
+                </span>
               )}
-              <Box sx={{ display: "flex", flexDirection: "row", gap: 1 }}>
-                <Box
-                  component="span"
-                  sx={{
-                    fontWeight: theme.typography.fontWeightMedium,
-                    color: theme.palette.text.primary,
-                    typography: "body2",
-                  }}
+              <div className="flex flex-row gap-1">
+                <span
+                  className="text-sm font-medium text-foreground"
                 >
                   {node.data?.label}
-                </Box>
-              </Box>
-            </Box>
+                </span>
+              </div>
+            </div>
           </AccordionSummary>
           {node.data.details && (
             <StyledAccordionDetails>
-              <Box
-                component="p"
-                sx={{
-                  typography: "body2",
-                  color: "text.secondary",
-                  m: 0,
-                }}
+              <p
+                className="text-sm text-muted-foreground m-0"
               >
                 {node.data.details}
-              </Box>
+              </p>
               {/* <SubjectIcon
                 className="subject-icon"
                 src={config.icon}

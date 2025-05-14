@@ -1,70 +1,60 @@
-import { styled } from "@mui/material/styles";
+import React from "react";
 import { Handle, Position } from "@xyflow/react";
-import { CSSProperties } from "react";
+import { cn } from "@/lib/utils";
 
-// A utility function to generate position-specific styles
-export const getHandleStyles = (position: Position): CSSProperties => {
-  // Base styles common to all triangles
-  const baseStyles: CSSProperties = {
-    backgroundColor: "transparent",
-    borderRadius: 10,
-    border: "none",
-    width: "2%",
-    height: "100%",
-    boxSizing: "border-box" as "border-box",
-    zIndex: 10, // Ensure handle is above other elements
-    transition: "all 0.2s ease",
-  };
+interface StyledCellHandleProps {
+  position: Position;
+  type: 'source' | 'target';
+  id: string;
+  className?: string;
+  color?: string;
+  [key: string]: any;
+}
 
-  // Position-specific triangle styles - smaller size and closer positioning
+// A utility function to get position-specific classes
+export const getHandleClasses = (position: Position): string => {
+  const baseClasses = "bg-transparent rounded-[10px] border-none z-10 transition-all duration-200";
+  
   switch (position) {
     case Position.Top:
-      return {
-        ...baseStyles,
-        top: "10px", // Closer to node
-      };
+      return cn(baseClasses, "top-[10px] w-full h-[2%]");
     case Position.Bottom:
-      return {
-        ...baseStyles,
-        bottom: "10px", // Closer to node
-      };
+      return cn(baseClasses, "bottom-[10px] w-full h-[2%]");
     case Position.Left:
-      return {
-        ...baseStyles,
-        left: "0px", // Closer to node
-        borderRight: "none",
-        borderRadius: "10px 0 0 10px",
-      };
+      return cn(baseClasses, "left-0 h-full w-[2%] rounded-l-[10px] border-r-0");
     case Position.Right:
-      return {
-        ...baseStyles,
-        right: "4px", // Closer to node
-        borderLeft: "none",
-        borderRadius: "0 10px 10px 0",
-      };
+      return cn(baseClasses, "right-[4px] h-full w-[2%] rounded-r-[10px] border-l-0");
     default:
-      return baseStyles;
+      return baseClasses;
   }
 };
 
-// Styled component for the handle
-export const StyledCellHandle = styled(Handle)(({ theme, position }) => ({
-  opacity: 0.5,
-  transition: theme.transitions.create(["opacity", "background-color"]),
-  "&:hover": {
-    opacity: 1,
-  },
-  backgroundColor: "transparent",
-  borderRadius: 10,
-  border: "none",
-  // width: "2%",
-  // height: "100%",
-  //If position is left or right, set height to 100%
-  height:
-    position === Position.Left || position === Position.Right ? "100%" : "2%",
-  //If position is up or down, set width to 100%
-  width:
-    position === Position.Top || position === Position.Bottom ? "100%" : "2%",
-  boxSizing: "border-box" as "border-box",
-  zIndex: 10, // Ensure handle is above other elements
-}));
+export const StyledCellHandle: React.FC<StyledCellHandleProps> = ({
+  position,
+  type,
+  id,
+  className,
+  color,
+  ...props
+}) => {
+  // Determine width and height based on position
+  const isVertical = position === Position.Top || position === Position.Bottom;
+  
+  return (
+    <Handle
+      type={type}
+      id={id}
+      position={position}
+      className={cn(
+        getHandleClasses(position),
+        "opacity-50 hover:opacity-100",
+        className
+      )}
+      style={{
+        width: isVertical ? "100%" : "2%",
+        height: isVertical ? "2%" : "100%",
+      }}
+      {...props}
+    />
+  );
+};
