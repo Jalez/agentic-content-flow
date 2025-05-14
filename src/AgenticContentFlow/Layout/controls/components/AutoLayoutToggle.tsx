@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import AutorenewIcon from '@mui/icons-material/Autorenew';
+import { RefreshCcw } from "lucide-react";
 import { useLayoutContext } from "@jalez/react-flow-automated-layout";
 import ControlButton from "../../../Controls/Components/ControlButton";
 
@@ -14,7 +14,7 @@ const AutoLayoutToggle: React.FC = () => {
     <ControlButton
       tooltip={autoLayout ? "Disable Auto Layout" : "Enable Auto Layout"}
       onClick={handleAutoLayoutToggle}
-      icon={<AutorenewIcon />}
+      icon={<RefreshCcw className="size-4" />}
       active={autoLayout}
     />
   );

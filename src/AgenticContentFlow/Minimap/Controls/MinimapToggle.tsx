@@ -1,6 +1,6 @@
 import ControlButton from "../../Controls/Components/ControlButton";
 import { useMinimapStore } from "../store/useMinimapStore";
-import MapIcon from "@mui/icons-material/Map";
+import { Map } from "lucide-react";
 
 const MinimapToggle = () => {
   const { showMiniMap, setShowMiniMap } = useMinimapStore();
@@ -13,7 +13,7 @@ const MinimapToggle = () => {
     <ControlButton
       tooltip="Toggle Mini-Map (M)"
       onClick={handleToggleMiniMap}
-      icon={<MapIcon  />}
+      icon={<Map className="size-4" />}
       active={showMiniMap}
     />
   );

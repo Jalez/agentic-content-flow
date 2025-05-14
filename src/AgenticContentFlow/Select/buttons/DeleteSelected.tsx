@@ -1,6 +1,6 @@
 import { useSelect } from "../contexts/SelectContext";
 import ControlButton from "../../Controls/Components/ControlButton";
-import DeleteIcon from "@mui/icons-material/Delete";
+  import { Trash2 } from "lucide-react";
 
 /**
  * @description
@@ -24,7 +24,7 @@ const DeleteSelectedButton = () => {
     <ControlButton
       key="deleteSelected"
       tooltip={"Delete Selected"}
-      icon={<DeleteIcon />}
+      icon={<Trash2 className="size-4" />}
       onClick={deleteSelected}
       disabled={!hasSelection}
       active={hasSelection}

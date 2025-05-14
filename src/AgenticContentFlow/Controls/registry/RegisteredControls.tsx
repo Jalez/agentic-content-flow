@@ -1,6 +1,6 @@
 /** @format */
 import React, { useMemo, memo } from "react";
-import { Box } from "@mui/material";
+import { cn } from "@/lib/utils";
 import {
   useControlsRegistry,
   ControlType,
@@ -10,7 +10,7 @@ import {
 interface RegisteredControlsProps {
   type: ControlType;
   context: string;
-  containerSx?: React.CSSProperties;
+  className?: string;
 }
 
 /**
@@ -30,14 +30,14 @@ interface RegisteredControlsProps {
  * <RegisteredControls
  *   type="viewSettings"
  *   context="mindmap"
- *   containerSx={{ display: 'flex', gap: 2 }}
+ *   className="flex flex-col gap-4"
  * />
  * ```
  */
 const RegisteredControls: React.FC<RegisteredControlsProps> = memo(({
   type,
   context,
-  containerSx = { display: "flex", gap: 1 },
+  className,
 }) => {
   // Use the improved hook to get controls
   const { getControls, version } = useControlsRegistry();
@@ -53,7 +53,7 @@ const RegisteredControls: React.FC<RegisteredControlsProps> = memo(({
     if (!controls.length) return null;
     
     return (
-      <Box sx={containerSx}>
+      <div className={cn("flex gap-1", className)}>
         {controls.map((entry: ControlEntry, index) => {
           const { Component, props } = entry;
           // Render with props if available, otherwise render without props
@@ -64,9 +64,9 @@ const RegisteredControls: React.FC<RegisteredControlsProps> = memo(({
             />
           );
         })}
-      </Box>
+      </div>
     );
-  }, [controls, containerSx, type, context, version]);
+  }, [controls, className, type, context, version]);
 
   return renderedControls;
 });

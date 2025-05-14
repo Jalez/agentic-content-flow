@@ -1,5 +1,5 @@
 import React from "react";
-import SwapVertIcon from "@mui/icons-material/SwapVert";
+import { ArrowUpDown } from "lucide-react";
 import { LayoutDirection, useLayoutContext } from "@jalez/react-flow-automated-layout";
 import ControlDropdown from "../../../Controls/Components/ControlDropdown";
 
@@ -46,7 +46,7 @@ const DirectionControls: React.FC = () => {
   return (
     <ControlDropdown
       tooltip="Layout Direction"
-      icon={<SwapVertIcon />}
+      icon={<ArrowUpDown className="size-4" />}
       items={directionItems}
     />
   );

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NodeProps, useReactFlow } from '@xyflow/react';
-import CallSplitIcon from '@mui/icons-material/CallSplit';
+import { GitFork } from 'lucide-react';
 import { colorByDepth } from '../common/utils/colorByDepth';
 import ConnectionHandles from '../common/ConnectionHandles';
 
@@ -26,13 +26,11 @@ export const ConditionalNode: React.FC<NodeProps> = ({
 
   const circleSize = height || width || 100; // Default size if not provided
   return (
-
       <div
         className={`
           relative flex items-center justify-center
-          rounded-full  shadow-[3px_-1px_black]
-          
-          `}
+          rounded-full shadow-[3px_-1px_black]
+        `}
         style={{
           width: circleSize,
           height: circleSize,
@@ -44,7 +42,13 @@ export const ConditionalNode: React.FC<NodeProps> = ({
         <ConnectionHandles
           color={color}
         />
-        <CallSplitIcon style={{ color: "black", fontSize: circleSize * 0.4 }} />
+        <GitFork 
+          style={{ 
+            color: "black",
+            transform: "rotate(90deg)"
+          }} 
+          size={circleSize * 0.4} 
+        />
       </div>
   );
 };

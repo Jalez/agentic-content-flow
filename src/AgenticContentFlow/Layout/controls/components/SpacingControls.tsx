@@ -1,11 +1,4 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { 
-  Box, 
-  Typography,
-  Slider,
-  Button
-} from "@mui/material";
-import SpaceBarIcon from '@mui/icons-material/SpaceBar';
 import { useLayoutContext } from "@jalez/react-flow-automated-layout";
 import ControlButton from "../../../Controls/Components/ControlButton";
 import {
@@ -13,6 +6,9 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
+import { ArrowUpDown } from "lucide-react";
 
 const SpacingControls: React.FC = () => {
   const { 
@@ -50,89 +46,76 @@ const SpacingControls: React.FC = () => {
     }
   }, [localNodeSpacing, localLayerSpacing, nodeSpacing, layerSpacing, setNodeSpacing, setLayerSpacing, algorithm, applyLayout]);
 
-  const handleNodeSpacingChange = useCallback((event: Event, value: number | number[]) => {
-    event.stopPropagation(); // Prevent closing the dropdown
-    setLocalNodeSpacing(value as number);
-  }, []);
-
-  const handleLayerSpacingChange = useCallback((event: Event, value: number | number[]) => {
-    event.stopPropagation(); // Prevent closing the dropdown
-    setLocalLayerSpacing(value as number);
-  }, []);
-  
-  const handleApply = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent closing the dropdown
-    setNodeSpacing(localNodeSpacing);
-    setLayerSpacing(localLayerSpacing);
-    
-    if (algorithm !== "mrtree") {
-      applyLayout();
-    }
-  }, [localNodeSpacing, localLayerSpacing, setNodeSpacing, setLayerSpacing, algorithm, applyLayout]);
-
   return (
     <DropdownMenu open={open} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
-        <span>
+        <div>
           <ControlButton
-            tooltip="Node Spacing"
-            onClick={(e) => e.preventDefault()}
-            icon={<SpaceBarIcon />}
+            tooltip="Adjust Spacing"
+            icon={<ArrowUpDown className="size-4" />}
+            active={open}
+            onClick={() => setOpen(!open)}
           />
-        </span>
+        </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="p-0 w-[280px]">
-        <Box sx={{ p: 2, width: '100%' }} onClick={(e) => e.stopPropagation()}>
-          <Typography id="node-spacing-slider" gutterBottom variant="body2" sx={{ fontWeight: 600 }}>
-            Node Spacing: {localNodeSpacing}px
-          </Typography>
-          <Slider
-            aria-labelledby="node-spacing-slider"
-            value={localNodeSpacing}
-            onChange={handleNodeSpacingChange}
-            min={50}
-            max={300}
-            step={10}
-            valueLabelDisplay="auto"
-            sx={{ mb: 3 }}
-          />
+      <DropdownMenuContent className="w-80 p-4">
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <p className="text-sm font-medium">Node Spacing</p>
+              <span className="text-sm text-muted-foreground">{localNodeSpacing}px</span>
+            </div>
+            <Slider
+              value={[localNodeSpacing]}
+              onValueChange={(value: number[]) => setLocalNodeSpacing(value[0])}
+              max={100}
+              min={20}
+              step={10}
+            />
+          </div>
 
-          {algorithm !== "mrtree" && (
-            <>
-              <Typography
-                id="layer-spacing-slider"
-                gutterBottom
-                variant="body2"
-                sx={{ fontWeight: 600 }}
-              >
-                Layer Spacing: {localLayerSpacing}px
-              </Typography>
-              <Slider
-                aria-labelledby="layer-spacing-slider"
-                value={localLayerSpacing}
-                onChange={handleLayerSpacingChange}
-                min={50}
-                max={300}
-                step={10}
-                valueLabelDisplay="auto"
-              />
-            </>
-          )}
-          
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-            <Button 
-              onClick={handleApply}
-              color="primary"
-              size="small"
-              variant="contained"
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <p className="text-sm font-medium">Layer Spacing</p>
+              <span className="text-sm text-muted-foreground">{localLayerSpacing}px</span>
+            </div>
+            <Slider
+              value={[localLayerSpacing]}
+              onValueChange={(value: number[]) => setLocalLayerSpacing(value[0])}
+              max={100}
+              min={20}
+              step={10}
+            />
+          </div>
+
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setOpen(false);
+                setLocalNodeSpacing(nodeSpacing);
+                setLocalLayerSpacing(layerSpacing);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                setNodeSpacing(localNodeSpacing);
+                setLayerSpacing(localLayerSpacing);
+                setOpen(false);
+                if (algorithm !== "mrtree") {
+                  applyLayout();
+                }
+              }}
             >
               Apply
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 };
 
-export default React.memo(SpacingControls);
+export default SpacingControls;

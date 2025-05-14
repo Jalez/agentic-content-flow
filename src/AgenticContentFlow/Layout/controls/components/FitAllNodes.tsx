@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { Maximize2 } from "lucide-react"; // Replace MUI icon with Lucide icon
+import { Maximize2 } from "lucide-react";
 import { useReactFlow } from "@xyflow/react";
 import { useLayoutContext } from "@jalez/react-flow-automated-layout";
 import { VIEWPORT_CONSTRAINTS } from "../../../constants";

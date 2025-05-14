@@ -1,6 +1,6 @@
 /** @format */
 import React from "react";
-import { Maximize, Keyboard } from "lucide-react"; // Replace MUI icons
+import { Maximize, Keyboard } from "lucide-react"; 
 import ControlButton from "../ControlButton";
 
 interface NavigationControlsProps {

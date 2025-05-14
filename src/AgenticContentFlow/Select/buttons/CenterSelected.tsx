@@ -1,7 +1,6 @@
 import { useSelect } from "../contexts/SelectContext";
-
 import ControlButton from "../../Controls/Components/ControlButton";
-import CenterFocusStrongIcon from "@mui/icons-material/CenterFocusStrong";
+import { Target } from "lucide-react";
 
 /**
  * @description This button is used to center the view on the selected nodes in the mindmap.
@@ -15,7 +14,7 @@ const CenterSelectedButton = () => {
     <ControlButton
       key="centerSelected"
       tooltip={"Center Selected"}
-      icon={<CenterFocusStrongIcon />}
+      icon={<Target className="size-4" />}
       onClick={handleCenterOnSelected}
       disabled={!hasSelection}
       active={hasSelection}

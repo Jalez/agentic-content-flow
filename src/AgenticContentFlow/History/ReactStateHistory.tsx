@@ -16,7 +16,7 @@ import {
 } from "@jalez/react-state-history";
 
 import "@xyflow/react/dist/style.css";
-import { Redo, Save, Undo } from "@mui/icons-material";
+import { Redo2, Save, Undo2 } from "lucide-react";
 import { useEffect } from "react";
 import { CONTROL_TYPES } from "../constants";
 import { registerControl, unregisterControl } from "../Controls";
@@ -45,14 +45,14 @@ function ReactStateHistoryControls() {
           }
         }}
         disabled={!canUndo}
-        icon={<Undo />}
+        icon={<Undo2 className="size-4" />}
         tooltip="Undo"
       />
       <ControlButton
         onClick={togglePersistence}
         tooltip="Toggle Persistence"
         disabled={false}
-        icon={<Save />}
+        icon={<Save className="size-4" />}
         active={isPersistent}
       />
       <ControlButton
@@ -62,7 +62,7 @@ function ReactStateHistoryControls() {
           }
         }}
         disabled={!canRedo}
-        icon={<Redo />}
+        icon={<Redo2 className="size-4" />}
         tooltip="Redo"
       />
     </>

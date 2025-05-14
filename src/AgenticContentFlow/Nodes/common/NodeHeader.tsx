@@ -6,7 +6,6 @@ import {
 } from "react";
 import { useNodeId, useReactFlow } from "@xyflow/react";
 import { cn } from "@/lib/utils";
-// Replace MUI icons with Lucide equivalents
 import { MoreVertical, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 

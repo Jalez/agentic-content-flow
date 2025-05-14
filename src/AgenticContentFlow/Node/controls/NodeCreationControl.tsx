@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useReactFlow } from "@xyflow/react";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import { PlusCircle } from "lucide-react";
 import ControlDropdown from "../../Controls/Components/ControlDropdown";
 import { createNodeFromTemplate } from "../registry/nodeTypeRegistry";
 import { useNodeStore } from "../store/useNodeStore";
@@ -71,7 +71,7 @@ const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
   return (
     <ControlDropdown
       tooltip="Create New Node"
-      icon={<AddCircleOutlineIcon />}
+      icon={<PlusCircle className="size-4" />}
       items={availableNodeTypes.map((nodeType) => ({
         key: nodeType,
         label: nodeType,

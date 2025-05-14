@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { IconButton, Badge } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { Node } from "@xyflow/react";
 import { useNodeStore } from "../../stores";
 import { useNodeHistoryState } from "../../Node/hooks/useNodeState";
 import { updateNodeHierarchyVisibility } from "./utils/nodeHierarchyUtils";
+import { ChevronUp, ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
 interface ExpandCollapseButtonProps {
   /**
    * Dimensions to apply when the node is collapsed
@@ -91,20 +91,26 @@ export const ExpandCollapseButton = ({
   };
 
   return (
-    <IconButton
+    <Button
       onClick={handleToggleExpand}
-      //size="small"
-      sx={{ mr: 0.5 }}
+      size="icon"
+      variant="ghost"
+      className="mr-1 relative h-6 w-6"
       aria-label={expanded ? "Collapse" : "Expand"}
     >
       {expanded ? (
-        <ExpandLessIcon />
+        <ChevronUp className="size-4" />
       ) : (
-        <Badge badgeContent={childCount} color="primary">
-          <ExpandMoreIcon />
-        </Badge>
+        <>
+          <ChevronDown className="size-4" />
+          {childCount > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[0.6rem] font-semibold text-primary-foreground">
+              {childCount}
+            </span>
+          )}
+        </>
       )}
-    </IconButton>
+    </Button>
   );
 };
 
