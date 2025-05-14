@@ -3,12 +3,11 @@ import {
   useCallback,
   HTMLAttributes,
   ReactNode,
-  useState,
 } from "react";
 import { useNodeId, useReactFlow } from "@xyflow/react";
 import { cn } from "@/lib/utils";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import DeleteIcon from "@mui/icons-material/Delete";
+// Replace MUI icons with Lucide equivalents
+import { MoreVertical, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 /* NODE HEADER -------------------------------------------------------------- */
@@ -156,7 +155,7 @@ export const NodeHeaderMenuAction = forwardRef<
           label={label}
           {...props}
         >
-          {trigger ?? <MoreVertIcon />}
+          {trigger ?? <MoreVertical />}
         </NodeHeaderAction>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
@@ -184,7 +183,7 @@ export const NodeHeaderDeleteAction = () => {
   return (
     <DropdownMenuItem onClick={handleClick} className="text-red-600">
       <div className="flex items-center gap-2">
-        <DeleteIcon fontSize="small" />
+        <Trash2 className="size-4" />
         <span>Delete</span>
       </div>
     </DropdownMenuItem>
