@@ -41,9 +41,9 @@ const CellComponent = (node: Node<CourseNodeData>) => {
     <>
       <div
         className={cn(
-          "inline-block w-[172px] overflow-hidden bg-card cursor-grab active:cursor-grabbing select-none transition-all rounded-lg",
+          "inline-block w-[172px] overflow-hidden bg-card cursor-grab active:cursor-grabbing select-none transition-all rounded-lg group",
           node.selected ? "shadow-[0_0_0_2px_var(--color-primary),_0_0_10px_2px_var(--color-primary)]" : "shadow-none",
-          "hover:shadow-md"
+          
         )}
         style={{
           borderLeft: `4px solid ${courseColor}`,
