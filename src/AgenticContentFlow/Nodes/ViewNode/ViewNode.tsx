@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { NodeProps } from '@xyflow/react';
-// Replace MUI icons with Lucide icons
 import { ArrowLeft, ArrowRight, ArrowUp, ArrowDown } from 'lucide-react';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ViewNodeContainer } from './ViewNodeStyles';

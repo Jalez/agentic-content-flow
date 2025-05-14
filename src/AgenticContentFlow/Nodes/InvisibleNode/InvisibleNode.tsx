@@ -13,7 +13,6 @@ import { LAYOUT_CONSTANTS } from '../../Layout/utils/layoutUtils';
 import ExpandCollapseButton from '../common/ExpandCollapseButton';
 import CornerResizer from '../common/CornerResizer';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
-// Replace MUI icon with Lucide equivalent
 import { Grid } from 'lucide-react';
 
 interface InvisibleNodeProps extends NodeProps {

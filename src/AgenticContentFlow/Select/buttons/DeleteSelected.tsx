@@ -13,10 +13,7 @@ import ControlButton from "../../Controls/Components/ControlButton";
  * @component
  * @example
  * <DeleteSelectedButton />
- * @see {@link https://mui.com/material-ui/material-icons/} for more icons
- * @see {@link https://mui.com/material-ui/react-button/#basic-button} for more button examples
- * @see {@link https://mui.com/material-ui/react-tooltip/#basic-tooltip} for more tooltip examples
- */
+*/
 const DeleteSelectedButton = () => {
   const { hasSelection, deleteSelected } = useSelect();
 

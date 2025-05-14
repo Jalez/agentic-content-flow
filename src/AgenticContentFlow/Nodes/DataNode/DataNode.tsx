@@ -13,7 +13,6 @@ import ConnectionHandles from '../common/ConnectionHandles';
 import ExpandCollapseButton from '../common/ExpandCollapseButton';
 import { colorByDepth } from '../common/utils/colorByDepth';
 
-// Replace MUI icons with Lucide icons
 import { ArrowLeft, ArrowRight, ArrowUp, ArrowDown } from 'lucide-react';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 

@@ -1,6 +1,6 @@
 /** @format */
 import ControlDropdown from "../Controls/Components/ControlDropdown";
-import { Database } from "lucide-react"; // Replace MUI icon with Lucide icon
+import { Database } from "lucide-react"; 
 import { useEdgeStore } from "../Edge/store/useEdgeStore";
 import { useNodeStore } from "../Node/store/useNodeStore";
 
