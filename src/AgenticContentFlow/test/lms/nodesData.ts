@@ -25,7 +25,8 @@ export const lmsParentNodesData: Array<Node> = [
       level: "advanced",
       subject: "education",
       expanded: true,
-      depth: 0
+      depth: 0,
+      isParent: true // Explicitly mark this node as a parent
     },
     position: { x: 700, y: 100 },
     parentId: "container-course-lr", // *** Set the parentId ***
@@ -41,7 +42,8 @@ export const lmsParentNodesData: Array<Node> = [
       level: "intermediate",
       subject: "education",
       expanded: true,
-      depth: 1
+      depth: 1,
+      isParent: true // Explicitly mark this node as a parent
     },
     position: { x: 300, y: 200 },
     parentId: "course-0",
@@ -56,7 +58,8 @@ export const lmsParentNodesData: Array<Node> = [
       level: "intermediate",
       subject: "education",
       expanded: true,
-      depth: 1
+      depth: 1,
+      isParent: true // Explicitly mark this node as a parent
       
     },
     position: { x: 900, y: 200 },
@@ -72,7 +75,8 @@ export const lmsParentNodesData: Array<Node> = [
       level: "basic",
       subject: "education",
       expanded: true,
-      depth: 2
+      depth: 2,
+      isParent: true // Explicitly mark this node as a parent
     },
     position: { x: 300, y: 300 },
     parentId: "instance-0",
@@ -87,7 +91,8 @@ export const lmsParentNodesData: Array<Node> = [
       level: "basic",
       subject: "education",
       expanded: true,
-      depth: 2
+      depth: 2,
+      isParent: true // Explicitly mark this node as a parent
     },
     position: { x: 300, y: 450 },
     parentId: "instance-0",
@@ -103,7 +108,8 @@ export const lmsParentNodesData: Array<Node> = [
       layoutDirection: 'LR', // Your getContainerLayoutDirection helper should look for this
       isContainer: true, // Or use a type check in isContainer
       expanded: true,
-      depth: 3
+      depth: 3,
+      isParent: true // Explicitly mark this node as a parent
 
     },
     style: { width: 250, height: 100 }, // Container needs initial dimensions for rendering
@@ -120,7 +126,8 @@ export const lmsParentNodesData: Array<Node> = [
       layoutDirection: 'LR', // Your getContainerLayoutDirection helper should look for this
       isContainer: true, // Or use a type check in isContainer
       expanded: true,
-      depth: 3
+      depth: 3,
+      isParent: true // Explicitly mark this node as a parent
 
     },
     style: { width: 250, height: 100 }, // Container needs initial dimensions for rendering
@@ -136,7 +143,8 @@ export const lmsParentNodesData: Array<Node> = [
       level: "basic",
       subject: "education",
       expanded: false,
-      depth: 2
+      depth: 2,
+      isParent: true // Explicitly mark this node as a parent
     },
     position: { x: 800, y: 300 },
     parentId: "instance-1",
@@ -151,7 +159,8 @@ export const lmsParentNodesData: Array<Node> = [
       level: "basic",
       subject: "education",
       expanded: false,
-      depth: 2
+      depth: 2,
+      isParent: true // Explicitly mark this node as a parent
     },
     position: { x: 1000, y: 300 },
     parentId: "instance-1",
@@ -166,7 +175,8 @@ export const lmsParentNodesData: Array<Node> = [
       level: "basic",
       subject: "education",
       expanded: false,
-      depth: 2
+      depth: 2,
+      isParent: true // Explicitly mark this node as a parent
     },
     position: { x: 900, y: 500 },
     parentId: "instance-1",
@@ -180,7 +190,8 @@ export const lmsParentNodesData: Array<Node> = [
       details: "Course analytics data",
       level: "advanced",
       subject: "data",
-      depth: 0
+      depth: 0,
+      isParent: true // Explicitly mark this node as a parent
     },
     position: { x: 280, y: 350 },
     parentId: "container-course-lr", // Set the parentId to the container
@@ -194,7 +205,8 @@ export const lmsParentNodesData: Array<Node> = [
       details: "Dependent course",
       level: "advanced",
       subject: "education",
-      depth: 0
+      depth: 0,
+      isParent: true // Explicitly mark this node as a parent
     },
     position: { x: 550, y: 700 },
   },
@@ -206,7 +218,8 @@ export const lmsParentNodesData: Array<Node> = [
       details: "Optional dependent course",
       level: "advanced",
       subject: "education",
-      depth: 0
+      depth: 0,
+      isParent: true // Explicitly mark this node as a parent
     },
     position: { x: 850, y: 700 },
   }
@@ -222,7 +235,8 @@ export const lmsChildNodesData: Array<Node> = [
       details: "Module 1 database connection",
       level: "basic",
       subject: "data",
-      depth: 3
+      depth: 3,
+      isParent: true // Explicitly mark this node as a parent
     },
     position: { x: 250, y: 340 },
     parentId: "container-instance-1-module-1-data-lr",
@@ -236,7 +250,8 @@ export const lmsChildNodesData: Array<Node> = [
       details: "Module 1 visualization",
       level: "basic",
       subject: "visualization",
-      depth: 3
+      depth: 3,
+      isParent: true // Explicitly mark this node as a parent
     },
     position: { x: 350, y: 340 },
     parentId: "container-instance-1-module-1-data-lr",
@@ -250,7 +265,8 @@ export const lmsChildNodesData: Array<Node> = [
       details: "Module 2 data source 1",
       level: "basic",
       subject: "data",
-      depth: 3
+      depth: 3,
+      isParent: true // Explicitly mark this node as a parent
     },
     position: { x: 250, y: 500 },
     parentId: "container-instance-0-module-2-data-lr",
@@ -264,7 +280,8 @@ export const lmsChildNodesData: Array<Node> = [
       details: "Module 2 data source 2",
       level: "basic",
       subject: "data",
-      depth: 3
+      depth: 3,
+      isParent: true // Explicitly mark this node as a parent
     },
     position: { x: 350, y: 500 },
     parentId: "container-instance-0-module-2-data-lr",
@@ -278,7 +295,8 @@ export const lmsChildNodesData: Array<Node> = [
       details: "Module 2 visualization",
       level: "basic",
       subject: "visualization",
-      depth: 3
+      depth: 3,
+      isParent: true // Explicitly mark this node as a parent
     },
     position: { x: 300, y: 550 },
     parentId: "container-instance-0-module-2-data-lr",
@@ -292,7 +310,7 @@ export const lmsChildNodesData: Array<Node> = [
       details: "Check if student has more than 50% points",
       level: "basic",
       subject: "logic",
-      depth: 3
+      depth: 3,
     },
     position: { x: 900, y: 400 },
     parentId: "instance-1",
