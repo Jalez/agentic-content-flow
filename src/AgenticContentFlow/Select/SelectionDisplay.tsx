@@ -5,7 +5,7 @@ import { useNodeStore } from "../stores";
 function SelectionDisplay() {
   const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
   const [selectedEdges, setSelectedEdges] = useState<string[]>([]);
-  const { nodeParentMap } = useNodeStore();
+  const { nodeParentIdMapWithChildIdSet } = useNodeStore();
 
   // the passed handler has to be memoized, otherwise the hook will not work correctly
   const onChange = useCallback(
@@ -22,7 +22,7 @@ function SelectionDisplay() {
 
   //Is parent
   const isPotentialParent = (nodeId: string) => {
-    return nodeParentMap.has(nodeId)
+    return nodeParentIdMapWithChildIdSet.has(nodeId)
 
   };
 
