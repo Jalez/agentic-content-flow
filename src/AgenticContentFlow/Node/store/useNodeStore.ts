@@ -42,7 +42,7 @@ const rebuildStoreState = (nodes: Node<any>[]) => {
 
     // Also check if this node itself is a parent type and ensure it has an entry
     // in the nodeParentIdMapWithChildIdSet (even if it has no children yet)
-    if (node.type && (node.data?.isParent || isParentNodeType(node.type))) {
+    if (node.type && (node.data?.isParent || isParentNodeType(node))) {
       if (!nodeParentIdMapWithChildIdSet.has(node.id)) {
         nodeParentIdMapWithChildIdSet.set(node.id, new Set());
       }
@@ -53,11 +53,14 @@ const rebuildStoreState = (nodes: Node<any>[]) => {
 };
 
 // Helper to check if a node type is registered as a parent
-const isParentNodeType = (type: string): boolean => {
-  const nodeTypeInfo = getNodeTypeInfo(type);
+// Helper to check if a node type is registered as a parent
+const isParentNodeType = (node: Node<any>): boolean => {
+  const nodeTypeInfo = getNodeTypeInfo(node.type as string);
+  if (!nodeTypeInfo) {
+    return node.data?.isParent || false;
+  }
   return !!nodeTypeInfo?.isParent;
 };
-
 // Helper to ensure node data has proper expanded property
 const normalizeNodeExpandedState = (node: Node<any>): Node<any> => {
   if (!node) return node;
@@ -100,10 +103,10 @@ export const useNodeStore = create<NodeStoreState>()(
       
       // Split the nodes into parent and child arrays
       const parentNodes = nodes.filter(node => 
-        node.type && isParentNodeType(node.type)
+        node.type && isParentNodeType(node)
       );
       const childNodes = nodes.filter(node => 
-        !node.type || !isParentNodeType(node.type)
+        !node.type || !isParentNodeType(node)
       );
       
       // Update the entire state with the new data
@@ -155,7 +158,7 @@ export const useNodeStore = create<NodeStoreState>()(
         let newChildNodes = state.childNodes;
         let newParentNodes = state.parentNodes;
         
-        if (!isParentNodeType(node?.type || "")) {
+        if (!isParentNodeType(node)) {
           newChildNodes = [...state.childNodes, node];
           newNodes = [...state.parentNodes, ...newChildNodes];
         }
@@ -219,7 +222,7 @@ export const useNodeStore = create<NodeStoreState>()(
         let newChildNodes = state.childNodes;
         let newParentNodes = state.parentNodes;
 
-        if (!isParentNodeType(node?.type || "")) {
+        if (!isParentNodeType(node)) {
           newChildNodes = state.childNodes.map((child) => {
             if (child.id === node.id) {
               return node;
@@ -289,8 +292,7 @@ export const useNodeStore = create<NodeStoreState>()(
             }
           }
           
-          const nodeType = nodeToRemove?.type;
-          if (nodeType && isParentNodeType(nodeType)) {
+          if (nodeToRemove && isParentNodeType(nodeToRemove)) {
             // If it has children, then make them children of the node's parent
             // Get all child IDs from the Set-based map
             const childIdSet = newNodeParentIdMapWithChildIdSet.get(nodeId);
@@ -324,7 +326,7 @@ export const useNodeStore = create<NodeStoreState>()(
             newNodeParentIdMapWithChildIdSet.delete(nodeId);
           }
           
-          if (!isParentNodeType(nodeToRemove?.type || "")) {
+          if (nodeToRemove && !isParentNodeType(nodeToRemove)) {
             newChildNodes = state.childNodes.filter((node) => node.id !== nodeId);
             newNodes = [...state.parentNodes, ...newChildNodes];
           } else {
@@ -388,7 +390,7 @@ export const useNodeStore = create<NodeStoreState>()(
             }
           }
 
-          if (!isParentNodeType(node.type || "")) {
+          if (!isParentNodeType(node)) {
             //find the node in the childNodes and update it
             const index = newChildNodes.findIndex((child) => child.id === node.id);
             if (index !== -1) {
