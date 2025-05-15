@@ -15,7 +15,7 @@ export const updateNodeHierarchyVisibility = (
   nodeParentIdMapWithChildIdSet: Map<string, Set<string>>,
   isExpanded: boolean
 ): Node[] => {
-  // First check if the parent node is in the nodeParentMap (is a parent)
+  // First check if the parent node is actually a parent in the hierarchy
   if (!nodeParentIdMapWithChildIdSet.has(parentNode.id)) {
     return [];
   }
