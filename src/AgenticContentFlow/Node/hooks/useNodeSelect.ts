@@ -19,7 +19,9 @@ const useNodeSelection = ({ nodes, isDragging }: UseNodeSelectionProps) => {
   const updateNodes = useNodeStore((state) => state.updateNodes);
   const nodeMap = useNodeStore((state) => state.nodeMap);
   const setNodes = useNodeStore((state) => state.setNodes);
-  const nodeParentMap = useNodeStore((state) => state.nodeParentMap);
+  const nodeParentIdMapWithChildIdSet = useNodeStore(
+    (state) => state.nodeParentIdMapWithChildIdSet
+  );
   const trackUpdateNodes = useTrackableState(
     "useNodeSelection/UpdateNodes",
     updateNodes,
@@ -34,28 +36,34 @@ const useNodeSelection = ({ nodes, isDragging }: UseNodeSelectionProps) => {
   }, [selectedNodes]);
   const changeParentSelectState = useCallback(
     (parentId: string, selected: boolean) => {
-      const parentNode = nodeMap.get(parentId);
-      if (parentNode) {
-        trackUpdateNodes(
-          nodeParentMap.get(parentId)?.map((node) => ({
+      const nodesToUpdate: Node<NodeData>[] = [];
+      nodeParentIdMapWithChildIdSet.get(parentId)?.forEach((childId) => {
+        const node = nodeMap.get(childId);
+        if (node) {
+          nodesToUpdate.push({
             ...node,
             selected: selected,
-          })) || [],
+          });
+        }
+      })
+        trackUpdateNodes(
+          nodesToUpdate,
           nodes
         );
-      }
+      
     },
-    [nodeMap, nodeParentMap, trackUpdateNodes, nodes]
+    [nodeMap, nodeParentIdMapWithChildIdSet, trackUpdateNodes, nodes]
   );
 
   const handleSelectionDragStart = useCallback(
     (_: React.MouseEvent) => {
       //Set all nodeParents selectable properties to false
-      nodeParentMap.forEach((_, parentId) => {
+      nodeParentIdMapWithChildIdSet.forEach((_, parentId) => {
         changeParentSelectState(parentId, false);
       });
+
     },
-    [nodeParentMap, nodeMap, changeParentSelectState]
+    [changeParentSelectState, nodeParentIdMapWithChildIdSet]
   );
 
   /**
@@ -136,7 +144,7 @@ const useNodeSelection = ({ nodes, isDragging }: UseNodeSelectionProps) => {
   // Handler for when selection operation ends (selection rect is released)
   const handleSelectionEnd = useCallback(() => {
     //Let all node parents selectable properties to true
-    nodeParentMap.forEach((_, parentId) => {
+    nodeParentIdMapWithChildIdSet.forEach((_, parentId) => {
       changeParentSelectState(parentId, true);
     });
 
@@ -164,7 +172,7 @@ const useNodeSelection = ({ nodes, isDragging }: UseNodeSelectionProps) => {
 
     // Reset selection box state when selection ends
     setPreviousSelectionBox(null);
-  }, [getNodes, nodeParentMap, changeParentSelectState, trackUpdateNodes]);
+  }, [getNodes, nodeParentIdMapWithChildIdSet, changeParentSelectState, trackUpdateNodes]);
 
   return {
     handleNodeClick,

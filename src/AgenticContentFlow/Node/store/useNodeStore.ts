@@ -11,9 +11,7 @@ export interface NodeStoreState {
   parentNodes: Node<any>[];
   childNodes: Node<any>[];
   nodeMap: Map<string, Node<any>>;
-  nodeParentMap: Map<string, Node<any>[]>;
   nodeParentIdMapWithChildIdSet: Map<string, Set<string>>;
-
 
   setNodes: (nodes: Node<any>[]) => void;
   addNodeToStore: (node: Node<any>) => void;
@@ -26,46 +24,53 @@ export interface NodeStoreState {
 // Helper to rebuild lookup maps from a nodes array.
 const rebuildStoreState = (nodes: Node<any>[]) => {
   const nodeMap = new Map<string, Node<any>>();
-  //Map where key is parentId and value is an array of child nodes
-  const nodeParentMap = new Map<string, Node<any>[]>();
   const nodeParentIdMapWithChildIdSet = new Map<string, Set<string>>();
 
   // Ensure "no-parent" category exists.
-  nodeParentMap.set("no-parent", []);
   nodeParentIdMapWithChildIdSet.set("no-parent", new Set());
 
   nodes.forEach((node) => {
     nodeMap.set(node.id, node);
     if (node.parentId) {
-      if (!nodeParentMap.has(node.parentId)) {
-        nodeParentMap.set(node.parentId, []);
+      if (!nodeParentIdMapWithChildIdSet.has(node.parentId)) {
         nodeParentIdMapWithChildIdSet.set(node.parentId, new Set());
       }
-      nodeParentMap.get(node.parentId)!.push(node);
       nodeParentIdMapWithChildIdSet.get(node.parentId)!.add(node.id);
     } else {
-      nodeParentMap.get("no-parent")!.push(node);
       nodeParentIdMapWithChildIdSet.get("no-parent")!.add(node.id);
-
     }
 
     // Also check if this node itself is a parent type and ensure it has an entry
-    // in the nodeParentMap (even if it has no children yet)
+    // in the nodeParentIdMapWithChildIdSet (even if it has no children yet)
     if (node.type && (node.data?.isParent || isParentNodeType(node.type))) {
-      if (!nodeParentMap.has(node.id)) {
-        nodeParentMap.set(node.id, []);
+      if (!nodeParentIdMapWithChildIdSet.has(node.id)) {
         nodeParentIdMapWithChildIdSet.set(node.id, new Set());
       }
     }
   });
 
-  return { nodeMap, nodeParentMap, nodeParentIdMapWithChildIdSet };
+  return { nodeMap, nodeParentIdMapWithChildIdSet };
 };
 
 // Helper to check if a node type is registered as a parent
 const isParentNodeType = (type: string): boolean => {
   const nodeTypeInfo = getNodeTypeInfo(type);
   return !!nodeTypeInfo?.isParent;
+};
+
+// Helper to ensure node data has proper expanded property
+const normalizeNodeExpandedState = (node: Node<any>): Node<any> => {
+  if (!node) return node;
+  
+  // Create a new copy of the node
+  return {
+    ...node,
+    data: {
+      ...node.data,
+      // Ensure expanded property is explicitly a boolean
+      expanded: typeof node.data?.expanded === 'boolean' ? node.data.expanded : false
+    }
+  };
 };
 
 const initialParentNodes = parentNodesData;
@@ -81,7 +86,6 @@ export const useNodeStore = create<NodeStoreState>()(
     parentNodes: initialParentNodes,
     childNodes: initialChildNodes,
     nodeMap: initialState.nodeMap,
-    nodeParentMap: initialState.nodeParentMap,
     nodeParentIdMapWithChildIdSet: initialState.nodeParentIdMapWithChildIdSet,
 
     getNode: (id: string) => get().nodeMap.get(id),
@@ -91,7 +95,7 @@ export const useNodeStore = create<NodeStoreState>()(
         console.error("Invalid nodes value:", nodes);
         return;
       }
-      const { nodeMap, nodeParentMap, nodeParentIdMapWithChildIdSet } = rebuildStoreState(nodes);
+      const { nodeMap, nodeParentIdMapWithChildIdSet } = rebuildStoreState(nodes);
       
       
       // Split the nodes into parent and child arrays
@@ -106,7 +110,6 @@ export const useNodeStore = create<NodeStoreState>()(
       set({ 
         nodes, 
         nodeMap, 
-        nodeParentMap, 
         nodeParentIdMapWithChildIdSet,
         parentNodes,
         childNodes
@@ -114,19 +117,15 @@ export const useNodeStore = create<NodeStoreState>()(
     },
 
     setChildNodes: (newChildnodes: Node<any>[]) => {
-
-      const newNodes = [...get().parentNodes
-        , ...newChildnodes];
-
-      const { nodeMap, nodeParentMap, nodeParentIdMapWithChildIdSet } = rebuildStoreState(newNodes);
-      set({ nodes: newNodes, nodeMap, nodeParentMap, childNodes: newChildnodes, nodeParentIdMapWithChildIdSet });
+      const newNodes = [...get().parentNodes, ...newChildnodes];
+      const { nodeMap, nodeParentIdMapWithChildIdSet } = rebuildStoreState(newNodes);
+      set({ nodes: newNodes, nodeMap, childNodes: newChildnodes, nodeParentIdMapWithChildIdSet });
     },
 
     setParentNodes: (newParentnodes: Node<any>[]) => {
       const newNodes = [...newParentnodes, ...get().childNodes];
-
-      const { nodeMap, nodeParentMap, nodeParentIdMapWithChildIdSet } = rebuildStoreState(newNodes);
-      set({ nodes: newNodes, nodeMap, nodeParentMap, parentNodes: newParentnodes, nodeParentIdMapWithChildIdSet });
+      const { nodeMap, nodeParentIdMapWithChildIdSet } = rebuildStoreState(newNodes);
+      set({ nodes: newNodes, nodeMap, parentNodes: newParentnodes, nodeParentIdMapWithChildIdSet });
     },
 
 
@@ -139,7 +138,6 @@ export const useNodeStore = create<NodeStoreState>()(
         }
         // Create new maps (shallow clones)
         const newNodeMap = new Map(state.nodeMap);
-        const newNodeParentMap = new Map(state.nodeParentMap);
         const newNodeParentIdMapWithChildIdSet = new Map(state.nodeParentIdMapWithChildIdSet);
 
         newNodeMap.set(node.id, node);
@@ -153,21 +151,6 @@ export const useNodeStore = create<NodeStoreState>()(
         }
         newNodeParentIdMapWithChildIdSet.get(parentId)!.add(node.id);
 
-        // Update the old nodeParentMap too (for backwards compatibility)
-        if (!newNodeParentMap.has(parentId)) {
-          // Only show error for real parent IDs, not "no-parent"
-          if (parentId !== "no-parent") {
-            console.error(
-              `Parent node not found in the store: ${parentId}. Node ID: ${node.id}`
-            );
-            return state;
-          }
-          newNodeParentMap.set(parentId, []);
-        }
-        const children = [...(newNodeParentMap.get(parentId) || [])];
-        children.push(node);
-        newNodeParentMap.set(parentId, children);
-
         let newNodes = state.nodes;
         let newChildNodes = state.childNodes;
         let newParentNodes = state.parentNodes;
@@ -177,25 +160,20 @@ export const useNodeStore = create<NodeStoreState>()(
           newNodes = [...state.parentNodes, ...newChildNodes];
         }
         else {
-          if (newNodeParentMap.has(node.id)) {
-            console.error(
-              `This node is already a parent node: ${node.id}. Node ID: ${node.id}. Aborting`
+          // Ensure this node has an entry in the parent ID map
+          if (!newNodeParentIdMapWithChildIdSet.has(node.id)) {
+            newNodeParentIdMapWithChildIdSet.set(node.id, new Set());
+            newParentNodes = organizeNodeParents(
+              newNodeParentIdMapWithChildIdSet,
+              newNodeMap
             );
-            return state;
+            newNodes = [...newParentNodes, ...state.childNodes];
           }
-          newNodeParentMap.set(node.id, []);
-          newNodeParentIdMapWithChildIdSet.set(node.id, new Set());
-          newParentNodes = organizeNodeParents(
-            newNodeParentIdMapWithChildIdSet,
-            newNodeMap
-          );
-          newNodes = [...newParentNodes, ...state.childNodes];
         }
 
         return {
           nodes: newNodes,
           nodeMap: newNodeMap,
-          nodeParentMap: newNodeParentMap,
           nodeParentIdMapWithChildIdSet: newNodeParentIdMapWithChildIdSet,
           parentNodes: newParentNodes,
           childNodes: newChildNodes,
@@ -212,7 +190,6 @@ export const useNodeStore = create<NodeStoreState>()(
         }
         // Create new maps (shallow clones)
         const newNodeMap = new Map(state.nodeMap);
-        const newNodeParentMap = new Map(state.nodeParentMap);
         const newNodeParentIdMapWithChildIdSet = new Map(state.nodeParentIdMapWithChildIdSet);
         
         //Get also the old node
@@ -236,19 +213,6 @@ export const useNodeStore = create<NodeStoreState>()(
             newNodeParentIdMapWithChildIdSet.set(addToId, new Set());
           }
           newNodeParentIdMapWithChildIdSet.get(addToId)!.add(node.id);
-          
-          // Update the old nodeParentMap too (for backwards compatibility)
-          // Add the node to the new parentId
-          const newSiblings = [...(newNodeParentMap.get(addToId) || [])];
-          newSiblings.push(node);
-          newNodeParentMap.set(addToId, newSiblings);
-
-          const oldSiblings = [...(newNodeParentMap.get(removeFromId) || [])];
-          const index = oldSiblings.findIndex((child) => child.id === node.id);
-          if (index !== -1) {
-            oldSiblings.splice(index, 1);
-            newNodeParentMap.set(removeFromId, oldSiblings);
-          }
         }
 
         let newNodes = state.nodes;
@@ -274,7 +238,6 @@ export const useNodeStore = create<NodeStoreState>()(
         return {
           nodes: newNodes,
           nodeMap: newNodeMap,
-          nodeParentMap: newNodeParentMap,
           nodeParentIdMapWithChildIdSet: newNodeParentIdMapWithChildIdSet,
           parentNodes: newParentNodes,
           childNodes: newChildNodes,
@@ -286,7 +249,6 @@ export const useNodeStore = create<NodeStoreState>()(
       set((state) => {
         // If node doesn't exist, throw an error
         const newNodeMap = new Map(state.nodeMap);
-        const newNodeParentMap = new Map(state.nodeParentMap);
         const newNodeParentIdMapWithChildIdSet = new Map(state.nodeParentIdMapWithChildIdSet);
         let newNodes = state.nodes;
         let newChildNodes = state.childNodes;
@@ -318,26 +280,12 @@ export const useNodeStore = create<NodeStoreState>()(
               }
             }
             
-            // Update the old nodeParentMap too (for backwards compatibility)
-            const children = [...(newNodeParentMap.get(parentId) || [])];
-            const index = children.findIndex((child) => child.id === nodeId);
-            if (index !== -1) {
-              children.splice(index, 1);
-              newNodeParentMap.set(parentId, children);
-            }
+ 
           } else {
             // Handle no-parent case for Set-based map
             const noParentChildIdSet = newNodeParentIdMapWithChildIdSet.get("no-parent");
             if (noParentChildIdSet) {
               noParentChildIdSet.delete(nodeId);
-            }
-            
-            // Update old nodeParentMap too
-            const noParentChildren = [...(newNodeParentMap.get("no-parent") || [])];
-            const index = noParentChildren.findIndex((child) => child.id === nodeId);
-            if (index !== -1) {
-              noParentChildren.splice(index, 1);
-              newNodeParentMap.set("no-parent", noParentChildren);
             }
           }
           
@@ -369,18 +317,11 @@ export const useNodeStore = create<NodeStoreState>()(
                 }
               });
               
-              // Also update the old nodeParentMap (for backwards compatibility)
-              const children = newNodeParentMap.get(nodeId) || [];
-              if (children.length > 0) {
-                const parentChildren = newNodeParentMap.get(parentId) || [];
-                parentChildren.push(...children);
-                newNodeParentMap.set(parentId, parentChildren);
-              }
+
             }
             
             // Remove this node as a parent from both map structures
             newNodeParentIdMapWithChildIdSet.delete(nodeId);
-            newNodeParentMap.delete(nodeId);
           }
           
           if (!isParentNodeType(nodeToRemove?.type || "")) {
@@ -395,7 +336,6 @@ export const useNodeStore = create<NodeStoreState>()(
         return {
           nodes: newNodes,
           nodeMap: newNodeMap,
-          nodeParentMap: newNodeParentMap,
           nodeParentIdMapWithChildIdSet: newNodeParentIdMapWithChildIdSet,
           parentNodes: newParentNodes,
           childNodes: newChildNodes,
@@ -406,6 +346,7 @@ export const useNodeStore = create<NodeStoreState>()(
     // Merges only the updated nodes with the existing ones.
     updateNodes: (updatedNodes: Node<any>[]) => {
       set((state) => {
+        console.log("Updating nodes in store:", updatedNodes);
 
         //First, go through the updated nodes and check if they exist in the store
         for (const node of updatedNodes) {
@@ -417,7 +358,6 @@ export const useNodeStore = create<NodeStoreState>()(
 
         // Create new maps (shallow clones)
         const newNodeMap = new Map(state.nodeMap);
-        const newNodeParentMap = new Map(state.nodeParentMap);
         const newNodeParentIdMapWithChildIdSet = new Map(state.nodeParentIdMapWithChildIdSet);
                 
         // Update the nodes in the store
@@ -446,25 +386,6 @@ export const useNodeStore = create<NodeStoreState>()(
             if (newParentChildren) {
               newParentChildren.add(node.id);
             }
-            // USING THE OLD PARENT ID MAP - TO BE REMOVED
-            // If the new parentId is not in the map, throw an error
-            if (!newNodeParentMap.has(newParentId)) {
-              console.error(
-                `Parent node not found in the store: ${newParentId}. Node ID: ${node.id}`
-              );
-              return state;
-            }
-            // Add the node to the new parentId
-            const newSiblings = [...(newNodeParentMap.get(newParentId) || [])];
-            newSiblings.push(node);
-            newNodeParentMap.set(newParentId, newSiblings);
-
-            const oldSiblings = [...(newNodeParentMap.get(oldParentId) || [])];
-            const index = oldSiblings.findIndex((child) => child.id === node.id);
-            if (index !== -1) {
-              oldSiblings.splice(index, 1);
-              newNodeParentMap.set(oldParentId, oldSiblings);
-            }
           }
 
           if (!isParentNodeType(node.type || "")) {
@@ -475,17 +396,23 @@ export const useNodeStore = create<NodeStoreState>()(
             } 
           }
         });
+        console.log("New node map:", newNodeMap);
+        console.log("New node parent-child map:", newNodeParentIdMapWithChildIdSet);
         newParentNodes = organizeNodeParents(
           newNodeParentIdMapWithChildIdSet,
           newNodeMap
         );
+        console.log("New parent nodess:", newParentNodes);
   
+
         
         newNodes = [...newParentNodes, ...newChildNodes];
+
+        console.log("Updating nodes in store:", newNodes)
+        // Return the updated state
         return {
           nodes: newNodes,
           nodeMap: newNodeMap,
-          nodeParentMap: newNodeParentMap,
           nodeParentIdMapWithChildIdSet: newNodeParentIdMapWithChildIdSet,
           parentNodes: newParentNodes,
           childNodes: newChildNodes,
@@ -505,24 +432,30 @@ export const useNodeStore = create<NodeStoreState>()(
     }),
     onRehydrateStorage: () => (state) => {
       if (state) {
-        // When rehydrating, ensure we rebuild all the necessary maps
-        const { nodeMap, nodeParentMap, nodeParentIdMapWithChildIdSet } = rebuildStoreState(state.nodes);
-        state.nodeMap = nodeMap;
-        state.nodeParentMap = nodeParentMap;
-        state.nodeParentIdMapWithChildIdSet = nodeParentIdMapWithChildIdSet;
+        console.log("Rehydrating node state...");
         
+        // Normalize all nodes to ensure expanded property is properly set
+        const normalizedNodes = state.nodes.map(normalizeNodeExpandedState);
+        state.nodes = normalizedNodes;
+        
+        // When rehydrating, ensure we rebuild all the necessary maps
+        const { nodeMap, nodeParentIdMapWithChildIdSet } = rebuildStoreState(normalizedNodes);
+        state.nodeMap = nodeMap;
+        state.nodeParentIdMapWithChildIdSet = nodeParentIdMapWithChildIdSet;
+        console.log("nodeParentIdMapWithChildIdSet:", nodeParentIdMapWithChildIdSet);
         // Ensure parent and child nodes are correctly categorized
         const parentNodes = organizeNodeParents(
           nodeParentIdMapWithChildIdSet,
           nodeMap
         );
-        const childNodes = state.nodes.filter(node => 
+        const childNodes = normalizedNodes.filter(node => 
           !parentNodes.some(parentNode => parentNode.id === node.id)
         );
         
         state.parentNodes = parentNodes;
         state.childNodes = childNodes;
         
+        console.log("Node state rehydration complete.");
       }
     },
   }
