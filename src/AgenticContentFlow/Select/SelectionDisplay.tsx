@@ -1,11 +1,11 @@
 import { Edge, Node, Panel, useOnSelectionChange } from "@xyflow/react";
 import { useCallback, useState } from "react";
-import { useNodeStore } from "../stores";
+import { useNodeContext } from "../Node/store/useNodeContext";
 
 function SelectionDisplay() {
   const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
   const [selectedEdges, setSelectedEdges] = useState<string[]>([]);
-  const { nodeParentIdMapWithChildIdSet } = useNodeStore();
+  const { nodeParentIdMapWithChildIdSet } = useNodeContext();
 
   // the passed handler has to be memoized, otherwise the hook will not work correctly
   const onChange = useCallback(

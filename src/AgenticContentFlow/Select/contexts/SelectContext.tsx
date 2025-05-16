@@ -7,7 +7,8 @@ import {
   useEffect,
 } from "react";
 import { Edge, Node, useOnSelectionChange, useReactFlow } from "@xyflow/react";
-import { useEdgeStore, useNodeStore } from "../../stores";
+import { useEdgeStore } from "../../stores";
+import { useNodeContext } from "../../Node/store/useNodeContext";
 
 //Create a context for the selected nodes and edges
 
