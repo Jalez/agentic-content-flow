@@ -7,8 +7,7 @@ import {
   useEffect,
 } from "react";
 import { Edge, Node, useOnSelectionChange, useReactFlow } from "@xyflow/react";
-import { useEdgeStore } from "../../stores";
-import { useNodeContext } from "../../Node/store/useNodeContext";
+
 
 //Create a context for the selected nodes and edges
 
@@ -27,7 +26,6 @@ export const SelectProvider = ({ children }: { children: ReactNode }) => {
   const reactFlowInstance = useReactFlow();
   const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
   const [selectedEdges, setSelectedEdges] = useState<Edge[]>([]);
-  const removeEdge = useEdgeStore((state) => state.removeEdge);
 
   // Handle keyboard events
   useEffect(() => {
