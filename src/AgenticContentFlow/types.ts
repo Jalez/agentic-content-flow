@@ -1,15 +1,6 @@
 /** @format */
 // Node data with level and optional parent
 
-import { Node } from "@xyflow/react";
-
-export interface EditNodeDialogProps {
-  open: boolean;
-  onClose: () => void;
-  onSave: (label: string, details: string) => void;
-  initialLabel: string;
-  initialDetails: string;
-}
 
 /**
  * Node data interface
