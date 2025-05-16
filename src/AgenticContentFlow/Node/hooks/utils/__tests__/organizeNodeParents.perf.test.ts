@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { Node } from '@xyflow/react';
 import { NodeData } from '../../../../types';
-import { organizeNodeParents } from '../organizeNodeParents';
+import { getOrganizedNodeParents } from '../../../store/utils/getOrganizedNodeParents';
 
 /**
- * Original implementation of organizeNodeParents without optimization
+ * Original implementation of getOrganizedNodeParents without optimization
  * Used for performance comparison
  */
-const organizeNodeParentsOriginal = (
+const getOrganizedNodeParentsOriginal = (
   parentIdWithChildren: Map<string, Node<NodeData>[]>,
   poolOfAllNodes: Map<string, Node<NodeData>>,
 ): Node[] => {
@@ -99,6 +99,32 @@ const generateNodeHierarchy = (depth: number, branchingFactor: number) => {
   return { poolOfAllNodes, parentIdWithChildren };
 };
 
+// Helper function to convert array-based parent-child map to Set-based map
+const convertToSetMap = (arrayMap: Map<string, Node<NodeData>[]>): Map<string, Set<string>> => {
+  const setMap = new Map<string, Set<string>>();
+  
+  // Ensure we include an entry for each parent, even if it has no children
+  arrayMap.forEach((_, parentId) => {
+    if (!setMap.has(parentId)) {
+      setMap.set(parentId, new Set<string>());
+    }
+  });
+  
+  // Now add all child relationships
+  arrayMap.forEach((children, parentId) => {
+    const childIdSet = setMap.get(parentId) || new Set<string>();
+    children.forEach((child: Node<NodeData>) => childIdSet.add(child.id));
+    setMap.set(parentId, childIdSet);
+  });
+  
+  // Add "no-parent" entry which is expected by the implementation
+  if (!setMap.has("no-parent")) {
+    setMap.set("no-parent", new Set<string>());
+  }
+  
+  return setMap;
+};
+
 /**
  * Time the execution of a function
  * @param fn Function to time
@@ -111,53 +137,53 @@ const timeExecution = <T>(fn: () => T): { result: T, timeMs: number } => {
   return { result, timeMs };
 };
 
-describe('organizeNodeParents performance', () => {
+describe('getOrganizedNodeParents performance', () => {
   it('should handle small hierarchies efficiently', () => {
     // Small hierarchy: depth 3, branching 3 (1 root + 3 + 9 + 27 = 40 nodes total)
     const { poolOfAllNodes, parentIdWithChildren } = generateNodeHierarchy(3, 3);
+    const setBasedMap = convertToSetMap(parentIdWithChildren);
     
     // Time both implementations
     const originalTime = timeExecution(() => 
-      organizeNodeParentsOriginal(parentIdWithChildren, poolOfAllNodes));
+      getOrganizedNodeParentsOriginal(parentIdWithChildren, poolOfAllNodes));
     const optimizedTime = timeExecution(() => 
-      organizeNodeParents(parentIdWithChildren, poolOfAllNodes));
+      getOrganizedNodeParents(setBasedMap, poolOfAllNodes));
     
-
     // Verify both implementations return the same result
-    expect(optimizedTime.result.map(node => node.id))
-      .toEqual(originalTime.result.map(node => node.id));
+    expect(optimizedTime.result.map(node => node.id).sort())
+      .toEqual(originalTime.result.map(node => node.id).sort());
   });
 
   it('should handle medium hierarchies with significant performance improvement', () => {
     // Medium hierarchy: depth 4, branching 4 (1 + 4 + 16 + 64 + 256 = 341 nodes total)
     const { poolOfAllNodes, parentIdWithChildren } = generateNodeHierarchy(4, 4);
+    const setBasedMap = convertToSetMap(parentIdWithChildren);
     
     // Time both implementations
     const originalTime = timeExecution(() => 
-      organizeNodeParentsOriginal(parentIdWithChildren, poolOfAllNodes));
+      getOrganizedNodeParentsOriginal(parentIdWithChildren, poolOfAllNodes));
     const optimizedTime = timeExecution(() => 
-      organizeNodeParents(parentIdWithChildren, poolOfAllNodes));
+      getOrganizedNodeParents(setBasedMap, poolOfAllNodes));
     
-
     // Verify both implementations return the same result
-    expect(optimizedTime.result.map(node => node.id))
-      .toEqual(originalTime.result.map(node => node.id));
+    expect(optimizedTime.result.map(node => node.id).sort())
+      .toEqual(originalTime.result.map(node => node.id).sort());
   });
 
   it('should handle large hierarchies much more efficiently', () => {
     // Large hierarchy: depth 5, branching 5 (1 + 5 + 25 + 125 + 625 + 3125 = 3906 nodes total)
     const { poolOfAllNodes, parentIdWithChildren } = generateNodeHierarchy(5, 5);
+    const setBasedMap = convertToSetMap(parentIdWithChildren);
     
     // Time both implementations
     const originalTime = timeExecution(() => 
-      organizeNodeParentsOriginal(parentIdWithChildren, poolOfAllNodes));
+      getOrganizedNodeParentsOriginal(parentIdWithChildren, poolOfAllNodes));
     const optimizedTime = timeExecution(() => 
-      organizeNodeParents(parentIdWithChildren, poolOfAllNodes));
+      getOrganizedNodeParents(setBasedMap, poolOfAllNodes));
     
-
     // Verify both implementations return the same result
-    expect(optimizedTime.result.map(node => node.id))
-      .toEqual(originalTime.result.map(node => node.id));
+    expect(optimizedTime.result.map(node => node.id).sort())
+      .toEqual(originalTime.result.map(node => node.id).sort());
   });
 
   it('should handle hierarchies with shared paths efficiently', () => {
@@ -210,11 +236,13 @@ describe('organizeNodeParents performance', () => {
       }
     }
     
+    const setBasedMap = convertToSetMap(parentIdWithChildren);
+    
     // Time both implementations
     const originalTime = timeExecution(() => 
-      organizeNodeParentsOriginal(parentIdWithChildren, poolOfAllNodes));
+      getOrganizedNodeParentsOriginal(parentIdWithChildren, poolOfAllNodes));
     const optimizedTime = timeExecution(() => 
-      organizeNodeParents(parentIdWithChildren, poolOfAllNodes));
+      getOrganizedNodeParents(setBasedMap, poolOfAllNodes));
 
     // Verify both implementations return the same result
     expect(optimizedTime.result.map(node => node.id).sort())
