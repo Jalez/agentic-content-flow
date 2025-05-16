@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Node } from "@xyflow/react";
-import { useNodeStore } from "../../stores";
+import { useNodeContext } from "../../stores";
 import { useNodeHistoryState } from "../../Node/hooks/useNodeState";
 import { updateNodeHierarchyVisibility } from "./utils/nodeHierarchyUtils";
 import { ChevronUp, ChevronDown } from "lucide-react";
@@ -37,10 +37,7 @@ export const ExpandCollapseButton = ({
   expandedDimensions,
   nodeInFlow,
 }: ExpandCollapseButtonProps) => {
-  const nodeParentIdMapWithChildIdSet = useNodeStore(
-    (state) => state.nodeParentIdMapWithChildIdSet
-  );
-  const nodeMap = useNodeStore((state) => state.nodeMap);
+  const {nodeParentIdMapWithChildIdSet, nodeMap} = useNodeContext();
   
   // Use the more efficient Set-based approach to get child IDs
   const childIdSet = nodeParentIdMapWithChildIdSet.get(nodeInFlow.id) || new Set();

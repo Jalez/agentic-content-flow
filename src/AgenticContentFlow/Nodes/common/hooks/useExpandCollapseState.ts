@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Node } from '@xyflow/react';
-import { useNodeStore } from '../../../stores';
+import { useNodeContext } from '../../../stores';
 import { useNodeHistoryState } from '../../../Node/hooks/useNodeState';
 import { updateNodeHierarchyVisibility } from '../utils/nodeHierarchyUtils';
 
@@ -36,10 +36,10 @@ export const useExpandCollapseState = ({
   node
 }: ExpandCollapseConfig) => {
   // Access the store for parent-child relationships
-  const nodeParentIdMapWithChildIdSet = useNodeStore(
+  const nodeParentIdMapWithChildIdSet = useNodeContext(
     (state) => state.nodeParentIdMapWithChildIdSet
   );
-  const nodeMap = useNodeStore((state) => state.nodeMap);
+  const nodeMap = useNodeContext((state) => state.nodeMap);
   
   // Get count of children for badge display
   const childIdSet = nodeParentIdMapWithChildIdSet.get(node.id) || new Set();

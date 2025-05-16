@@ -3,22 +3,22 @@ import { NodeData } from "../../types";
 import { useCallback } from "react";
 import { withErrorHandler } from "../../utils/withErrorHandler";
 import { createNodeFromTemplate } from "../registry/nodeTypeRegistry";
-import { useNodeStore } from "../store/useNodeStore";
+import { useNodeContext } from "../store/useNodeContext";
 import { useEdgeStore } from "../../stores";
 import { useTrackableState, useTransaction } from "@jalez/react-state-history";
 
 // type useConnectionOperationsProps = {};
 
 export const useConnectionOperations = () => {
-  const { addNodeToStore, nodeMap, updateNode, nodeParentIdMapWithChildIdSet, removeNodes } =
-    useNodeStore();
+  const { addNode, nodeMap, updateNode, nodeParentIdMapWithChildIdSet, removeNodes } =
+    useNodeContext();
   const { edges, addEdgeToStore, setEdges, edgeMap } = useEdgeStore();
   const { screenToFlowPosition } = useReactFlow();
   const { withTransaction } = useTransaction();
   const reactFlowInstance = useReactFlow();
-  const trackAddNodeToStore = useTrackableState(
+  const trackaddNode = useTrackableState(
     "useConnectionOperations/AddSourceNode",
-    addNodeToStore,
+    addNode,
     removeNodes
   );
 
@@ -85,7 +85,7 @@ export const useConnectionOperations = () => {
           realChildNode,
           `Update Child Node to ${newParentNode.id}`
         );
-        trackAddNodeToStore(
+        trackaddNode(
           newParentNode,
         [newParentNode],
           `Add Parent Node to ${childNode.id}`
@@ -189,7 +189,7 @@ export const useConnectionOperations = () => {
     };
     withTransaction(
       () => {
-        trackAddNodeToStore(
+        trackaddNode(
           newChildNode,
         [newChildNode],
           `Create target Node of ${eventNode.id}`
@@ -318,7 +318,7 @@ export const useConnectionOperations = () => {
         };
         withTransaction(
           () => {
-            trackAddNodeToStore(
+            trackaddNode(
               newNode,
               [newNode],
               `Add New Node from ${connectionState.fromNode.id}`
@@ -333,7 +333,7 @@ export const useConnectionOperations = () => {
         );
       }
     },
-    [screenToFlowPosition, addNodeToStore, addEdgeToStore, nodeMap, edges]
+    [screenToFlowPosition, addNode, addEdgeToStore, nodeMap, edges]
   );
 
   return {

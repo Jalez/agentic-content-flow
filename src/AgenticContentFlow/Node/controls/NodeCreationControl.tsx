@@ -3,7 +3,7 @@ import { useReactFlow } from "@xyflow/react";
 import { PlusCircle } from "lucide-react";
 import ControlDropdown from "../../Controls/Components/ControlDropdown";
 import { createNodeFromTemplate } from "../registry/nodeTypeRegistry";
-import { useNodeStore } from "../store/useNodeStore";
+import { useNodeContext } from "../store/useNodeContext";
 import { useSelect } from "../../Select/contexts/SelectContext";
 import { useEdgeStore } from "../../stores";
 import { useTrackableState, useTransaction } from "@jalez/react-state-history";
@@ -15,15 +15,15 @@ interface NodeCreationControlProps {
 const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
   availableNodeTypes,
 }) => {
-  const { addNodeToStore, removeNodes } = useNodeStore();
+  const { addNode, removeNodes } = useNodeContext();
   const { addEdgeToStore, setEdges, edges } = useEdgeStore();
   const { screenToFlowPosition } = useReactFlow();
   const { selectedNodes } = useSelect();
   const { withTransaction } = useTransaction();
 
-  const trackAddNodeToStore = useTrackableState(
+  const trackaddNode = useTrackableState(
     "NodeCreationControl/AddNode",
-    addNodeToStore,
+    addNode,
     removeNodes
   );
   const trackAddEdgeToStore = useTrackableState(
@@ -61,7 +61,7 @@ const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
       }
 
       if (newNode) {
-        trackAddNodeToStore(newNode,[newNode]);
+        trackaddNode(newNode,[newNode]);
       }
     }, "NodeCreationControl/Add");
 
