@@ -5,7 +5,7 @@ import ControlDropdown from "../../Controls/Components/ControlDropdown";
 import { createNodeFromTemplate } from "../registry/nodeTypeRegistry";
 import { useNodeContext } from "../store/useNodeContext";
 import { useSelect } from "../../Select/contexts/SelectContext";
-import { useEdgeStore } from "../../stores";
+import { useEdgeContext } from "../../Edge/store/useEdgeContext";
 import { useTrackableState, useTransaction } from "@jalez/react-state-history";
 
 interface NodeCreationControlProps {
@@ -16,7 +16,7 @@ const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
   availableNodeTypes,
 }) => {
   const { addNode, removeNodes } = useNodeContext();
-  const { addEdgeToStore, setEdges, edges } = useEdgeStore();
+  const { addEdgeToStore, setEdges, edges } = useEdgeContext();
   const { screenToFlowPosition } = useReactFlow();
   const { selectedNodes } = useSelect();
   const { withTransaction } = useTransaction();

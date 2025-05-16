@@ -1,14 +1,12 @@
 import { useCallback, useMemo } from "react";
 import { Edge, EdgeChange, applyEdgeChanges } from "@xyflow/react";
-import { useEdgeStore } from "../../stores";
+import { useEdgeContext } from "../store/useEdgeContext";
 import { withErrorHandler } from "../../utils/withErrorHandler";
 import { useTrackableState } from "@jalez/react-state-history";
 
 export const useEdgeState = () => {
-  const edges = useEdgeStore((state) => state.edges);
-  const setEdges = useEdgeStore((state) => state.setEdges);
-  const updateEdges = useEdgeStore((state) => state.updateEdges);
-  const removeEdges = useEdgeStore((state) => state.removeEdges);
+  const { edges, setEdges, updateEdges, removeEdges } = useEdgeContext();
+  
   const trackUpdateEdges = useTrackableState(
     "useEdgeState/UpdateEdges",
     updateEdges,
@@ -42,7 +40,7 @@ export const useEdgeState = () => {
       }
       trackUpdateEdges(newEdges, edges); // Use updateEdges for consistency
     }),
-    [updateEdges, edges, trackUpdateEdges]
+    [edges, trackUpdateEdges]
   );
 
   const getVisibleEdges = useCallback(() => {
@@ -56,7 +54,7 @@ export const useEdgeState = () => {
       }
       trackSetEdges(newEdges, edges); // Use setEdges for consistency
     }),
-    [setEdges, edges, trackSetEdges]
+    [edges, trackSetEdges]
   );
 
   const onEdgeRemove = useCallback(
@@ -66,13 +64,12 @@ export const useEdgeState = () => {
       }
       trackRemoveEdges(edges, edges); // Use removeEdges for consistency
     }),
-    [removeEdges, edges, trackRemoveEdges]
+    [edges, trackRemoveEdges]
   );
 
   const visibleEdges = useMemo(() => {
     return getVisibleEdges();
-  }
-  , [edges]); 
+  }, [getVisibleEdges]); 
 
   return {
     edges,

@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import { withErrorHandler } from "../../utils/withErrorHandler";
 import { createNodeFromTemplate } from "../registry/nodeTypeRegistry";
 import { useNodeContext } from "../store/useNodeContext";
-import { useEdgeStore } from "../../stores";
+import { useEdgeContext } from "../../Edge/store/useEdgeContext";
 import { useTrackableState, useTransaction } from "@jalez/react-state-history";
 
 // type useConnectionOperationsProps = {};
@@ -12,7 +12,7 @@ import { useTrackableState, useTransaction } from "@jalez/react-state-history";
 export const useConnectionOperations = () => {
   const { addNode, nodeMap, updateNode, nodeParentIdMapWithChildIdSet, removeNodes } =
     useNodeContext();
-  const { edges, addEdgeToStore, setEdges, edgeMap } = useEdgeStore();
+  const { edges, addEdgeToStore, setEdges, edgeMap } = useEdgeContext();
   const { screenToFlowPosition } = useReactFlow();
   const { withTransaction } = useTransaction();
   const reactFlowInstance = useReactFlow();

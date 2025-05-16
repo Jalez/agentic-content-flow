@@ -9,6 +9,7 @@ import { SelectProvider } from "./Select/contexts/SelectContext";
 import { useCallback, useRef } from "react";
 import { useViewPreferencesStore } from "./stores";
 import { NodeProvider, useNodeContext } from "./Node/store/useNodeContext";
+import { EdgeProvider } from "./Edge/store/useEdgeContext";
 import { useViewportManager } from "./Flow/hooks/useViewportManager";
 import { GRID_SETTINGS } from "./constants";
 import { FlowContainer } from "./Flow/FlowContainer";
@@ -111,7 +112,9 @@ const AgenticContentFlow = () => (
     <SelectProvider>
       <ReactStateHistory>
         <NodeProvider>
-          <AgenticContentFlowContent />
+          <EdgeProvider>
+            <AgenticContentFlowContent />
+          </EdgeProvider>
         </NodeProvider>
       </ReactStateHistory>
     </SelectProvider>

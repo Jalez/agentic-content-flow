@@ -1,7 +1,7 @@
 /** @format */
 import ControlDropdown from "../Controls/Components/ControlDropdown";
 import { Database } from "lucide-react"; 
-import { useEdgeStore } from "../Edge/store/useEdgeStore";
+import { useEdgeContext } from "../Edge/store/useEdgeContext";
 import { useNodeContext } from "../Node/store/useNodeContext";
 
 // Import test data sets
@@ -23,7 +23,7 @@ import { testEdgesMinimalSiblingNested, testNodesMinimalSiblingNested } from "./
  * @description Switcher for loading different test data sets
  */
 export const TestDataSwitcher = () => {
-  const { setEdges } = useEdgeStore();
+  const { setEdges } = useEdgeContext();
   const { setNodes } = useNodeContext();
 
   const switchToDataSet = (dataSet: string) => {
