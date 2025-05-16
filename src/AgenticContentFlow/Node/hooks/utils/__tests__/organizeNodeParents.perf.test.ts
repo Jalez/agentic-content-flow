@@ -113,7 +113,7 @@ const convertToSetMap = (arrayMap: Map<string, Node<NodeData>[]>): Map<string, S
   // Now add all child relationships
   arrayMap.forEach((children, parentId) => {
     const childIdSet = setMap.get(parentId) || new Set<string>();
-    children.forEach((child: Node<NodeData>) => childIdSet.add(child.id));
+    children.forEach(child => childIdSet.add(child.id));
     setMap.set(parentId, childIdSet);
   });
   
