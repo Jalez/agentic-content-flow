@@ -8,7 +8,7 @@ import { useConnectionOperations } from "../Node/hooks/useConnectionOperations";
 import { useNodeTypeRegistry } from "../Node/registry/nodeTypeRegistry";
 import { ensureNodeTypesRegistered } from "../Nodes/registerBasicNodeTypes";
 import { useSelect } from "../Select/contexts/SelectContext";
-import { useNodeStore } from "../stores";
+import { useNodeContext } from "../Node/store/useNodeContext";
 import { useNodeHistoryState } from "../Node/hooks/useNodeState";
 // Import the grid controls registration
 import GridControlsRegistration from "./controls/GridControlsRegistration";
@@ -22,7 +22,7 @@ const defaultEdgeOptions = {
 };
 
 function Flow({ children }: { children?: React.ReactNode }) {
-  const { nodes } = useNodeStore();
+  const { nodes } = useNodeContext();
   const { visibleEdges, onEdgesChange, onEdgeRemove } = useEdgeState();
   const {
     localNodes,

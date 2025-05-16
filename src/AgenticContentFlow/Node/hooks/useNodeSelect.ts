@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Node, useReactFlow } from "@xyflow/react";
 import { NodeData } from "../../types";
-import { useNodeStore } from "../../stores";
+import { useNodeContext } from "../store/useNodeContext";
 import { useSelect } from "../../Select/contexts/SelectContext";
 import { useTrackableState } from "@jalez/react-state-history";
 
@@ -16,12 +16,8 @@ interface UseNodeSelectionProps {
  */
 const useNodeSelection = ({ nodes, isDragging }: UseNodeSelectionProps) => {
   const { fitView, getNodes } = useReactFlow();
-  const updateNodes = useNodeStore((state) => state.updateNodes);
-  const nodeMap = useNodeStore((state) => state.nodeMap);
-  const setNodes = useNodeStore((state) => state.setNodes);
-  const nodeParentIdMapWithChildIdSet = useNodeStore(
-    (state) => state.nodeParentIdMapWithChildIdSet
-  );
+  const { updateNodes, nodeMap, setNodes, nodeParentIdMapWithChildIdSet } = useNodeContext();
+  
   const trackUpdateNodes = useTrackableState(
     "useNodeSelection/UpdateNodes",
     updateNodes,

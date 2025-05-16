@@ -2,16 +2,12 @@
 import { useCallback } from "react";
 import { NodeChange, applyNodeChanges, Node } from "@xyflow/react";
 import { NodeData } from "../../types";
-import { useNodeStore } from "../../stores";
 import { useTrackableState } from "@jalez/react-state-history";
 import { useNodeDrag } from "./useNodeDrag";
+import { useNodeContext } from "../store/useNodeContext";
 
 export const useNodeHistoryState = () => {
-  const nodes = useNodeStore((state) => state.nodes);
-  const setNodes = useNodeStore((state) => state.setNodes);
-  const updateNode = useNodeStore((state) => state.updateNode);
-  const updateNodes = useNodeStore((state) => state.updateNodes);
-  const removeNodes = useNodeStore((state) => state.removeNodes);
+  const { nodes, setNodes, updateNode, updateNodes, removeNodes } = useNodeContext();
   const trackSetNodes = useTrackableState("useNodeState/SetNodes", setNodes);
 
   const trackUpdateNode = useTrackableState(

@@ -7,7 +7,8 @@ import {
 } from "@xyflow/react";
 import { SelectProvider } from "./Select/contexts/SelectContext";
 import { useCallback, useRef } from "react";
-import { useNodeStore, useViewPreferencesStore } from "./stores";
+import { useViewPreferencesStore } from "./stores";
+import { NodeProvider, useNodeContext } from "./Node/store/useNodeContext";
 import { useViewportManager } from "./Flow/hooks/useViewportManager";
 import { GRID_SETTINGS } from "./constants";
 import { FlowContainer } from "./Flow/FlowContainer";
@@ -31,7 +32,7 @@ ensureNodeTypesRegistered();
 export function AgenticContentFlowContent() {
   const flowWrapper = useRef<HTMLDivElement>(null);
   const { showGrid, gridVariant } = useViewPreferencesStore();
-  const { nodeMap, nodeParentIdMapWithChildIdSet } = useNodeStore();
+  const { nodeMap, nodeParentIdMapWithChildIdSet } = useNodeContext();
 
   const {
     updateNodes,
@@ -109,7 +110,9 @@ const AgenticContentFlow = () => (
   <ReactFlowProvider>
     <SelectProvider>
       <ReactStateHistory>
-        <AgenticContentFlowContent />
+        <NodeProvider>
+          <AgenticContentFlowContent />
+        </NodeProvider>
       </ReactStateHistory>
     </SelectProvider>
   </ReactFlowProvider>
