@@ -29,7 +29,7 @@ export const TestDataSwitcher = () => {
   const switchToDataSet = (dataSet: string) => {
     switch (dataSet) {
       case "default":
-        setNodes([...childNodesData, ...parentNodesData]);
+        setNodes([...parentNodesData, ...childNodesData ]);
         setEdges(edgesData);
         break;
       case "simple":
@@ -48,7 +48,7 @@ export const TestDataSwitcher = () => {
             height: node.type === "conditionalnode" ? 100: 200,
           }
         })));
-        setEdges(lmsEdgesData);
+        setEdges([...lmsEdgesData])
         break;
       default:
         console.warn("Unknown test data set:", dataSet);

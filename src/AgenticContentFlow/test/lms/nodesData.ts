@@ -3,7 +3,7 @@ import { Node } from "@xyflow/react";
 // Course nodes (top-level container)
 export const lmsParentNodesData: Array<Node> = [
   {
-    id: 'container-course-lr', // ID for the container
+    id: 'container-course-lr-lms', // ID for the container
     type: 'invisiblenode', 
     position: { x: 0, y: 0 }, // Initial position doesn't matter, layout will set it
     data: {
@@ -17,7 +17,7 @@ export const lmsParentNodesData: Array<Node> = [
     style: { width: 250, height: 100 }, // Container needs initial dimensions for rendering
   },
   {
-    id: "course-0",
+    id: "course-0-lms",
     type: "pagenode",
     data: {
       label: "Course 0",
@@ -29,7 +29,7 @@ export const lmsParentNodesData: Array<Node> = [
       isParent: true // Explicitly mark this node as a parent
     },
     position: { x: 700, y: 100 },
-    parentId: "container-course-lr", // *** Set the parentId ***
+    parentId: "container-course-lr-lms", // *** Set the parentId ***
     extent: "parent",
   },
 
@@ -46,7 +46,7 @@ export const lmsParentNodesData: Array<Node> = [
       isParent: true // Explicitly mark this node as a parent
     },
     position: { x: 300, y: 200 },
-    parentId: "course-0",
+    parentId: "course-0-lms",
     extent: "parent",
   },
   {
@@ -63,7 +63,7 @@ export const lmsParentNodesData: Array<Node> = [
       
     },
     position: { x: 900, y: 200 },
-    parentId: "course-0",
+    parentId: "course-0-lms",
     extent: "parent",
   },
   {
@@ -194,7 +194,7 @@ export const lmsParentNodesData: Array<Node> = [
       isParent: true // Explicitly mark this node as a parent
     },
     position: { x: 280, y: 350 },
-    parentId: "container-course-lr", // Set the parentId to the container
+    parentId: "container-course-lr-lms", // Set the parentId to the container
     extent: "parent",
   },
   {

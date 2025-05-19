@@ -56,7 +56,7 @@ export const lmsEdgesData: Edge[] = [
   {
     id: "e-stats-course0",
     source: "course-stats",
-    target: "course-0",
+    target: "course-0-lms",
     sourceHandle: "right", // Right side of data node
     targetHandle: "left",  // Left side of course
   },
@@ -64,14 +64,14 @@ export const lmsEdgesData: Edge[] = [
   // Connect Course 0 to dependent courses - UPDATED for routing
   {
     id: "e-course0-course1",
-    source: "course-0",
+    source: "course-0-lms",
     target: "course-1",
     sourceHandle: "bottom", // Bottom of course (for routing)
     targetHandle: "top",  // Top of dependent course (for routing)
   },
   {
     id: "e-course0-course2",
-    source: "course-0",
+    source: "course-0-lms",
     target: "course-2",
     sourceHandle: "bottom", // Bottom of course (for routing)
     targetHandle: "top",  // Top of dependent course (for routing)
