@@ -12,6 +12,7 @@ import { useNodeContext } from "../Node/store/useNodeContext";
 import { useNodeHistoryState } from "../Node/hooks/useNodeState";
 // Import the grid controls registration
 import GridControlsRegistration from "./controls/GridControlsRegistration";
+import { useLayoutContext } from "@jalez/react-flow-automated-layout";
 
 
 const defaultEdgeOptions = {
@@ -22,8 +23,10 @@ const defaultEdgeOptions = {
 };
 
 function Flow({ children }: { children?: React.ReactNode }) {
-  const { nodes } = useNodeContext();
+  const { nodes, isNewState, changeStateAge } = useNodeContext();
+  const { applyLayout } = useLayoutContext();
   const { visibleEdges, onEdgesChange, onEdgeRemove } = useEdgeState();
+  
   const {
     localNodes,
     onNodesChange,
@@ -34,6 +37,13 @@ function Flow({ children }: { children?: React.ReactNode }) {
     onNodesDelete,
   } = useNodeHistoryState();
 
+  useEffect(() => {
+    // Apply layout when nodes change
+    if (isNewState) {
+      applyLayout();
+      changeStateAge(false);
+    }
+  }, [isNewState]);
 
   // Add ref for tracking panning performance
   const isPanning = useRef(false);
