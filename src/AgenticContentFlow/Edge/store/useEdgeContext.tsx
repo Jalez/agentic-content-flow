@@ -46,11 +46,9 @@ interface EdgeProviderProps {
 export const EdgeProvider: React.FC<EdgeProviderProps> = ({ children }) => {
   // Custom initializer function for useReducer to handle loading from storage
   const initializer = (initialState: EdgeStoreState): EdgeStoreState => {
-    console.log("EdgeProvider: Initializing state...");
     try {
       const savedState = localStorage.getItem(PERSIST_STORAGE_KEY);
       if (savedState) {
-        console.log("EdgeProvider: Found saved state, attempting rehydration...");
         const parsedState = JSON.parse(savedState);
         
         // Rehydrate using the reducer's REHYDRATE action
@@ -60,11 +58,9 @@ export const EdgeProvider: React.FC<EdgeProviderProps> = ({ children }) => {
           payload: parsedState
         });
       }
-      console.log("EdgeProvider: No saved state found, using default initial state.");
       return initialState; // No saved state, use default initial state
     } catch (error) {
       console.error("EdgeProvider: Failed to load or parse state from storage:", error);
-      console.log("EdgeProvider: Falling back to default initial state.");
       return initialState; // Error loading, fall back to default
     }
   };
@@ -78,12 +74,10 @@ export const EdgeProvider: React.FC<EdgeProviderProps> = ({ children }) => {
   // Effect to save state to localStorage whenever the 'edges' state changes
   // We only save the edges array as maps can be rebuilt
   useEffect(() => {
-    console.log("EdgeProvider: State updated, saving to storage...");
     try {
       // Save only the essential data (edges array)
       const stateToSave = { edges: state.edges };
       localStorage.setItem(PERSIST_STORAGE_KEY, JSON.stringify(stateToSave));
-      console.log("EdgeProvider: State saved successfully.");
     } catch (error) {
       console.error("EdgeProvider: Failed to save state to storage:", error);
     }

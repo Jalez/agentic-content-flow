@@ -10,7 +10,7 @@ export type EdgeAction =
   | { type: "REMOVE_EDGES"; payload: Edge[] }
   | { type: "UPDATE_EDGE"; payload: Edge }
   | { type: "UPDATE_EDGES"; payload: Edge[] }
-  | { type: "REHYDRATE"; payload: EdgeStoreState };
+  | { type: "REHYDRATE"; payload: EdgeStoreState }
 
 // Reducer function
 export const edgeReducer = (state: EdgeStoreState, action: EdgeAction): EdgeStoreState => {
@@ -24,7 +24,6 @@ export const edgeReducer = (state: EdgeStoreState, action: EdgeAction): EdgeStor
 
       // Rebuild maps from the new edges
       const { edgeMap, edgeSourceMap } = rebuildEdgeMapState(edges);
-
       return {
         ...state,
         edges,
