@@ -19,6 +19,7 @@ import { NodeAction, nodeReducer } from "./reducer/nodeReducer";
 
 // 1. Define the State Interface (same as Zustand)
 export interface NodeStoreState {
+  isNewState: boolean;
   nodes: Node<any>[];
   parentNodes: Node<any>[];
   childNodes: Node<any>[];
@@ -36,6 +37,7 @@ const defaultInitialNodes = [...initialParentNodes, ...initialChildNodes];
 const defaultInitialStateMaps = rebuildMapState(defaultInitialNodes);
 
 export const defaultInitialState: NodeStoreState = {
+  isNewState: false, 
   nodes: defaultInitialNodes,
   parentNodes: initialParentNodes,
   childNodes: initialChildNodes,
@@ -63,11 +65,9 @@ interface NodeProviderProps {
 export const NodeProvider: React.FC<NodeProviderProps> = ({ children }) => {
   // Custom initializer function for useReducer to handle loading from storage
   const initializer = (initialState: NodeStoreState): NodeStoreState => {
-    console.log("NodeProvider: Initializing state...");
     try {
       const savedState = localStorage.getItem(PERSIST_STORAGE_KEY);
       if (savedState) {
-        console.log("NodeProvider: Found saved state, attempting rehydration...");
         const parsedState = JSON.parse(savedState);
         // Perform rehydration logic similar to Zustand's onRehydrateStorage
         // Rebuild maps and normalize data
@@ -83,8 +83,8 @@ export const NodeProvider: React.FC<NodeProviderProps> = ({ children }) => {
           !parentNodes.some(parentNode => parentNode.id === node.id)
         );
 
-        console.log("NodeProvider: Rehydration successful.");
         return {
+          isNewState: false, // Reset newNodeSet to false on rehydration
           nodes: rehydratedNodes,
           nodeMap,
           nodeParentIdMapWithChildIdSet,
@@ -95,11 +95,9 @@ export const NodeProvider: React.FC<NodeProviderProps> = ({ children }) => {
         };
 
       }
-      console.log("NodeProvider: No saved state found, using default initial state.");
       return initialState; // No saved state, use default initial state
     } catch (error) {
       console.error("NodeProvider: Failed to load or parse state from storage:", error);
-      console.log("NodeProvider: Falling back to default initial state.");
       return initialState; // Error loading, fall back to default
     }
   };
@@ -114,12 +112,10 @@ export const NodeProvider: React.FC<NodeProviderProps> = ({ children }) => {
   // Effect to save state to localStorage whenever the 'nodes' state changes
   // We only save the 'nodes' array as maps and parent/child arrays can be rebuilt
   useEffect(() => {
-    console.log("NodeProvider: State updated, saving to storage...");
     try {
       // Save only the essential data (nodes array)
       const stateToSave = { nodes: state.nodes };
       localStorage.setItem(PERSIST_STORAGE_KEY, JSON.stringify(stateToSave));
-      console.log("NodeProvider: State saved successfully.");
     } catch (error) {
       console.error("NodeProvider: Failed to save state to storage:", error);
     }
@@ -155,6 +151,9 @@ export const useNodeContext = () => {
     removeNodes: (nodes: Node<any>[]) => dispatch({ type: "REMOVE_NODES", payload: nodes }),
     updateNode: (node: Node<any>) => dispatch({ type: "UPDATE_NODE", payload: node }),
     updateNodes: (nodes: Node<any>[]) => dispatch({ type: "UPDATE_NODES", payload: nodes }),
+    changeStateAge: (
+      isOld: boolean = false // Optional parameter to reset newNodeSet
+    ) => dispatch({ type: "CHANGE_STATE_AGE", payload: isOld }),
   }), [dispatch, state.nodeMap]); // Depend on dispatch and state.nodeMap for getNode
 
 

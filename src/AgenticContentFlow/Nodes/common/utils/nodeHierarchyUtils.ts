@@ -45,15 +45,13 @@ export const updateNodeHierarchyVisibility = (
         // currently do not on render set the "expanded" nor the "hidden" property on any nodes, so by default
         // we assume they are all expanded.
         // In the future, we might be tempted to set some child elements to be collapsed and 
-        // Some to be hidden by default, so we need to return to this
-        // code if we ever do that. Perhaps some kind of a reminder would be good? 
+        // some to be hidden by default, so we need to return to this
+        // code if we ever do that.
         let isChildExpanded = true;
         if( Object.prototype.hasOwnProperty.call(childNode.data, "expanded") ) {
             isChildExpanded = childNode.data.expanded as boolean;
         }
-        console.log("Child node expanded interpret value", isChildExpanded);
-        console.log("Child node expanded direct value", childNode.data?.expanded);
-        
+
         if (isChildExpanded) {
         
           const grandchildUpdates = updateNodeHierarchyVisibility(childNode, nodeMap, nodeParentIdMapWithChildIdSet, isExpanded);

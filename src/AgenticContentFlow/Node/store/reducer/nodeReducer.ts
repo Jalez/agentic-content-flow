@@ -16,6 +16,7 @@ export type NodeAction =
   | { type: "UPDATE_NODES"; payload: Node<any>[] }
   | { type: "SET_CHILD_NODES"; payload: Node<any>[] }
   | { type: "SET_PARENT_NODES"; payload: Node<any>[] }
+  | { type: "CHANGE_STATE_AGE"; payload: boolean } // Action to change node age
   | { type: "REHYDRATE"; payload: NodeStoreState }; // Action for initial load/persistence
 
 
@@ -24,7 +25,10 @@ export type NodeAction =
 export const nodeReducer = (state: NodeStoreState, action: NodeAction): NodeStoreState => {
     switch (action.type) {
       case "SET_NODES": {
+        const oldNodes = state.nodes;
         const nodes = action.payload;
+        //If the first old node is the same as the first new node, we need to tell them that it is still a new state
+        const isNewState = oldNodes.length > 0 && oldNodes[0].id === nodes[0].id ? true : false;
         if (!Array.isArray(nodes)) {
           console.error("Invalid nodes value:", nodes);
           return state;
@@ -40,8 +44,10 @@ export const nodeReducer = (state: NodeStoreState, action: NodeAction): NodeStor
           nodes: nodes,
           nodeMap,
           nodeParentIdMapWithChildIdSet,
+          pureChildIdSet, // Include the pure child ID set for future use
           parentNodes,
           childNodes,
+          isNewState: isNewState,
         };
       }
   
@@ -85,6 +91,7 @@ export const nodeReducer = (state: NodeStoreState, action: NodeAction): NodeStor
           nodeParentIdMapWithChildIdSet: newNodeParentIdMapWithChildIdSet,
           parentNodes: newParentNodes,
           childNodes: newChildNodes,
+          pureChildIdSet: newPureChildIdSet, // Include the pure child ID set for future use
         };
       }
   
@@ -193,7 +200,7 @@ export const nodeReducer = (state: NodeStoreState, action: NodeAction): NodeStor
         );
   
         let newNodes: Node<any>[] = [...state.nodes];
-  
+
         updatedNodes.forEach((updatedNode) => {
           // If node doesn't exist, cannot update it
           if (!newNodeMap.has(updatedNode.id)) {
@@ -248,18 +255,13 @@ export const nodeReducer = (state: NodeStoreState, action: NodeAction): NodeStor
   
           } // End of parentId change check
   
-          // Update the node in the newNodes array
-          newNodes = newNodes.map(node =>
-            node.id === updatedNode.id ? updatedNode : node
-          );
+  
         });
   
         // Rebuild parent/child arrays based on the updated node map and parent map
         const newParentNodes = getOrganizedNodeParents(newNodeParentIdMapWithChildIdSet, newNodeMap);
-        const newChildNodes = newNodes.filter(node =>
-          !newParentNodes.some(parentNode => parentNode.id === node.id)
-        );
-  
+        const newChildNodes = getPureNodeChildren(state.pureChildIdSet, newNodeMap);
+        newNodes = [...newParentNodes, ...newChildNodes];
   
         return {
           ...state,
@@ -270,7 +272,14 @@ export const nodeReducer = (state: NodeStoreState, action: NodeAction): NodeStor
           childNodes: newChildNodes,
         };
       }
+
+      case "CHANGE_STATE_AGE": { // Fixed syntax error
+        return {
+          ...state,
+          isNewState: action.payload as boolean, // Update the state age flag
+        }; // Added missing closing brace
   
+      }
   
       case "REHYDRATE": {
         // This action is only dispatched internally during initialization

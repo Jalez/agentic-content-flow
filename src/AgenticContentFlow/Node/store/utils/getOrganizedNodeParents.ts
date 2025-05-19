@@ -21,7 +21,7 @@ export const getOrganizedNodeParents = (
         const node = poolOfAllNodes.get(id);
         
         // Skip hidden nodes
-        if (!node || node.data.hidden) continue;
+        if (!node || node.hidden) continue;
         
         // Calculate the node's level
         const level = getNodeDepth(poolOfAllNodes, id);

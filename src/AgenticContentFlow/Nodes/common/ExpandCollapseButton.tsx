@@ -51,7 +51,6 @@ export const ExpandCollapseButton = ({
     e.stopPropagation();
     const newExpanded = !expanded;
     setExpanded(newExpanded);
-    console.log("Expanded", newExpanded);
     
     // First node to update is the current node, which is being expanded/collapsed
     const updatedParentNode = {
@@ -83,7 +82,6 @@ export const ExpandCollapseButton = ({
 
     // Toggle expansion state
     const updatedNodes = [updatedParentNode, ...updatedChildNodes];
-    console.log("Updated nodes", updatedNodes);
     updateNodes(updatedNodes);
   };
 
