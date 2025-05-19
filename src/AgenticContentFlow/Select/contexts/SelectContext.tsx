@@ -52,7 +52,6 @@ export const SelectProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const deleteSelected = useCallback(() => {
-    console.log("Attempting to delete selected nodes and edges");
     if (selectedNodes.length === 0 && selectedEdges.length === 0) return;
 
     // selectedNodes.forEach((node) => {
