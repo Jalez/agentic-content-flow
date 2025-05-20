@@ -9,7 +9,7 @@ import { SelectProvider } from "./Select/contexts/SelectContext";
 import { useCallback, useRef } from "react";
 import { useViewPreferencesStore } from "./stores";
 import { NodeProvider, useNodeContext } from "./Node/store/useNodeContext";
-import { EdgeProvider } from "./Edge/store/useEdgeContext";
+import { EdgeProvider, useEdgeContext } from "./Edge/store/useEdgeContext";
 import { useViewportManager } from "./Flow/hooks/useViewportManager";
 import { GRID_SETTINGS } from "./constants";
 import { FlowContainer } from "./Flow/FlowContainer";
@@ -24,8 +24,6 @@ import { ensureNodeTypesRegistered } from "./Nodes/registerBasicNodeTypes";
 import "@xyflow/react/dist/style.css"; // Ensure to import the styles for React Flow
 import ReactStateHistory from "./History/ReactStateHistory";
 import { LayoutProvider } from "@jalez/react-flow-automated-layout";
-import { useNodeHistoryState } from "./Node/hooks/useNodeState";
-import { useEdgeState } from "./Edge/hooks/useEdgeState";
 
 // Register node types before any rendering occurs
 ensureNodeTypesRegistered();
@@ -33,13 +31,9 @@ ensureNodeTypesRegistered();
 export function AgenticContentFlowContent() {
   const flowWrapper = useRef<HTMLDivElement>(null);
   const { showGrid, gridVariant } = useViewPreferencesStore();
-  const { nodeMap, nodeParentIdMapWithChildIdSet } = useNodeContext();
+  const { nodeMap, nodeParentIdMapWithChildIdSet, updateNodes } = useNodeContext();
 
-  const {
-    updateNodes,
-  } = useNodeHistoryState();
-
-  const { handleUpdateEdges } = useEdgeState();
+  const { handleUpdateEdges } = useEdgeContext();
 
   // Use custom hooks for functionality
   const { handleWheel } = useViewportManager(flowWrapper);

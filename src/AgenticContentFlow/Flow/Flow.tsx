@@ -1,6 +1,5 @@
 import { MarkerType, ReactFlow, SelectionMode } from "@xyflow/react";
 import { memo, useEffect, useCallback, useRef, useMemo } from "react";
-import { useEdgeState } from "../Edge/hooks/useEdgeState";
 import useNodeSelection from "../Node/hooks/useNodeSelect";
 import { useEdgeSelect } from "../Edge/hooks/useEdgeSelect";
 import { VIEWPORT_CONSTRAINTS } from "../constants";
@@ -9,7 +8,7 @@ import { useNodeTypeRegistry } from "../Node/registry/nodeTypeRegistry";
 import { ensureNodeTypesRegistered } from "../Nodes/registerBasicNodeTypes";
 import { useSelect } from "../Select/contexts/SelectContext";
 import { useNodeContext } from "../Node/store/useNodeContext";
-import { useNodeHistoryState } from "../Node/hooks/useNodeState";
+import { useEdgeContext } from "../Edge/store/useEdgeContext";
 // Import the grid controls registration
 import GridControlsRegistration from "./controls/GridControlsRegistration";
 import { useLayoutContext } from "@jalez/react-flow-automated-layout";
@@ -23,19 +22,21 @@ const defaultEdgeOptions = {
 };
 
 function Flow({ children }: { children?: React.ReactNode }) {
-  const { nodes, isNewState, changeStateAge } = useNodeContext();
   const { applyLayout } = useLayoutContext();
-  const { visibleEdges, onEdgesChange, onEdgeRemove } = useEdgeState();
+  const { visibleEdges, onEdgesChange, onEdgeRemove } = useEdgeContext();
   
   const {
+    nodes,
     localNodes,
+    isNewState,
+    changeStateAge,
     onNodesChange,
     onNodeDragStart,
     onNodeDrag,
     onNodeDragStop,
     isDragging,
     onNodesDelete,
-  } = useNodeHistoryState();
+  } = useNodeContext();
 
   useEffect(() => {
     // Apply layout when nodes change
