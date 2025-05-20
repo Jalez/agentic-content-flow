@@ -2,7 +2,6 @@
 import { useCallback, useState, useRef } from "react";
 import { Node, useReactFlow, useViewport } from "@xyflow/react";
 import { NodeData } from "../../types";
-import { useNodeContext } from "../store/useNodeContext";
 import { getPotentialParentId } from "./utils/getPotentialParents";
 import {
   updateNodeExtentInLocalNodes
@@ -15,9 +14,13 @@ const ROOT_INDICATOR = "no-parent";
 /**
  * A custom hook for handling node dragging behavior in a mindmap.
  */
-export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previousNodes: Node<NodeData>[]) => void) => {
-  const { updateNode, nodes, nodeMap, nodeParentIdMapWithChildIdSet } = useNodeContext();
-
+export const useNodeDrag = (
+  trackUpdateNodes: (nodes: Node<NodeData>[], previousNodes: Node<NodeData>[]) => void,
+  nodes: Node<NodeData>[],
+  nodeMap: Map<string, Node<NodeData>>,
+  nodeParentIdMapWithChildIdSet: Map<string, Set<string>>,
+  updateNode?: (node: Node<NodeData>) => void
+) => {
   const { getIntersectingNodes, getNode } = useReactFlow();
   const { x, y, zoom } = useViewport();
 
@@ -25,8 +28,6 @@ export const useNodeDrag = (trackUpdateNodes: (nodes: Node<NodeData>[], previous
   const [localNodes, setLocalNodes] = useState<Node<NodeData>[]>([]);
   const [currentParentCandidateId, setCurrentParentCandidateId] = useState<string | null>(null);
   const isDraggingRef = useRef(false);
-
-
 
   // Handle drag start
   const onNodeDragStart = useCallback((_: React.MouseEvent, __: Node<NodeData>, nodesToDrag: Node<NodeData>[]) => {

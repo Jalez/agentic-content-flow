@@ -4,10 +4,19 @@ import { NodeChange, applyNodeChanges, Node } from "@xyflow/react";
 import { NodeData } from "../../types";
 import { useTrackableState } from "@jalez/react-state-history";
 import { useNodeDrag } from "./useNodeDrag";
-import { useNodeContext } from "../store/useNodeContext";
 
-export const useNodeHistoryState = () => {
-  const { nodes, setNodes, updateNode, updateNodes, removeNodes } = useNodeContext();
+// Define a private implementation that accepts parameters
+// This will be used by the provider, not exposed to components directly
+export const useNodeHistoryStateImpl = (
+  nodes: Node<NodeData>[],
+  setNodes: (nodes: Node<NodeData>[]) => void,
+  updateNode: (node: Node<NodeData>) => void,
+  updateNodes: (nodes: Node<NodeData>[]) => void,
+  removeNodes: (nodes: Node<NodeData>[]) => void,
+  addNode: (node: Node<NodeData>) => void,
+  nodeMap?: Map<string, Node<NodeData>>,
+  nodeParentIdMapWithChildIdSet?: Map<string, Set<string>>
+) => {
   const trackSetNodes = useTrackableState("useNodeState/SetNodes", setNodes);
 
   const trackUpdateNode = useTrackableState(
@@ -27,6 +36,16 @@ export const useNodeHistoryState = () => {
     removeNodes,
     setNodes
   );
+  
+  const trackAddNode = useTrackableState(
+    "useNodeState/AddNode",
+    addNode,
+    removeNodes
+  );
+
+  // Create default maps if not provided to avoid circular dependency
+  const nodeMapToUse = nodeMap || new Map();
+  const parentMapToUse = nodeParentIdMapWithChildIdSet || new Map();
 
   const {
     isDragging,
@@ -36,7 +55,7 @@ export const useNodeHistoryState = () => {
     onNodeDragStart,
     onNodeDragStop,
     onNodeDrag
-  } = useNodeDrag(trackUpdateNodes);
+  } = useNodeDrag(trackUpdateNodes, nodes, nodeMapToUse, parentMapToUse, updateNode);
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -53,7 +72,7 @@ export const useNodeHistoryState = () => {
   );
 
   const handleUpdateNodes = useCallback(
-    (updatedNodes: Node[]) => {
+    (updatedNodes: Node<NodeData>[]) => {
       trackUpdateNodes(updatedNodes, nodes);
     },
     [trackUpdateNodes, nodes]
@@ -67,20 +86,18 @@ export const useNodeHistoryState = () => {
   );
 
   const handleUpdateNode = useCallback(
-    (updatedNode: Node) => {
+    (updatedNode: Node<NodeData>) => {
       trackUpdateNode(updatedNode, nodes);
     },
     [nodes, trackUpdateNode]
   );
 
-
   const onNodesDelete = useCallback(
     (nodesToRemove: Node<NodeData>[]) => {
       // Handle node deletion
       trackRemoveNodes(nodesToRemove, nodes);
-      
     },
-    [ trackRemoveNodes, nodes]
+    [trackRemoveNodes, nodes]
   );
 
   return {
@@ -88,6 +105,7 @@ export const useNodeHistoryState = () => {
     setNodes: handleSetNodes,
     updateNodes: handleUpdateNodes,
     updateNode: handleUpdateNode,
+    addNode: trackAddNode,
     onNodesChange,
     onNodesDelete,
     onNodeDragStart,
