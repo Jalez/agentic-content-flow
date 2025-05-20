@@ -12,9 +12,12 @@ import { Node } from "@xyflow/react";
 import { childNodesData, parentNodesData } from "../../test/default/nodesData"; // Adjust path as needed
 import { getOrganizedNodeParents } from "./utils/getOrganizedNodeParents"; // Adjust path as needed
 import { rebuildMapState } from "./utils/rebuildMapState";
+import { NodeData } from "../../types";
 
 import { normalizeNodeExpandedState } from "./utils/normalizeNodeExpandedState";
 import { NodeAction, nodeReducer } from "./reducer/nodeReducer";
+// Import useNodeHistoryState to use in NodeProvider
+import { useNodeHistoryStateImpl } from "../hooks/useNodeState";
 
 
 // 1. Define the State Interface (same as Zustand)
@@ -51,11 +54,38 @@ export const defaultInitialState: NodeStoreState = {
 const PERSIST_STORAGE_KEY = "node-context-storage";
 
 
-// 3. Create the Context
-const NodeContext = createContext<{
+// 3. Create the Context with all the actions we're providing
+interface NodeContextType {
+  // State properties
+  nodes: Node<any>[];
+  parentNodes: Node<any>[];
+  childNodes: Node<any>[];
+  nodeMap: Map<string, Node<any>>;
+  nodeParentIdMapWithChildIdSet: Map<string, Set<string>>;
+  pureChildIdSet: Set<string>;
+  isNewState: boolean;
+  // Implementation details
   state: NodeStoreState;
   dispatch: React.Dispatch<NodeAction>;
-} | undefined>(undefined);
+  // Node operations
+  getNode: (id: string) => Node<any> | undefined;
+  setNodes: (nodes: Node<any>[]) => void;
+  addNode: (node: Node<any>, oldValue?: Node<NodeData>[], description?: string) => void;
+  updateNode: (node: Node<any>) => void;
+  updateNodes: (nodes: Node<any>[]) => void;
+  removeNodes: (nodes: Node<any>[]) => void;
+  changeStateAge: (isOld?: boolean) => void;
+  onNodesDelete: (nodes: Node<any>[]) => void;
+  // Flow operations
+  onNodesChange: (changes: any[]) => void;
+  onNodeDragStart: (event: any, node: Node<NodeData>, nodesToDrag: Node<NodeData>[]) => void;
+  onNodeDrag: (event: any, node: Node<NodeData>, draggedNodes: Node<NodeData>[]) => void;
+  onNodeDragStop: (event: any, node: Node<NodeData>, draggedNodes: Node<NodeData>[]) => void;
+  isDragging: boolean;
+  localNodes: Node<any>[];
+}
+
+const NodeContext = createContext<NodeContextType | undefined>(undefined);
 
 // 4. Create the Provider Component
 interface NodeProviderProps {
@@ -91,7 +121,6 @@ export const NodeProvider: React.FC<NodeProviderProps> = ({ children }) => {
           parentNodes,
           childNodes,
           pureChildIdSet, // Include the pure child ID set for future use
-
         };
 
       }
@@ -102,11 +131,32 @@ export const NodeProvider: React.FC<NodeProviderProps> = ({ children }) => {
     }
   };
 
-
   const [state, dispatch] = useReducer(
     nodeReducer,
     defaultInitialState, // Pass default initial state
     initializer // Use the initializer function for initial load
+  );
+
+  // Create base actions (without history tracking)
+  const baseActions = useMemo(() => ({
+    setNodes: (nodes: Node<any>[]) => dispatch({ type: "SET_NODES", payload: nodes }),
+    addNode: (node: Node<any>) => dispatch({ type: "ADD_NODE", payload: node }),
+    removeNodes: (nodes: Node<any>[]) => dispatch({ type: "REMOVE_NODES", payload: nodes }),
+    updateNode: (node: Node<any>) => dispatch({ type: "UPDATE_NODE", payload: node }),
+    updateNodes: (nodes: Node<any>[]) => dispatch({ type: "UPDATE_NODES", payload: nodes }),
+    changeStateAge: (isOld: boolean = false) => dispatch({ type: "CHANGE_STATE_AGE", payload: isOld }),
+  }), [dispatch]);
+
+  // Use the history state implementation with our state and actions
+  const historyActions = useNodeHistoryStateImpl(
+    state.nodes,
+    baseActions.setNodes,
+    baseActions.updateNode,
+    baseActions.updateNodes,
+    baseActions.removeNodes,
+    baseActions.addNode,
+    state.nodeMap,
+    state.nodeParentIdMapWithChildIdSet
   );
 
   // Effect to save state to localStorage whenever the 'nodes' state changes
@@ -119,12 +169,52 @@ export const NodeProvider: React.FC<NodeProviderProps> = ({ children }) => {
     } catch (error) {
       console.error("NodeProvider: Failed to save state to storage:", error);
     }
-
   }, [state.nodes]); // Dependency array: save whenever the nodes array changes
 
-  // Memoize the context value to prevent unnecessary re-renders of consumers
-  const contextValue = useMemo(() => ({ state, dispatch }), [state, dispatch]);
+  // Create the context value with state and history-tracked actions
+  const contextValue = useMemo(() => {
+    // Create wrapper functions that can accept either 1 or multiple arguments
+    const addNodeWrapper = (node: Node<any>, oldValue?: Node<NodeData>[], description?: string) => {
+      if (oldValue) {
+        // If oldValue is provided, use all arguments
+        historyActions.addNode(node, oldValue, description);
+      } else {
+        // If only the first argument is provided
+        historyActions.addNode(node, [], '');
+      }
+    };
 
+    return {
+      // State properties from state
+      nodes: state.nodes,
+      parentNodes: state.parentNodes,
+      childNodes: state.childNodes,
+      nodeMap: state.nodeMap,
+      nodeParentIdMapWithChildIdSet: state.nodeParentIdMapWithChildIdSet,
+      pureChildIdSet: state.pureChildIdSet,
+      isNewState: state.isNewState,
+      // Implementation details
+      state,
+      dispatch,
+      // Additional utility actions that don't need history tracking
+      getNode: (id: string) => state.nodeMap.get(id),
+      changeStateAge: baseActions.changeStateAge,
+      // History-tracked actions with wrapper functions
+      addNode: addNodeWrapper,
+      setNodes: historyActions.setNodes,
+      updateNode: historyActions.updateNode,
+      updateNodes: historyActions.updateNodes,
+      removeNodes: historyActions.onNodesDelete,
+      onNodesDelete: historyActions.onNodesDelete,
+      // Additional functions from history state
+      onNodesChange: historyActions.onNodesChange,
+      onNodeDragStart: historyActions.onNodeDragStart,
+      onNodeDrag: historyActions.onNodeDrag,
+      onNodeDragStop: historyActions.onNodeDragStop,
+      isDragging: historyActions.isDragging,
+      localNodes: historyActions.localNodes,
+    };
+  }, [state, dispatch, baseActions, historyActions]);
 
   return (
     <NodeContext.Provider value={contextValue}>
@@ -140,27 +230,9 @@ export const useNodeContext = () => {
     throw new Error("useNodeContext must be used within a NodeProvider");
   }
 
-  // Provide individual state properties and bound action creators for a Zustand-like API
-  // This mimics the structure of your original Zustand store
-  const { state, dispatch } = context;
-
-  const actions = useMemo(() => ({
-    getNode: (id: string) => state.nodeMap.get(id),
-    setNodes: (nodes: Node<any>[]) => dispatch({ type: "SET_NODES", payload: nodes }),
-    addNode: (node: Node<any>) => dispatch({ type: "ADD_NODE", payload: node }),
-    removeNodes: (nodes: Node<any>[]) => dispatch({ type: "REMOVE_NODES", payload: nodes }),
-    updateNode: (node: Node<any>) => dispatch({ type: "UPDATE_NODE", payload: node }),
-    updateNodes: (nodes: Node<any>[]) => dispatch({ type: "UPDATE_NODES", payload: nodes }),
-    changeStateAge: (
-      isOld: boolean = false // Optional parameter to reset newNodeSet
-    ) => dispatch({ type: "CHANGE_STATE_AGE", payload: isOld }),
-  }), [dispatch, state.nodeMap]); // Depend on dispatch and state.nodeMap for getNode
-
-
-  return {
-    ...state, // Spread all state properties
-    ...actions, // Spread all action functions
-  };
+  // The context now provides the history-tracked actions directly
+  // No need to recreate them here
+  return context;
 };
 
 /*
