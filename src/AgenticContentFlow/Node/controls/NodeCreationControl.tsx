@@ -6,7 +6,7 @@ import { createNodeFromTemplate } from "../registry/nodeTypeRegistry";
 import { useNodeContext } from "../store/useNodeContext";
 import { useSelect } from "../../Select/contexts/SelectContext";
 import { useEdgeContext } from "../../Edge/store/useEdgeContext";
-import { useTrackableState, useTransaction } from "@jalez/react-state-history";
+import { useTransaction } from "@jalez/react-state-history";
 
 interface NodeCreationControlProps {
   availableNodeTypes: string[];
@@ -15,22 +15,11 @@ interface NodeCreationControlProps {
 const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
   availableNodeTypes,
 }) => {
-  const { addNode, removeNodes } = useNodeContext();
-  const { addEdgeToStore, setEdges, edges } = useEdgeContext();
+  const { addNode } = useNodeContext();
+  const { addEdgeToStore } = useEdgeContext();
   const { screenToFlowPosition } = useReactFlow();
   const { selectedNodes } = useSelect();
   const { withTransaction } = useTransaction();
-
-  const trackaddNode = useTrackableState(
-    "NodeCreationControl/AddNode",
-    addNode,
-    removeNodes
-  );
-  const trackAddEdgeToStore = useTrackableState(
-    "NodeCreationControl/AddEdge",
-    addEdgeToStore,
-    setEdges
-  );
 
   const [open, setOpen] = useState(false);
 
@@ -56,12 +45,12 @@ const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
             source: selectedNode.id,
             target: newNodeId,
           };
-          trackAddEdgeToStore(newEdge, edges);
+          addEdgeToStore(newEdge);
         }
       }
 
       if (newNode) {
-        trackaddNode(newNode,[newNode]);
+        addNode(newNode);
       }
     }, "NodeCreationControl/Add");
 

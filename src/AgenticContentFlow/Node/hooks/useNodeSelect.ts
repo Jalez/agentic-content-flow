@@ -4,7 +4,6 @@ import { Node, useReactFlow } from "@xyflow/react";
 import { NodeData } from "../../types";
 import { useNodeContext } from "../store/useNodeContext";
 import { useSelect } from "../../Select/contexts/SelectContext";
-import { useTrackableState } from "@jalez/react-state-history";
 
 interface UseNodeSelectionProps {
   nodes: Node<NodeData>[];
@@ -16,13 +15,8 @@ interface UseNodeSelectionProps {
  */
 const useNodeSelection = ({ nodes, isDragging }: UseNodeSelectionProps) => {
   const { fitView, getNodes } = useReactFlow();
-  const { updateNodes, nodeMap, setNodes, nodeParentIdMapWithChildIdSet } = useNodeContext();
+  const { updateNodes, nodeMap, nodeParentIdMapWithChildIdSet } = useNodeContext();
   
-  const trackUpdateNodes = useTrackableState(
-    "useNodeSelection/UpdateNodes",
-    updateNodes,
-    setNodes
-  );
   const [previousSelectionBox, setPreviousSelectionBox] =
     useState<DOMRect | null>(null);
 
@@ -42,13 +36,10 @@ const useNodeSelection = ({ nodes, isDragging }: UseNodeSelectionProps) => {
           });
         }
       })
-        trackUpdateNodes(
-          nodesToUpdate,
-          nodes
-        );
+      updateNodes(nodesToUpdate);
       
     },
-    [nodeMap, nodeParentIdMapWithChildIdSet, trackUpdateNodes, nodes]
+    [nodeMap, nodeParentIdMapWithChildIdSet, updateNodes]
   );
 
   const handleSelectionDragStart = useCallback(
@@ -83,9 +74,9 @@ const useNodeSelection = ({ nodes, isDragging }: UseNodeSelectionProps) => {
       }));
 
       // Update nodes through the store
-      trackUpdateNodes(updatedNodes, nodes);
+      updateNodes(updatedNodes);
     },
-    [nodes, isDragging, trackUpdateNodes]
+    [nodes, isDragging, updateNodes]
   );
 
   /**
@@ -156,19 +147,18 @@ const useNodeSelection = ({ nodes, isDragging }: UseNodeSelectionProps) => {
 
       // Update selection to exclude container nodes
       if (nonContainerNodes.length !== selectedNodes.length) {
-        trackUpdateNodes(
+        updateNodes(
           getNodes().map((node) => ({
             ...node,
             selected: nonContainerNodes.some((n) => n.id === node.id),
-          })),
-          getNodes()
+          }))
         );
       }
     }
 
     // Reset selection box state when selection ends
     setPreviousSelectionBox(null);
-  }, [getNodes, nodeParentIdMapWithChildIdSet, changeParentSelectState, trackUpdateNodes]);
+  }, [getNodes, nodeParentIdMapWithChildIdSet, changeParentSelectState, updateNodes]);
 
   return {
     handleNodeClick,

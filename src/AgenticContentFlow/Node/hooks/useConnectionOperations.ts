@@ -5,33 +5,25 @@ import { withErrorHandler } from "../../utils/withErrorHandler";
 import { createNodeFromTemplate } from "../registry/nodeTypeRegistry";
 import { useNodeContext } from "../store/useNodeContext";
 import { useEdgeContext } from "../../Edge/store/useEdgeContext";
-import { useTrackableState, useTransaction } from "@jalez/react-state-history";
-
-// type useConnectionOperationsProps = {};
+import { useTransaction } from "@jalez/react-state-history";
 
 export const useConnectionOperations = () => {
-  const { addNode, nodeMap, updateNode, nodeParentIdMapWithChildIdSet, removeNodes } =
-    useNodeContext();
-  const { edges, addEdgeToStore, setEdges, edgeMap } = useEdgeContext();
+  const { 
+    addNode, 
+    nodeMap, 
+    updateNode, 
+    nodeParentIdMapWithChildIdSet 
+  } = useNodeContext();
+  
+  const { 
+    edges, 
+    addEdgeToStore, 
+    edgeMap 
+  } = useEdgeContext();
+  
   const { screenToFlowPosition } = useReactFlow();
   const { withTransaction } = useTransaction();
   const reactFlowInstance = useReactFlow();
-  const trackaddNode = useTrackableState(
-    "useConnectionOperations/AddSourceNode",
-    addNode,
-    removeNodes
-  );
-
-  const trackAddEdgeToStore = useTrackableState(
-    "useConnectionOperations/AddEdgeToStore",
-    addEdgeToStore,
-    setEdges
-  );
-
-  const trackUpdateNodeToStore = useTrackableState(
-    "useConnectionOperations/UpdateNodeToStore",
-    updateNode
-  );
 
   const addSourceNode = (childNode: Node<NodeData>) => {
     const realChildNode = nodeMap.get(childNode.id);
@@ -80,21 +72,9 @@ export const useConnectionOperations = () => {
     // updateNode(updatedChildNode);
     withTransaction(
       () => {
-        trackUpdateNodeToStore(
-          updatedChildNode,
-          realChildNode,
-          `Update Child Node to ${newParentNode.id}`
-        );
-        trackaddNode(
-          newParentNode,
-        [newParentNode],
-          `Add Parent Node to ${childNode.id}`
-        );
-        trackAddEdgeToStore(
-          newEdge,
-          edges,
-          `Add Edge from ${newParentNode.id} to ${realChildNode.id}`
-        );
+        updateNode(updatedChildNode);
+        addNode(newParentNode);
+        addEdgeToStore(newEdge);
       },
       "addSourceNodeTransaction" // Transaction name
     );
@@ -189,16 +169,8 @@ export const useConnectionOperations = () => {
     };
     withTransaction(
       () => {
-        trackaddNode(
-          newChildNode,
-        [newChildNode],
-          `Create target Node of ${eventNode.id}`
-        );
-        trackAddEdgeToStore(
-          newEdge,
-          edges,
-          `Create Edge from ${eventNode.id} to ${newChildNode.id}`
-        );
+        addNode(newChildNode);
+        addEdgeToStore(newEdge);
       },
       "addTargetNodeTransaction" // Transaction name
     );
@@ -218,13 +190,9 @@ export const useConnectionOperations = () => {
         targetHandle
       };
       
-      trackAddEdgeToStore(
-        connection,
-        edges,
-        `Add Edge from ${params.source} to ${params.target}`
-      );
+      addEdgeToStore(connection);
     }),
-    [edgeMap, edges, trackAddEdgeToStore]
+    [edgeMap, edges, addEdgeToStore]
   );
 
   const getCumulativeParentOffset = (
@@ -318,16 +286,8 @@ export const useConnectionOperations = () => {
         };
         withTransaction(
           () => {
-            trackaddNode(
-              newNode,
-              [newNode],
-              `Add New Node from ${connectionState.fromNode.id}`
-            );
-            trackAddEdgeToStore(
-              newEdge,
-              edges,
-              `Add Edge from ${connectionState.fromNode.id} to ${newNodeId}`
-            );
+            addNode(newNode);
+            addEdgeToStore(newEdge);
           },
           "onConnectEndTransaction" // Transaction name
         );
