@@ -11,6 +11,8 @@ import { Edge, Connection } from "@xyflow/react";
 import { edgesData } from "../../test/default/edgeData"; // Adjust path as needed
 import { rebuildEdgeMapState } from "./utils/rebuildEdgeMapState";
 import { EdgeAction, edgeReducer } from "./reducer/edgeReducer";
+// Import useEdgeStateImpl to use in EdgeProvider
+import { useEdgeStateImpl } from "../hooks/useEdgeState";
 
 // 1. Define the State Interface (same as Zustand)
 export interface EdgeStoreState {
@@ -32,11 +34,32 @@ export const defaultInitialState: EdgeStoreState = {
 // Persistence key
 const PERSIST_STORAGE_KEY = "edge-context-storage";
 
-// Create the Context
-const EdgeContext = createContext<{
+// Create the Context with all the actions we're providing
+interface EdgeContextType {
+  // State properties
+  edges: Edge[];
+  edgeMap: Map<string, Edge>;
+  edgeSourceMap: Map<string, Edge[]>;
+  // Implementation details
   state: EdgeStoreState;
   dispatch: React.Dispatch<EdgeAction>;
-} | undefined>(undefined);
+  // Edge operations
+  getEdge: (id: string) => Edge | undefined;
+  setEdges: (edges: Edge[]) => void;
+  addEdgeToStore: (edge: Edge | Connection, oldValue?: Edge[], description?: string) => void;
+  updateEdge: (edge: Edge) => void;
+  updateEdges: (edges: Edge[]) => void;
+  removeEdge: (edgeId: string) => void;
+  removeEdges: (edges: Edge[]) => void;
+  // Flow operations
+  onEdgesChange: (changes: any[]) => void;
+  handleUpdateEdges: (edges: Edge[]) => void;
+  onEdgeRemove: (edges: Edge[]) => void;
+  visibleEdges: Edge[];
+  getVisibleEdges: () => Edge[];
+}
+
+const EdgeContext = createContext<EdgeContextType | undefined>(undefined);
 
 // Create the Provider Component
 interface EdgeProviderProps {
@@ -71,6 +94,25 @@ export const EdgeProvider: React.FC<EdgeProviderProps> = ({ children }) => {
     initializer
   );
 
+  // Create base actions (without history tracking)
+  const baseActions = useMemo(() => ({
+    setEdges: (edges: Edge[]) => dispatch({ type: "SET_EDGES", payload: edges }),
+    addEdgeToStore: (edge: Edge | Connection) => dispatch({ type: "ADD_EDGE", payload: edge }),
+    updateEdge: (edge: Edge) => dispatch({ type: "UPDATE_EDGE", payload: edge }),
+    updateEdges: (edges: Edge[]) => dispatch({ type: "UPDATE_EDGES", payload: edges }),
+    removeEdge: (edgeId: string) => dispatch({ type: "REMOVE_EDGE", payload: edgeId }),
+    removeEdges: (edges: Edge[]) => dispatch({ type: "REMOVE_EDGES", payload: edges }),
+  }), [dispatch]);
+
+  // Use the edge state implementation with our state and actions
+  const historyActions = useEdgeStateImpl(
+    state.edges,
+    baseActions.setEdges,
+    baseActions.updateEdges,
+    baseActions.removeEdges,
+    baseActions.addEdgeToStore
+  );
+
   // Effect to save state to localStorage whenever the 'edges' state changes
   // We only save the edges array as maps can be rebuilt
   useEffect(() => {
@@ -83,8 +125,45 @@ export const EdgeProvider: React.FC<EdgeProviderProps> = ({ children }) => {
     }
   }, [state.edges]); // Dependency array: save whenever the edges array changes
 
-  // Memoize the context value to prevent unnecessary re-renders of consumers
-  const contextValue = useMemo(() => ({ state, dispatch }), [state, dispatch]);
+  // Create the context value with state and history-tracked actions
+  const contextValue = useMemo(() => {
+    // Create wrapper function for addEdgeToStore that can handle both usage patterns
+    const addEdgeToStoreWrapper = (edge: Edge | Connection, oldValue?: Edge[], description?: string) => {
+      if (oldValue) {
+        // If oldValue is provided, use all arguments
+        historyActions.addEdgeToStore(edge, oldValue, description);
+      } else {
+        // If only the first argument is provided
+        historyActions.addEdgeToStore(edge, state.edges, '');
+      }
+    };
+
+    return {
+      // State properties
+      edges: state.edges,
+      edgeMap: state.edgeMap,
+      edgeSourceMap: state.edgeSourceMap,
+      // Implementation details
+      state,
+      dispatch,
+      // Utility function
+      getEdge: (id: string) => state.edgeMap.get(id),
+      // Standard edge operations
+      updateEdge: baseActions.updateEdge,  // Not history-tracked yet
+      removeEdge: baseActions.removeEdge,  // Not history-tracked yet
+      // History-tracked actions
+      setEdges: historyActions.setEdges,
+      updateEdges: historyActions.handleUpdateEdges,
+      removeEdges: historyActions.onEdgeRemove,
+      addEdgeToStore: addEdgeToStoreWrapper,
+      // Additional edge operations
+      onEdgesChange: historyActions.onEdgesChange,
+      handleUpdateEdges: historyActions.handleUpdateEdges,
+      onEdgeRemove: historyActions.onEdgeRemove,
+      visibleEdges: historyActions.visibleEdges,
+      getVisibleEdges: historyActions.getVisibleEdges
+    };
+  }, [state, dispatch, baseActions, historyActions]);
 
   return (
     <EdgeContext.Provider value={contextValue}>
@@ -100,25 +179,9 @@ export const useEdgeContext = () => {
     throw new Error("useEdgeContext must be used within an EdgeProvider");
   }
 
-  // Provide individual state properties and bound action creators for a Zustand-like API
-  // This mimics the structure of the original Zustand store
-  const { state, dispatch } = context;
-
-  const actions = useMemo(() => ({
-    // Edge operations
-    getEdge: (id: string) => state.edgeMap.get(id),
-    setEdges: (edges: Edge[]) => dispatch({ type: "SET_EDGES", payload: edges }),
-    addEdgeToStore: (edge: Edge | Connection) => dispatch({ type: "ADD_EDGE", payload: edge }),
-    updateEdge: (edge: Edge) => dispatch({ type: "UPDATE_EDGE", payload: edge }),
-    updateEdges: (edges: Edge[]) => dispatch({ type: "UPDATE_EDGES", payload: edges }),
-    removeEdge: (edgeId: string) => dispatch({ type: "REMOVE_EDGE", payload: edgeId }),
-    removeEdges: (edges: Edge[]) => dispatch({ type: "REMOVE_EDGES", payload: edges }),
-  }), [dispatch, state.edgeMap]); // Depend on dispatch and state.edgeMap for getEdge
-
-  return {
-    ...state, // Spread all state properties
-    ...actions, // Spread all action functions
-  };
+  // The context now provides the history-tracked actions directly
+  // No need to recreate them here
+  return context;
 };
 
 /*
