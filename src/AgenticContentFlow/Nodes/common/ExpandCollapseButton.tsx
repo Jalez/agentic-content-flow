@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Node } from "@xyflow/react";
-import { useNodeContext } from "../../stores";
-import { useNodeHistoryState } from "../../Node/hooks/useNodeState";
+import { useNodeContext } from "../../Node/store/useNodeContext";
 import { updateNodeHierarchyVisibility } from "./utils/nodeHierarchyUtils";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -37,15 +36,13 @@ export const ExpandCollapseButton = ({
   expandedDimensions,
   nodeInFlow,
 }: ExpandCollapseButtonProps) => {
-  const {nodeParentIdMapWithChildIdSet, nodeMap} = useNodeContext();
+  const { nodeParentIdMapWithChildIdSet, nodeMap, updateNodes } = useNodeContext();
   
   // Use the more efficient Set-based approach to get child IDs
   const childIdSet = nodeParentIdMapWithChildIdSet.get(nodeInFlow.id) || new Set();
   const childCount = childIdSet.size;
   
   const [expanded, setExpanded] = useState(nodeInFlow.data.expanded || false);
-  const { updateNodes } = useNodeHistoryState();
-
 
   const handleToggleExpand = (e: React.MouseEvent) => {
     e.stopPropagation();

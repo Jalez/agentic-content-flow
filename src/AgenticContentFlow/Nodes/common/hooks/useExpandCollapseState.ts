@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Node } from '@xyflow/react';
-import { useNodeContext } from '../../../stores';
-import { useNodeHistoryState } from '../../../Node/hooks/useNodeState';
+import { useNodeContext } from '../../../Node/store/useNodeContext';
 import { updateNodeHierarchyVisibility } from '../utils/nodeHierarchyUtils';
 
 interface ExpandCollapseConfig {
@@ -35,11 +34,8 @@ export const useExpandCollapseState = ({
   expandedDimensions,
   node
 }: ExpandCollapseConfig) => {
-  // Access the store for parent-child relationships
-  const nodeParentIdMapWithChildIdSet = useNodeContext(
-    (state) => state.nodeParentIdMapWithChildIdSet
-  );
-  const nodeMap = useNodeContext((state) => state.nodeMap);
+  // Access the node context for all the data and operations we need
+  const { nodeParentIdMapWithChildIdSet, nodeMap, updateNodes } = useNodeContext();
   
   // Get count of children for badge display
   const childIdSet = nodeParentIdMapWithChildIdSet.get(node.id) || new Set();
@@ -47,7 +43,6 @@ export const useExpandCollapseState = ({
   
   // Local state for expanded status, initialized from node data
   const [expanded, setExpanded] = useState(node.data.expanded || false);
-  const { updateNodes } = useNodeHistoryState();
 
   // Handler for toggle expand/collapse
   const handleToggleExpand = useCallback((e: React.MouseEvent) => {

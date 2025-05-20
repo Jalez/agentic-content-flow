@@ -16,7 +16,7 @@ import {
   NodeHeaderMenuAction,
   NodeHeaderDeleteAction,
 } from "../common/NodeHeader";
-import { useNodeHistoryState } from "../../Node/hooks/useNodeState";
+import { useNodeContext } from "../../Node/store/useNodeContext";
 import ExpandCollapseButton from "../common/ExpandCollapseButton";
 import NodeContent from "../common/NodeContent";
 import { NodeStyleHelper } from "../common/NodeStyleHelper";
@@ -33,7 +33,7 @@ export const ContainerNode = ({
   targetPosition,
   sourcePosition,
 }: NodeProps) => {
-  const { updateNode } = useNodeHistoryState();
+  const { updateNode } = useNodeContext();
   const updateNodeInternals = useUpdateNodeInternals();
   const { getNode } = useReactFlow();
 
