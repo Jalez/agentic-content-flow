@@ -1,12 +1,20 @@
 import { useCallback, useMemo } from "react";
-import { Edge, EdgeChange, applyEdgeChanges } from "@xyflow/react";
-import { useEdgeContext } from "../store/useEdgeContext";
+import { Edge, EdgeChange, applyEdgeChanges, Connection } from "@xyflow/react";
 import { withErrorHandler } from "../../utils/withErrorHandler";
+
+// Import useTrackableState directly only in this file
+// In the future, this will be used only internally by EdgeProvider
 import { useTrackableState } from "@jalez/react-state-history";
 
-export const useEdgeState = () => {
-  const { edges, setEdges, updateEdges, removeEdges } = useEdgeContext();
-  
+// Define a private implementation that accepts parameters
+// This will be used by the EdgeProvider in the future, not exposed to components directly
+export const useEdgeStateImpl = (
+  edges: Edge[],
+  setEdges: (edges: Edge[]) => void,
+  updateEdges: (edges: Edge[]) => void,
+  removeEdges: (edges: Edge[]) => void,
+  addEdgeToStore: (edge: Edge | Connection) => void
+) => {
   const trackUpdateEdges = useTrackableState(
     "useEdgeState/UpdateEdges",
     updateEdges,
@@ -20,6 +28,12 @@ export const useEdgeState = () => {
   );
 
   const trackSetEdges = useTrackableState("useEdgeState/SetEdges", setEdges);
+  
+  const trackAddEdgeToStore = useTrackableState(
+    "useEdgeState/AddEdge",
+    addEdgeToStore,
+    setEdges
+  );
 
   const onEdgesChange = useCallback(
     withErrorHandler("onEdgesChange", (changes: EdgeChange[]) => {
@@ -72,12 +86,13 @@ export const useEdgeState = () => {
   }, [getVisibleEdges]); 
 
   return {
-    edges,
     visibleEdges,
     setEdges: handleSetEdges,
     onEdgesChange,
     getVisibleEdges,
     handleUpdateEdges,
     onEdgeRemove,
+    addEdgeToStore: trackAddEdgeToStore
   };
 };
+
