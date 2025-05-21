@@ -1,5 +1,5 @@
 /** @format */
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { NodeChange, applyNodeChanges, Node } from "@xyflow/react";
 import { NodeData } from "../../types";
 import { useTrackableState } from "@jalez/react-state-history";
@@ -18,6 +18,7 @@ export const useNodeHistoryStateImpl = (
   nodeParentIdMapWithChildIdSet?: Map<string, Set<string>>
 ) => {
   const trackSetNodes = useTrackableState("useNodeState/SetNodes", setNodes);
+  const [changeEvent, setChangeEvent] = useState<string>("");
 
   const trackUpdateNode = useTrackableState(
     "useNodeState/UpdateNode",
@@ -64,40 +65,60 @@ export const useNodeHistoryStateImpl = (
           applyNodeChanges(changes, prev.length > 0 ? prev : nodes) as Node<NodeData>[]
         );
       } else {
-        const updatedNodes = applyNodeChanges(changes, nodes) as Node<NodeData>[];
-        trackUpdateNodes(updatedNodes, nodes);
+        console.log("onNodesChange", changes);
+        // Only track significant changes in history
+        // Skip position changes as they're too frequent and will be tracked by onNodeDragStop
+        const hasNonPositionChanges = changes.some(change => 
+          change.type !== 'position' && change.type !== 'remove'
+        );
+        
+        if (hasNonPositionChanges) {
+          const updatedNodes = applyNodeChanges(changes, nodes) as Node<NodeData>[];
+          trackUpdateNodes(updatedNodes, nodes, "Update nodes on change");
+        } else {
+          // Apply changes without tracking in history
+          const updatedNodes = applyNodeChanges(changes, nodes) as Node<NodeData>[];
+          setNodes(updatedNodes);
+        }
       }
     },
-    [nodes, trackUpdateNodes, setLocalNodes, isDraggingRef, localNodes]
+    [nodes, trackUpdateNodes, setNodes, isDraggingRef, setLocalNodes, localNodes]
   );
 
   const handleUpdateNodes = useCallback(
     (updatedNodes: Node<NodeData>[]) => {
-      trackUpdateNodes(updatedNodes, nodes);
+      trackUpdateNodes(updatedNodes, nodes, "Update nodes on handleUpdateNodes");
     },
     [trackUpdateNodes, nodes]
   );
 
   const handleSetNodes = useCallback(
     (newNodes: Node<NodeData>[]) => {
-      trackSetNodes(newNodes, nodes);
+      trackSetNodes(newNodes, nodes, "Set nodes");
     },
     [trackSetNodes, nodes]
   );
 
   const handleUpdateNode = useCallback(
     (updatedNode: Node<NodeData>) => {
-      trackUpdateNode(updatedNode, nodes);
+      trackUpdateNode(updatedNode, nodes, "Update node");
     },
     [nodes, trackUpdateNode]
   );
 
   const onNodesDelete = useCallback(
     (nodesToRemove: Node<NodeData>[]) => {
-      // Handle node deletion
-      trackRemoveNodes(nodesToRemove, nodes);
+      const deepCopyNodes = nodes.map(node => ({ ...node }));
+      trackRemoveNodes(nodesToRemove, deepCopyNodes, "Delete nodes");
     },
     [trackRemoveNodes, nodes]
+  );
+
+  const handleNodeAdd = useCallback(
+    (newNode: Node<NodeData>, oldValue?: Node<NodeData>[], description?: string) => {
+      trackAddNode(newNode, oldValue, description);
+    },
+    [trackAddNode, nodes]
   );
 
   return {
@@ -105,7 +126,8 @@ export const useNodeHistoryStateImpl = (
     setNodes: handleSetNodes,
     updateNodes: handleUpdateNodes,
     updateNode: handleUpdateNode,
-    addNode: trackAddNode,
+    addNode: handleNodeAdd,
+    removeNodes: trackRemoveNodes,
     onNodesChange,
     onNodesDelete,
     onNodeDragStart,
