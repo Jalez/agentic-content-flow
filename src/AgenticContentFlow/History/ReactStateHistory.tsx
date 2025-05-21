@@ -31,7 +31,7 @@ function ReactStateHistoryControls() {
     canRedo,
     undo,
     redo,
-
+    
     isPersistent,
     togglePersistence,
   } = useHistoryStateContext();
