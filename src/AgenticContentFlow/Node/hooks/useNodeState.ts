@@ -1,5 +1,5 @@
 /** @format */
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { NodeChange, applyNodeChanges, Node } from "@xyflow/react";
 import { NodeData } from "../../types";
 import { useTrackableState } from "@jalez/react-state-history";
@@ -18,7 +18,6 @@ export const useNodeHistoryStateImpl = (
   nodeParentIdMapWithChildIdSet?: Map<string, Set<string>>
 ) => {
   const trackSetNodes = useTrackableState("useNodeState/SetNodes", setNodes);
-  const [changeEvent, setChangeEvent] = useState<string>("");
 
   const trackUpdateNode = useTrackableState(
     "useNodeState/UpdateNode",
@@ -115,7 +114,7 @@ export const useNodeHistoryStateImpl = (
   );
 
   const handleNodeAdd = useCallback(
-    (newNode: Node<NodeData>, oldValue?: Node<NodeData>[], description?: string) => {
+    (newNode: Node<NodeData>, oldValue: Node<NodeData>[], description?: string) => {
       trackAddNode(newNode, oldValue, description);
     },
     [trackAddNode, nodes]

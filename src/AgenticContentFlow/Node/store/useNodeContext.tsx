@@ -213,6 +213,7 @@ export const NodeProvider: React.FC<NodeProviderProps> = ({ children }) => {
       onNodeDragStop: historyActions.onNodeDragStop,
       isDragging: historyActions.isDragging,
       localNodes: historyActions.localNodes,
+      
     };
   }, [state, dispatch, baseActions, historyActions]);
 

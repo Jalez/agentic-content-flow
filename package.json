@@ -12,8 +12,8 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@jalez/react-flow-automated-layout": "^1.1.1",
-    "@jalez/react-state-history": "^0.2.2",
+    "@jalez/react-flow-automated-layout": "^1.2.0",
+    "@jalez/react-state-history": "^0.3.0",
     "@radix-ui/react-accordion": "^1.2.10",
     "@radix-ui/react-dialog": "^1.1.13",
     "@radix-ui/react-dropdown-menu": "^2.1.14",
