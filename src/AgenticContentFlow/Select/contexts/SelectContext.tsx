@@ -41,6 +41,7 @@ export const SelectProvider = ({ children }: { children: ReactNode }) => {
 
   const onChange = useCallback(
     ({ nodes, edges }: { nodes: Node[]; edges: Edge[] }) => {
+      console.log("SELECT CONTEXT", nodes, edges);
       setSelectedNodes(nodes);
       setSelectedEdges(edges);
     },
@@ -54,12 +55,6 @@ export const SelectProvider = ({ children }: { children: ReactNode }) => {
   const deleteSelected = useCallback(() => {
     if (selectedNodes.length === 0 && selectedEdges.length === 0) return;
 
-    // selectedNodes.forEach((node) => {
-    //   removeNode(node.id);
-    // });
-    // selectedEdges.forEach((edge) => {
-    //   removeEdge(edge.id);
-    // });
     reactFlowInstance.deleteElements({
       nodes: selectedNodes,
       edges: selectedEdges,
