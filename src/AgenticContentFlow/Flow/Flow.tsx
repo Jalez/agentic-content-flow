@@ -1,4 +1,4 @@
-import { MarkerType, ReactFlow, SelectionMode } from "@xyflow/react";
+import { Edge, MarkerType, Node, ReactFlow, SelectionMode, useOnSelectionChange } from "@xyflow/react";
 import { memo, useEffect, useCallback, useRef, useMemo } from "react";
 import useNodeSelection from "../Node/hooks/useNodeSelect";
 import { useEdgeSelect } from "../Edge/hooks/useEdgeSelect";
@@ -12,6 +12,7 @@ import { useEdgeContext } from "../Edge/store/useEdgeContext";
 // Import the grid controls registration
 import GridControlsRegistration from "./controls/GridControlsRegistration";
 import { useLayoutContext } from "@jalez/react-flow-automated-layout";
+import { useTransaction } from "@jalez/react-state-history";
 
 
 const defaultEdgeOptions = {
@@ -22,9 +23,24 @@ const defaultEdgeOptions = {
 };
 
 function Flow({ children }: { children?: React.ReactNode }) {
-  const { applyLayout } = useLayoutContext();
+  const { applyLayout, autoLayout } = useLayoutContext();
   const { visibleEdges, onEdgesChange, onEdgeRemove } = useEdgeContext();
+  const selectedNodesRef = useRef<any[]>([]);
+  const selectedEdgesRef = useRef<any[]>([]);
+
+
+    const onChange = useCallback(
+      ({ nodes, edges }: { nodes: Node[]; edges: Edge[] }) => {
+        console.log("FLOW SELECT CONTEXT", nodes, edges);
+        selectedNodesRef.current = nodes;
+        selectedEdgesRef.current = edges;
+      },
+      []
+    );
   
+    useOnSelectionChange({
+      onChange,
+    });
   const {
     nodes,
     localNodes,
@@ -41,7 +57,8 @@ function Flow({ children }: { children?: React.ReactNode }) {
   useEffect(() => {
     // Apply layout when nodes change
     if (isNewState) {
-      applyLayout();
+      console.log("Applying layout due to new state");
+      autoLayout && applyLayout();
       changeStateAge(false);
     }
   }, [isNewState]);
@@ -49,7 +66,12 @@ function Flow({ children }: { children?: React.ReactNode }) {
   // Add ref for tracking panning performance
   const isPanning = useRef(false);
   const lastPanTime = useRef(0);
+  const isDeleting = useRef(false);
+  const { withTransaction } = useTransaction();
 
+  
+
+  
   const { onConnect, onConnectEnd } = useConnectionOperations();
   const {
     handleSelectionDragStart,
@@ -65,11 +87,38 @@ function Flow({ children }: { children?: React.ReactNode }) {
   });
 
   // Add this to get clearSelection
-  const { clearSelection } = useSelect();
+  const { clearSelection, selectedEdges, selectedNodes } = useSelect();
+
+  const handleDelete = (source: string) => {
+    console.log("handleDelete called from:", source);
+    if (isDeleting.current) {
+      console.warn("Deletion already in progress. Ignoring this request.");
+      return;
+    }
+
+    const hasSelectedNodes = selectedNodesRef.current.length > 0;
+    const hasSelectedEdges = selectedEdgesRef.current.length > 0;
+
+    if (hasSelectedNodes || hasSelectedEdges) {
+      withTransaction(() => {
+        console.log("Starting deletion transaction", hasSelectedNodes, hasSelectedEdges);
+        if (hasSelectedNodes) {
+          console.log("Deleting selected nodes:", selectedNodesRef.current);
+          onNodesDelete(selectedNodesRef.current);
+          selectedNodesRef.current = [];
+        }
+        if (hasSelectedEdges) {
+          console.log("Deleting selected edges:", selectedEdgesRef.current);
+          onEdgeRemove(selectedEdgesRef.current);
+          selectedEdgesRef.current = [];
+        }
+        console.log("Deletion completed");
+      }, "Delete selection");
+    }
+  };
   const handleClearSelection = useCallback(() => {
     clearSelection();
-  }
-  , [clearSelection]);
+  }, [clearSelection]);
   const { nodeTypes } = useNodeTypeRegistry();
   const memoizedNodeTypes = useMemo(() => nodeTypes, [nodeTypes]);
 
@@ -105,7 +154,7 @@ const filteredNodes = useMemo(() => {
         nodeTypes={memoizedNodeTypes}
         defaultEdgeOptions={defaultEdgeOptions}
         nodes={filteredNodes}
-        onNodesDelete={onNodesDelete}
+        onNodesDelete={() => handleDelete("onNodesDelete")}
         onNodesChange={onNodesChange}
         onNodeDragStart={onNodeDragStart}
         onNodeDrag={onNodeDrag}
@@ -116,7 +165,7 @@ const filteredNodes = useMemo(() => {
         onEdgesChange={onEdgesChange}
         onEdgeClick={DetermineEdgeClickFunction}
         onEdgeDoubleClick={DetermineEdgeClickFunction}
-        onEdgesDelete={onEdgeRemove}
+        onEdgesDelete={() => handleDelete("onEdgesDelete")}
         onConnect={onConnect}
         onConnectEnd={onConnectEnd}
         // Enable node functionality
