@@ -41,8 +41,35 @@ export const useEdgeStateImpl = (
         setEdges([]);
         throw new Error("Edges is not an array:" + edges);
       }
+      
+      // Skip tracking edge removal through onEdgesChange
+      // This will be handled by onEdgeRemove instead
+      if (changes.length > 0 && changes[0].type === "remove") {
+        console.log("onEdgesChange: skipping remove operation");
+        return;
+      }
+      
+      // Filter changes to only track significant ones
+      // Most edge changes like selection should be applied but not tracked in history
+      const significantChanges = changes.filter(change => 
+        // Add specific change types that should be tracked in history
+        change.type === 'add' ||
+        // Add other significant change types here
+        false
+      );
+      
+      // Always apply all changes to maintain UI state
       const newEdges = applyEdgeChanges(changes, edges);
-      trackUpdateEdges(newEdges, edges); // Use updateEdges instead of setEdges for consistency
+      
+      if (significantChanges.length > 0) {
+        // Only track in history if we have significant changes
+        console.log("onEdgesChange: tracking significant changes", significantChanges);
+        trackUpdateEdges(newEdges, edges, "Update edges on significant change");
+      } else {
+        // Otherwise just update the state without history tracking
+        console.log("onEdgesChange: applying changes without history tracking");
+        setEdges(newEdges);
+      }
     }),
     [edges, setEdges, trackUpdateEdges]
   );
@@ -52,7 +79,7 @@ export const useEdgeStateImpl = (
       if (!Array.isArray(newEdges)) {
         throw new Error("New edges is not an array:" + newEdges);
       }
-      trackUpdateEdges(newEdges, edges); // Use updateEdges for consistency
+      trackUpdateEdges(newEdges, edges, "Update edges on handleUpdateEdges"); // Use updateEdges for consistency
     }),
     [edges, trackUpdateEdges]
   );
@@ -66,17 +93,20 @@ export const useEdgeStateImpl = (
       if (!Array.isArray(newEdges)) {
         throw new Error("New edges is not an array:" + newEdges);
       }
-      trackSetEdges(newEdges, edges); // Use setEdges for consistency
+      trackSetEdges(newEdges, edges, "Set edges"); // Use setEdges for consistency
     }),
     [edges, trackSetEdges]
   );
 
   const onEdgeRemove = useCallback(
-    withErrorHandler("onEdgeRemove", (edges: Edge[]) => {
-      if (!Array.isArray(edges)) {
-        throw new Error("Edges is not an array:" + edges);
+    withErrorHandler("onEdgeRemove", (edgesToRemove: Edge[]) => {
+      if (!Array.isArray(edgesToRemove)) {
+        throw new Error("Edges to remove is not an array:" + edgesToRemove);
       }
-      trackRemoveEdges(edges, edges); // Use removeEdges for consistency
+      const deepCopyEdges = edges.map((edge) => ({ ...edge }));
+      console.log("deepCopyEdges", deepCopyEdges);
+      console.log("edgesToRemove", edgesToRemove);
+      trackRemoveEdges(edgesToRemove, deepCopyEdges, "Remove edges"); // Use removeEdges for consistency
     }),
     [edges, trackRemoveEdges]
   );
