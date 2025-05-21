@@ -47,11 +47,13 @@ export function AgenticContentFlowContent() {
     }
   }, [flowWrapper]);
   const testCallNodes = useCallback((nodes: Node[]) => {
+    console.log("testCallNodes", nodes);
     updateNodes(nodes);
   }, [updateNodes])
 
   const testCallEdges = useCallback((edges: Edge[]) => {
     handleUpdateEdges(edges);
+    console.log("testCallEdges", edges);
   }, [handleUpdateEdges]);
 
 
