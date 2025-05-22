@@ -2,7 +2,7 @@
 import { useCallback } from "react";
 import { NodeChange, applyNodeChanges, Node } from "@xyflow/react";
 import { NodeData } from "../../types";
-import { useTrackableState } from "@jalez/react-state-history";
+import {useTrackableState } from "@jalez/react-state-history";
 import { useNodeDrag } from "./useNodeDrag";
 
 // Define a private implementation that accepts parameters
@@ -17,6 +17,7 @@ export const useNodeHistoryStateImpl = (
   nodeMap?: Map<string, Node<NodeData>>,
   nodeParentIdMapWithChildIdSet?: Map<string, Set<string>>
 ) => {
+
   const trackSetNodes = useTrackableState("useNodeState/SetNodes", setNodes);
 
   const trackUpdateNode = useTrackableState(
@@ -64,7 +65,6 @@ export const useNodeHistoryStateImpl = (
           applyNodeChanges(changes, prev.length > 0 ? prev : nodes) as Node<NodeData>[]
         );
       } else {
-        console.log("onNodesChange", changes);
         // Only track significant changes in history
         // Skip position changes as they're too frequent and will be tracked by onNodeDragStop
         const hasNonPositionChanges = changes.some(change => 
@@ -86,6 +86,7 @@ export const useNodeHistoryStateImpl = (
 
   const handleUpdateNodes = useCallback(
     (updatedNodes: Node<NodeData>[]) => {
+
       trackUpdateNodes(updatedNodes, nodes, "Update nodes on handleUpdateNodes");
     },
     [trackUpdateNodes, nodes]
@@ -100,6 +101,7 @@ export const useNodeHistoryStateImpl = (
 
   const handleUpdateNode = useCallback(
     (updatedNode: Node<NodeData>) => {
+
       trackUpdateNode(updatedNode, nodes, "Update node");
     },
     [nodes, trackUpdateNode]

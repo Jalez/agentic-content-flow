@@ -15,7 +15,7 @@ const ROOT_INDICATOR = "no-parent";
  * A custom hook for handling node dragging behavior in a mindmap.
  */
 export const useNodeDrag = (
-  trackUpdateNodes: (nodes: Node<NodeData>[], previousNodes: Node<NodeData>[]) => void,
+  trackUpdateNodes: (nodes: Node<NodeData>[], previousNodes: Node<NodeData>[], description: string) => void,
   nodes: Node<NodeData>[],
   nodeMap: Map<string, Node<NodeData>>,
   nodeParentIdMapWithChildIdSet: Map<string, Set<string>>,
@@ -210,7 +210,7 @@ export const useNodeDrag = (
     if (updatedLocalNodes.length > 0) {
       //setLocalNodes(updatedLocalNodes);
       // Update the nodes in the store
-      trackUpdateNodes(updatedLocalNodes, nodes);
+      trackUpdateNodes(updatedLocalNodes, nodes, "Update nodes on drag stop");
       setLocalNodes([]);
     }
   }, [localNodes, nodes, currentParentCandidateId]);
