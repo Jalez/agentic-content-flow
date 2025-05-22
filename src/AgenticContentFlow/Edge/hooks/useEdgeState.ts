@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Edge, EdgeChange, applyEdgeChanges, Connection } from "@xyflow/react";
 import { withErrorHandler } from "../../utils/withErrorHandler";
 
@@ -13,8 +13,11 @@ export const useEdgeStateImpl = (
   setEdges: (edges: Edge[]) => void,
   updateEdges: (edges: Edge[]) => void,
   removeEdges: (edges: Edge[]) => void,
-  addEdgeToStore: (edge: Edge | Connection) => void
+  addEdge: (edge: Edge | Connection) => void
 ) => {
+
+  const [lastExecutedAction, setLastExecutedAction] = useState<string | null>(null);
+
   const trackUpdateEdges = useTrackableState(
     "useEdgeState/UpdateEdges",
     updateEdges,
@@ -28,10 +31,10 @@ export const useEdgeStateImpl = (
   );
 
   const trackSetEdges = useTrackableState("useEdgeState/SetEdges", setEdges);
-  
+
   const trackAddEdgeToStore = useTrackableState(
     "useEdgeState/AddEdge",
-    addEdgeToStore,
+    addEdge,
     setEdges
   );
 
@@ -41,37 +44,32 @@ export const useEdgeStateImpl = (
         setEdges([]);
         throw new Error("Edges is not an array:" + edges);
       }
-      
-      // Skip tracking edge removal through onEdgesChange
-      // This will be handled by onEdgeRemove instead
+
       if (changes.length > 0 && changes[0].type === "remove") {
-        console.log("onEdgesChange: skipping remove operation");
         return;
       }
-      
+
       // Filter changes to only track significant ones
       // Most edge changes like selection should be applied but not tracked in history
-      const significantChanges = changes.filter(change => 
+      const significantChanges = changes.filter(_ =>
         // Add specific change types that should be tracked in history
-        change.type === 'add' ||
         // Add other significant change types here
         false
       );
-      
+
       // Always apply all changes to maintain UI state
       const newEdges = applyEdgeChanges(changes, edges);
-      
-      if (significantChanges.length > 0) {
+
+      if (significantChanges.length > 0 && lastExecutedAction !== "onEdgeRemove" && lastExecutedAction !== "onEdgeAdd") {
         // Only track in history if we have significant changes
-        console.log("onEdgesChange: tracking significant changes", significantChanges);
         trackUpdateEdges(newEdges, edges, "Update edges on significant change");
+        setLastExecutedAction("onEdgesChange");
       } else {
         // Otherwise just update the state without history tracking
-        console.log("onEdgesChange: applying changes without history tracking");
         setEdges(newEdges);
       }
     }),
-    [edges, setEdges, trackUpdateEdges]
+    [edges, setEdges, trackUpdateEdges, setLastExecutedAction]
   );
 
   const handleUpdateEdges = useCallback(
@@ -79,9 +77,15 @@ export const useEdgeStateImpl = (
       if (!Array.isArray(newEdges)) {
         throw new Error("New edges is not an array:" + newEdges);
       }
-      trackUpdateEdges(newEdges, edges, "Update edges on handleUpdateEdges"); // Use updateEdges for consistency
+      if (lastExecutedAction === "onEdgeRemove" || lastExecutedAction === "onEdgeAdd") {
+        updateEdges(newEdges);
+      }
+      else {
+        trackUpdateEdges(newEdges, edges, "Update edges on handleUpdateEdges"); // Use updateEdges for consistency
+        setLastExecutedAction("handleUpdateEdges");
+      }
     }),
-    [edges, trackUpdateEdges]
+    [edges, trackUpdateEdges, lastExecutedAction, setLastExecutedAction, updateEdges]
   );
 
   const getVisibleEdges = useCallback(() => {
@@ -94,6 +98,7 @@ export const useEdgeStateImpl = (
         throw new Error("New edges is not an array:" + newEdges);
       }
       trackSetEdges(newEdges, edges, "Set edges"); // Use setEdges for consistency
+      setLastExecutedAction("handleSetEdges");
     }),
     [edges, trackSetEdges]
   );
@@ -104,16 +109,27 @@ export const useEdgeStateImpl = (
         throw new Error("Edges to remove is not an array:" + edgesToRemove);
       }
       const deepCopyEdges = edges.map((edge) => ({ ...edge }));
-      console.log("deepCopyEdges", deepCopyEdges);
-      console.log("edgesToRemove", edgesToRemove);
       trackRemoveEdges(edgesToRemove, deepCopyEdges, "Remove edges"); // Use removeEdges for consistency
+      setLastExecutedAction("onEdgeRemove");
     }),
-    [edges, trackRemoveEdges]
+    [edges, trackRemoveEdges, setLastExecutedAction, lastExecutedAction]
+  );
+
+  const onEdgeAdd = useCallback(
+    withErrorHandler("onEdgeAdd", (newEdge: Edge | Connection) => {
+      if (!newEdge) {
+        throw new Error("New edge is not valid:" + newEdge);
+      }
+      const deepCopyEdges = edges.map((edge) => ({ ...edge }));
+      trackAddEdgeToStore(newEdge, deepCopyEdges, "Add edge"); // Use onEdgeAdd for consistency
+      setLastExecutedAction("onEdgeAdd");
+    }),
+    [edges, trackAddEdgeToStore, setLastExecutedAction, lastExecutedAction]
   );
 
   const visibleEdges = useMemo(() => {
     return getVisibleEdges();
-  }, [getVisibleEdges]); 
+  }, [getVisibleEdges]);
 
   return {
     visibleEdges,
@@ -122,7 +138,7 @@ export const useEdgeStateImpl = (
     getVisibleEdges,
     handleUpdateEdges,
     onEdgeRemove,
-    addEdgeToStore: trackAddEdgeToStore
+    onEdgeAdd,
   };
 };
 
