@@ -41,7 +41,6 @@ export const SelectProvider = ({ children }: { children: ReactNode }) => {
 
   const onChange = useCallback(
     ({ nodes, edges }: { nodes: Node[]; edges: Edge[] }) => {
-      console.log("SELECT CONTEXT", nodes, edges);
       setSelectedNodes(nodes);
       setSelectedEdges(edges);
     },

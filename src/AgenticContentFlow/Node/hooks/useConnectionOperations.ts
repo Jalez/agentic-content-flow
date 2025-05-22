@@ -17,7 +17,7 @@ export const useConnectionOperations = () => {
   
   const { 
     edges, 
-    addEdgeToStore, 
+    onEdgeAdd, 
     edgeMap 
   } = useEdgeContext();
   
@@ -72,9 +72,10 @@ export const useConnectionOperations = () => {
     // updateNode(updatedChildNode);
     withTransaction(
       () => {
+        
         updateNode(updatedChildNode);
         addNode(newParentNode);
-        addEdgeToStore(newEdge);
+        onEdgeAdd(newEdge);
       },
       "addSourceNodeTransaction" // Transaction name
     );
@@ -170,7 +171,7 @@ export const useConnectionOperations = () => {
     withTransaction(
       () => {
         addNode(newChildNode);
-        addEdgeToStore(newEdge);
+        onEdgeAdd(newEdge);
       },
       "addTargetNodeTransaction" // Transaction name
     );
@@ -190,9 +191,9 @@ export const useConnectionOperations = () => {
         targetHandle
       };
       
-      addEdgeToStore(connection);
+      onEdgeAdd(connection);
     }),
-    [edgeMap, edges, addEdgeToStore]
+    [edgeMap, edges, onEdgeAdd]
   );
 
   const getCumulativeParentOffset = (
@@ -287,13 +288,13 @@ export const useConnectionOperations = () => {
         withTransaction(
           () => {
             addNode(newNode);
-            addEdgeToStore(newEdge);
+            onEdgeAdd(newEdge);
           },
           "onConnectEndTransaction" // Transaction name
         );
       }
     },
-    [screenToFlowPosition, addNode, addEdgeToStore, nodeMap, edges]
+    [screenToFlowPosition, addNode, onEdgeAdd, nodeMap, edges]
   );
 
   return {

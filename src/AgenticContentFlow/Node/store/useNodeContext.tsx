@@ -75,7 +75,6 @@ interface NodeContextType {
   updateNodes: (nodes: Node<any>[]) => void;
   removeNodes: (nodes: Node<any>[]) => void;
   changeStateAge: (isOld?: boolean) => void;
-  onNodesDelete: (nodes: Node<any>[]) => void;
   // Flow operations
   onNodesChange: (changes: any[]) => void;
   onNodeDragStart: (event: any, node: Node<NodeData>, nodesToDrag: Node<NodeData>[]) => void;
@@ -173,16 +172,7 @@ export const NodeProvider: React.FC<NodeProviderProps> = ({ children }) => {
 
   // Create the context value with state and history-tracked actions
   const contextValue = useMemo(() => {
-    // Create wrapper functions that can accept either 1 or multiple arguments
-    const addNodeWrapper = (node: Node<any>, oldValue?: Node<NodeData>[], description?: string) => {
-      if (oldValue) {
-        // If oldValue is provided, use all arguments
-        historyActions.addNode(node, oldValue, description);
-      } else {
-        // If only the first argument is provided
-        historyActions.addNode(node, [], '');
-      }
-    };
+
 
     return {
       // State properties from state
@@ -200,12 +190,11 @@ export const NodeProvider: React.FC<NodeProviderProps> = ({ children }) => {
       getNode: (id: string) => state.nodeMap.get(id),
       changeStateAge: baseActions.changeStateAge,
       // History-tracked actions with wrapper functions
-      addNode: addNodeWrapper,
+      addNode: historyActions.addNode,
       setNodes: historyActions.setNodes,
       updateNode: historyActions.updateNode,
       updateNodes: historyActions.updateNodes,
-      removeNodes: historyActions.onNodesDelete,
-      onNodesDelete: historyActions.onNodesDelete,
+      removeNodes: historyActions.removeNodes,
       // Additional functions from history state
       onNodesChange: historyActions.onNodesChange,
       onNodeDragStart: historyActions.onNodeDragStart,

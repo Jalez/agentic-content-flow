@@ -16,7 +16,7 @@ const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
   availableNodeTypes,
 }) => {
   const { addNode } = useNodeContext();
-  const { addEdgeToStore } = useEdgeContext();
+  const { onEdgeAdd } = useEdgeContext();
   const { screenToFlowPosition } = useReactFlow();
   const { selectedNodes } = useSelect();
   const { withTransaction } = useTransaction();
@@ -45,7 +45,7 @@ const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
             source: selectedNode.id,
             target: newNodeId,
           };
-          addEdgeToStore(newEdge);
+          onEdgeAdd(newEdge);
         }
       }
 

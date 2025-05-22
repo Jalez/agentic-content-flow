@@ -46,7 +46,7 @@ interface EdgeContextType {
   // Edge operations
   getEdge: (id: string) => Edge | undefined;
   setEdges: (edges: Edge[]) => void;
-  addEdgeToStore: (edge: Edge | Connection, oldValue?: Edge[], description?: string) => void;
+  onEdgeAdd: (edge: Edge | Connection) => void;
   updateEdge: (edge: Edge) => void;
   updateEdges: (edges: Edge[]) => void;
   removeEdge: (edgeId: string) => void;
@@ -97,7 +97,7 @@ export const EdgeProvider: React.FC<EdgeProviderProps> = ({ children }) => {
   // Create base actions (without history tracking)
   const baseActions = useMemo(() => ({
     setEdges: (edges: Edge[]) => dispatch({ type: "SET_EDGES", payload: edges }),
-    addEdgeToStore: (edge: Edge | Connection) => dispatch({ type: "ADD_EDGE", payload: edge }),
+    addEdge: (edge: Edge | Connection) => dispatch({ type: "ADD_EDGE", payload: edge }),
     updateEdge: (edge: Edge) => dispatch({ type: "UPDATE_EDGE", payload: edge }),
     updateEdges: (edges: Edge[]) => dispatch({ type: "UPDATE_EDGES", payload: edges }),
     removeEdge: (edgeId: string) => dispatch({ type: "REMOVE_EDGE", payload: edgeId }),
@@ -110,7 +110,7 @@ export const EdgeProvider: React.FC<EdgeProviderProps> = ({ children }) => {
     baseActions.setEdges,
     baseActions.updateEdges,
     baseActions.removeEdges,
-    baseActions.addEdgeToStore
+    baseActions.addEdge
   );
 
   // Effect to save state to localStorage whenever the 'edges' state changes
@@ -127,16 +127,8 @@ export const EdgeProvider: React.FC<EdgeProviderProps> = ({ children }) => {
 
   // Create the context value with state and history-tracked actions
   const contextValue = useMemo(() => {
-    // Create wrapper function for addEdgeToStore that can handle both usage patterns
-    const addEdgeToStoreWrapper = (edge: Edge | Connection, oldValue?: Edge[], description?: string) => {
-      if (oldValue) {
-        // If oldValue is provided, use all arguments
-        historyActions.addEdgeToStore(edge, oldValue, description);
-      } else {
-        // If only the first argument is provided
-        historyActions.addEdgeToStore(edge, state.edges, '');
-      }
-    };
+    // Create wrapper function for onEdgeAdd that can handle both usage patterns
+
 
     return {
       // State properties
@@ -155,7 +147,7 @@ export const EdgeProvider: React.FC<EdgeProviderProps> = ({ children }) => {
       setEdges: historyActions.setEdges,
       updateEdges: historyActions.handleUpdateEdges,
       removeEdges: historyActions.onEdgeRemove,
-      addEdgeToStore: addEdgeToStoreWrapper,
+      onEdgeAdd: historyActions.onEdgeAdd,
       // Additional edge operations
       onEdgesChange: historyActions.onEdgesChange,
       handleUpdateEdges: historyActions.handleUpdateEdges,
@@ -202,11 +194,11 @@ export const useEdgeContext = () => {
 // import { useEdgeContext } from './EdgeContext'; // Adjust the path
  
 // function MyComponentThatNeedsEdges() {
-//   const { edges, addEdgeToStore, removeEdge, updateEdge, getEdge } = useEdgeContext();
+//   const { edges, onEdgeAdd, removeEdge, updateEdge, getEdge } = useEdgeContext();
  
 //   // Use edges and call the action functions
 //   const handleAddEdge = (params) => {
-//     addEdgeToStore(params);
+//     onEdgeAdd(params);
 //   };
  
 //   // ... rest of your component logic
