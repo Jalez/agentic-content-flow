@@ -36,7 +36,7 @@ export function AgenticContentFlowContent() {
   const stateContext = useHistoryStateContext();
 
 
-  const { handleUpdateEdges } = useEdgeContext();
+  const { updateEdges } = useEdgeContext();
 
   // Use custom hooks for functionality
   const { handleWheel } = useViewportManager(flowWrapper);
@@ -50,12 +50,12 @@ export function AgenticContentFlowContent() {
     }
   }, [flowWrapper]);
   const testCallNodes = useCallback((nodes: Node[]) => {
-    updateNodes(nodes);
+    updateNodes(nodes, false);
   }, [updateNodes])
 
   const testCallEdges = useCallback((edges: Edge[]) => {
-    handleUpdateEdges(edges);
-  }, [handleUpdateEdges]);
+    updateEdges(edges, false);
+  }, [updateEdges]);
 
 
   return (
@@ -80,7 +80,8 @@ export function AgenticContentFlowContent() {
       updateEdges={testCallEdges}
       nodeParentIdMapWithChildIdSet={nodeParentIdMapWithChildIdSet}
       nodeIdWithNode={nodeMap}
-      disableAutoLayoutEffect={stateContext.lastCommandType === "undo" || stateContext.lastCommandType === "redo"}
+      disableAutoLayoutEffect={stateContext.lastCommandType === "undo"}
+      //disableAutoLayoutEffect={stateContext.lastCommandType === "undo" || stateContext.lastCommandType === "redo"}
     >
       <FlowContainer ref={flowWrapper} onWheel={handleWheel}>
         <Flow>

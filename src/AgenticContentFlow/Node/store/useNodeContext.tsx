@@ -69,11 +69,11 @@ interface NodeContextType {
   dispatch: React.Dispatch<NodeAction>;
   // Node operations
   getNode: (id: string) => Node<any> | undefined;
-  setNodes: (nodes: Node<any>[]) => void;
-  addNode: (node: Node<any>, oldValue?: Node<NodeData>[], description?: string) => void;
-  updateNode: (node: Node<any>) => void;
-  updateNodes: (nodes: Node<any>[]) => void;
-  removeNodes: (nodes: Node<any>[]) => void;
+  setNodes: (nodes: Node<any>[], isClick?: boolean) => void;
+  addNode: (node: Node<any>, isClick?: boolean) => void;
+  updateNode: (node: Node<any>, isClick?: boolean) => void;
+  updateNodes: (nodes: Node<any>[], isClick?: boolean) => void;
+  removeNodes: (nodes: Node<any>[], isClick?: boolean) => void;
   changeStateAge: (isOld?: boolean) => void;
   // Flow operations
   onNodesChange: (changes: any[]) => void;

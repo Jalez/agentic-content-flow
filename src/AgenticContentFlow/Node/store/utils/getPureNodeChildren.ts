@@ -10,9 +10,9 @@ export const getPureNodeChildren = (
     for (const childId of childNodeIds) {
         const childNode = nodeMap.get(childId);
         //if its hidden, skip it
-        if (childNode && childNode.hidden) {
-            continue;
-        }
+        // if (childNode && childNode.hidden) {
+        //     continue;
+        // }
         if (childNode) {
             childNodes.push(childNode);
         }

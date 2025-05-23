@@ -45,15 +45,14 @@ interface EdgeContextType {
   dispatch: React.Dispatch<EdgeAction>;
   // Edge operations
   getEdge: (id: string) => Edge | undefined;
-  setEdges: (edges: Edge[]) => void;
-  onEdgeAdd: (edge: Edge | Connection) => void;
-  updateEdge: (edge: Edge) => void;
-  updateEdges: (edges: Edge[]) => void;
-  removeEdge: (edgeId: string) => void;
-  removeEdges: (edges: Edge[]) => void;
+  setEdges: (edges: Edge[], isClick?: boolean) => void;
+  onEdgeAdd: (edge: Edge | Connection, isClick?: boolean) => void;
+  updateEdge: (edge: Edge, isClick?: boolean) => void;
+  updateEdges: (edges: Edge[], isClick?: boolean) => void;
+  removeEdge: (edgeId: string, isClick?: boolean) => void;
+  removeEdges: (edges: Edge[], isClick?: boolean) => void;
   // Flow operations
   onEdgesChange: (changes: any[]) => void;
-  handleUpdateEdges: (edges: Edge[]) => void;
   onEdgeRemove: (edges: Edge[]) => void;
   visibleEdges: Edge[];
   getVisibleEdges: () => Edge[];
@@ -150,7 +149,6 @@ export const EdgeProvider: React.FC<EdgeProviderProps> = ({ children }) => {
       onEdgeAdd: historyActions.onEdgeAdd,
       // Additional edge operations
       onEdgesChange: historyActions.onEdgesChange,
-      handleUpdateEdges: historyActions.handleUpdateEdges,
       onEdgeRemove: historyActions.onEdgeRemove,
       visibleEdges: historyActions.visibleEdges,
       getVisibleEdges: historyActions.getVisibleEdges

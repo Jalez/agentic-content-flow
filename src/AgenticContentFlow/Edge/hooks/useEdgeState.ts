@@ -32,7 +32,7 @@ export const useEdgeStateImpl = (
 
   const trackSetEdges = useTrackableState("useEdgeState/SetEdges", setEdges);
 
-  const trackAddEdgeToStore = useTrackableState(
+  const trackAddEdge = useTrackableState(
     "useEdgeState/AddEdge",
     addEdge,
     setEdges
@@ -73,17 +73,16 @@ export const useEdgeStateImpl = (
   );
 
   const handleUpdateEdges = useCallback(
-    withErrorHandler("handleUpdateEdges", (newEdges: Edge[]) => {
+    withErrorHandler("handleUpdateEdges", (newEdges: Edge[], isClick = true) => {
       if (!Array.isArray(newEdges)) {
         throw new Error("New edges is not an array:" + newEdges);
       }
-      if (lastExecutedAction === "onEdgeRemove" || lastExecutedAction === "onEdgeAdd") {
+      if (!isClick) {
         updateEdges(newEdges);
+        return;
       }
-      else {
-        trackUpdateEdges(newEdges, edges, "Update edges on handleUpdateEdges"); // Use updateEdges for consistency
-        setLastExecutedAction("handleUpdateEdges");
-      }
+      trackUpdateEdges(newEdges, edges, "Update edges on handleUpdateEdges"); // Use updateEdges for consistency
+      setLastExecutedAction("handleUpdateEdges");
     }),
     [edges, trackUpdateEdges, lastExecutedAction, setLastExecutedAction, updateEdges]
   );
@@ -93,38 +92,50 @@ export const useEdgeStateImpl = (
   }, [edges]);
 
   const handleSetEdges = useCallback(
-    withErrorHandler("handleSetEdges", (newEdges: Edge[]) => {
+    withErrorHandler("handleSetEdges", (newEdges: Edge[], isClick = true) => {
       if (!Array.isArray(newEdges)) {
         throw new Error("New edges is not an array:" + newEdges);
+      }
+      if (!isClick) {
+        setEdges(newEdges);
+        return;
       }
       trackSetEdges(newEdges, edges, "Set edges"); // Use setEdges for consistency
       setLastExecutedAction("handleSetEdges");
     }),
-    [edges, trackSetEdges]
+    [edges, trackSetEdges, setLastExecutedAction, lastExecutedAction, setEdges] 
   );
 
   const onEdgeRemove = useCallback(
-    withErrorHandler("onEdgeRemove", (edgesToRemove: Edge[]) => {
+    withErrorHandler("onEdgeRemove", (edgesToRemove: Edge[], isClick = true) => {
       if (!Array.isArray(edgesToRemove)) {
         throw new Error("Edges to remove is not an array:" + edgesToRemove);
+      }
+      if (!isClick) {
+        removeEdges(edgesToRemove);
+        return;
       }
       const deepCopyEdges = edges.map((edge) => ({ ...edge }));
       trackRemoveEdges(edgesToRemove, deepCopyEdges, "Remove edges"); // Use removeEdges for consistency
       setLastExecutedAction("onEdgeRemove");
     }),
-    [edges, trackRemoveEdges, setLastExecutedAction, lastExecutedAction]
+    [edges, trackRemoveEdges, setLastExecutedAction, lastExecutedAction, removeEdges]
   );
 
   const onEdgeAdd = useCallback(
-    withErrorHandler("onEdgeAdd", (newEdge: Edge | Connection) => {
+    withErrorHandler("onEdgeAdd", (newEdge: Edge | Connection, isClick=true) => {
       if (!newEdge) {
         throw new Error("New edge is not valid:" + newEdge);
       }
+      if (!isClick) {
+        addEdge(newEdge);
+        return;
+      }
       const deepCopyEdges = edges.map((edge) => ({ ...edge }));
-      trackAddEdgeToStore(newEdge, deepCopyEdges, "Add edge"); // Use onEdgeAdd for consistency
+      trackAddEdge(newEdge, deepCopyEdges, "Add edge"); // Use onEdgeAdd for consistency
       setLastExecutedAction("onEdgeAdd");
     }),
-    [edges, trackAddEdgeToStore, setLastExecutedAction, lastExecutedAction]
+    [edges, trackAddEdge, setLastExecutedAction, lastExecutedAction, addEdge]
   );
 
   const visibleEdges = useMemo(() => {
