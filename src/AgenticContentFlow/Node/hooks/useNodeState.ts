@@ -4,6 +4,7 @@ import { NodeChange, applyNodeChanges, Node } from "@xyflow/react";
 import { NodeData } from "../../types";
 import { useTrackableState } from "@jalez/react-state-history";
 import { useNodeDrag } from "./useNodeDrag";
+import { withErrorHandler } from "../../utils/withErrorHandler";
 
 // Define a private implementation that accepts parameters
 // This will be used by the provider, not exposed to components directly
@@ -17,6 +18,7 @@ export const useNodeHistoryStateImpl = (
   nodeMap?: Map<string, Node<NodeData>>,
   nodeParentIdMapWithChildIdSet?: Map<string, Set<string>>
 ) => {
+
   const [lastExecutedAction, setLastExecutedAction] = useState<string | null>(null);
 
   const trackSetNodes = useTrackableState("useNodeState/SetNodes", setNodes);
@@ -34,7 +36,7 @@ export const useNodeHistoryStateImpl = (
   );
 
   const trackRemoveNodes = useTrackableState(
-    "useNodeState/RemoveNode",
+    "useNodeState/RemoveNodes",
     removeNodes,
     setNodes
   );
@@ -60,80 +62,96 @@ export const useNodeHistoryStateImpl = (
   } = useNodeDrag(trackUpdateNodes, nodes, nodeMapToUse, parentMapToUse, updateNode);
 
   const onNodesChange = useCallback(
-    (changes: NodeChange[]) => {
+    withErrorHandler("onNodesChange", (changes: NodeChange[]) => {
       if (isDraggingRef.current) {
         setLocalNodes(prev =>
           applyNodeChanges(changes, prev.length > 0 ? prev : nodes) as Node<NodeData>[]
         );
       } else {
-        console.log("onNodesChange", changes);
         // Only track significant changes in history
         // Skip position changes as they're too frequent and will be tracked by onNodeDragStop
         const hasNonPositionChanges = changes.some(change =>
           change.type !== 'position' && change.type !== 'remove' && change.type !== 'add'
         );
 
-        if (hasNonPositionChanges && lastExecutedAction !== "removeNodes" && lastExecutedAction !== "handleNodeAdd") {
+        if (hasNonPositionChanges && lastExecutedAction !== "onNodeRemove" && lastExecutedAction !== "onNodeAdd" && lastExecutedAction !== "handleUpdateNodes") {
           const updatedNodes = applyNodeChanges(changes, nodes) as Node<NodeData>[];
-          trackUpdateNodes(updatedNodes, nodes, "Update nodes on change");
+          // Create a deep copy of the nodes to avoid mutating the original state
+          const deepCopyNodes = nodes.map(node => ({ ...node }));
+          trackUpdateNodes(updatedNodes, deepCopyNodes, "Update nodes on change");
           setLastExecutedAction("onNodesChange");
         } else {
           const updatedNodes = applyNodeChanges(changes, nodes) as Node<NodeData>[];
           updateNodes(updatedNodes);
         }
       }
-    },
+    }),
     [nodes, trackUpdateNodes, setNodes, isDraggingRef, setLocalNodes, localNodes, lastExecutedAction]
   );
 
   const handleUpdateNodes = useCallback(
-    (updatedNodes: Node<NodeData>[]) => {
-      console.log("handleUpdateNodes", updatedNodes);
-      if (lastExecutedAction === "removeNodes" || lastExecutedAction === "handleNodeAdd") {
-        
+    withErrorHandler("handleUpdateNodes", (updatedNodes: Node<NodeData>[], isClick = true) => {
+      if (!isClick) {
+        //Dont track if not a click
         updateNodes(updatedNodes);
-      } else {
-        trackUpdateNodes(updatedNodes, nodes, "Update nodes on handleUpdateNodes");
-        setLastExecutedAction("handleUpdateNodes");
+        return;
       }
-    },
+      const deepCopyNodes = nodes.map(node => ({ ...node }));
+      trackUpdateNodes(updatedNodes, deepCopyNodes, "Update nodes on handleUpdateNodes");
+      setLastExecutedAction("handleUpdateNodes");
+    }),
     [trackUpdateNodes, nodes, setLastExecutedAction, lastExecutedAction, updateNodes]
   );
 
   const handleSetNodes = useCallback(
-    (newNodes: Node<NodeData>[]) => {
-      console.log("handleSetNodes", newNodes);
+    withErrorHandler("handleSetNodes", (newNodes: Node<NodeData>[], isClick = true) => {
+      if (!isClick) {
+        setLocalNodes(newNodes);
+        return;
+      }
       trackSetNodes(newNodes, nodes, "Set nodes");
       setLastExecutedAction("handleSetNodes");
-    },
+    }),
     [trackSetNodes, nodes, setLastExecutedAction]
   );
 
   const handleUpdateNode = useCallback(
-    (updatedNode: Node<NodeData>) => {
-console.log("handleUpdateNode", updatedNode);
+    withErrorHandler("handleUpdateNode", (updatedNode: Node<NodeData>, isClick = true) => {
+      if (!isClick) {
+        updateNode(updatedNode);
+        return;
+      }
       trackUpdateNode(updatedNode, nodes, "Update node");
       setLastExecutedAction("handleUpdateNode");
-    },
+
+    }),
     [nodes, trackUpdateNode, setLastExecutedAction]
   );
 
-  const handleRemoveNodes = useCallback(
-    (nodesToRemove: Node<NodeData>[]) => {
-      console.log("handleRemoveNodes", nodesToRemove);
+  const onNodeRemove = useCallback(
+    withErrorHandler("onNodeRemove", (nodesToRemove: Node<NodeData>[], isClick = true) => {
+      if (!isClick) {
+        removeNodes(nodesToRemove);
+        return;
+      }
       const deepCopyNodes = nodes.map(node => ({ ...node }));
       trackRemoveNodes(nodesToRemove, deepCopyNodes, "Delete nodes");
-      setLastExecutedAction("removeNodes");
-    },
-    [trackRemoveNodes, nodes, setLastExecutedAction]
+      setLastExecutedAction("onNodeRemove");
+    }),
+    [trackRemoveNodes, nodes, setLastExecutedAction, removeNodes]
   );
 
-  const handleNodeAdd = useCallback(
-    (newNode: Node<NodeData>) => {
-      console.log("handleNodeAdd", newNode);
-      trackAddNode(newNode, nodes, "Add node");
-      setLastExecutedAction("handleNodeAdd");
-    },
+  const onNodeAdd = useCallback(
+    withErrorHandler("onNodeAdd", (newNode: Node<NodeData>, isClick = true) => {
+      if (!isClick) {
+        addNode(newNode);
+        return;
+      }
+      else {
+        trackAddNode(newNode, nodes, "Add node");
+        setLastExecutedAction("onNodeAdd");
+      }
+    }),
     [trackAddNode, nodes, setLastExecutedAction]
   );
 
@@ -142,8 +160,8 @@ console.log("handleUpdateNode", updatedNode);
     setNodes: handleSetNodes,
     updateNodes: handleUpdateNodes,
     updateNode: handleUpdateNode,
-    addNode: handleNodeAdd,
-    removeNodes: handleRemoveNodes,
+    addNode: onNodeAdd,
+    removeNodes: onNodeRemove,
     onNodesChange,
     onNodeDragStart,
     isDragging,
