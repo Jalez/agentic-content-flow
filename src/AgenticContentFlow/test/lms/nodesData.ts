@@ -4,7 +4,7 @@ import { Node } from "@xyflow/react";
 export const lmsParentNodesData: Array<Node> = [
   {
     id: 'container-course-lr-lms', // ID for the container
-    type: 'invisiblenode', 
+    type: 'invisiblenode',
     position: { x: 0, y: 0 }, // Initial position doesn't matter, layout will set it
     data: {
       label: 'LR Container',
@@ -60,7 +60,7 @@ export const lmsParentNodesData: Array<Node> = [
       expanded: true,
       depth: 1,
       isParent: true // Explicitly mark this node as a parent
-      
+
     },
     position: { x: 900, y: 200 },
     parentId: "course-0-lms",
@@ -68,7 +68,7 @@ export const lmsParentNodesData: Array<Node> = [
   },
   {
     id: "module-1-instance-0",
-    type: "pagenode", 
+    type: "pagenode",
     data: {
       label: "Module 1",
       details: "First module of Instance 0",
@@ -84,7 +84,7 @@ export const lmsParentNodesData: Array<Node> = [
   },
   {
     id: "module-2-instance-0",
-    type: "pagenode", 
+    type: "pagenode",
     data: {
       label: "Module 2",
       details: "Module 2 content",
@@ -100,7 +100,7 @@ export const lmsParentNodesData: Array<Node> = [
   },
   {
     id: 'container-instance-1-module-1-data-lr', // ID for the container
-    type: 'invisiblenode', 
+    type: 'invisiblenode',
     position: { x: 0, y: 0 }, // Initial position doesn't matter, layout will set it
     data: {
       label: 'LR Container',
@@ -118,7 +118,7 @@ export const lmsParentNodesData: Array<Node> = [
   },
   {
     id: 'container-instance-0-module-2-data-lr', // ID for the container
-    type: 'invisiblenode', 
+    type: 'invisiblenode',
     position: { x: 0, y: 0 }, // Initial position doesn't matter, layout will set it
     data: {
       label: 'LR Container',
@@ -136,7 +136,7 @@ export const lmsParentNodesData: Array<Node> = [
   },
   {
     id: "module-1-instance-1",
-    type: "pagenode", 
+    type: "pagenode",
     data: {
       label: "Module 1",
       details: "First module of Instance 1",
@@ -152,7 +152,7 @@ export const lmsParentNodesData: Array<Node> = [
   },
   {
     id: "module-2-instance-1",
-    type: "pagenode", 
+    type: "pagenode",
     data: {
       label: "Module 2",
       details: "Second module of Instance 1",
@@ -168,7 +168,7 @@ export const lmsParentNodesData: Array<Node> = [
   },
   {
     id: "module-3-instance-1",
-    type: "pagenode", 
+    type: "pagenode",
     data: {
       label: "Module 3",
       details: "Third module of Instance 1",
