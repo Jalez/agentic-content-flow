@@ -101,7 +101,7 @@ export const InvisibleNode: React.FC<InvisibleNodeProps> = ({ id, data, selected
         ref={containerRef}
         onTransitionEnd={() => updateNodeInternals(id)}
         selected={selected}
-        color={color}
+        color={"black"}
         isExpanded={isExpanded}
         isHovered={isHovered}
       >

@@ -3,6 +3,7 @@ import { NodeData } from "../../types";
 
 /**
  * Creates a template for a new invisible container node
+ * Supports both regular containers and specialized LR containers for horizontal layouts
  *
  * @param params Object containing node creation parameters
  * @returns A new invisible node configuration
@@ -26,18 +27,22 @@ export const createInvisibleNodeTemplate = (
       label: params.label || "Container",
       level,
       parent: eventNode?.id,
-      subject: eventNode?.data.subject || "container",
+      subject: params.subject || eventNode?.data.subject || "container",
       nodeLevel: params.nodeLevel || "intermediate",
       details: params.details || "Invisible container for organizing content",
-      isParent: true,
-      expanded: false
+      isParent: params.isParent ?? true,
+      expanded: params.expanded ?? true, // Default to expanded for containers
+      // Support for LR container layout direction
+      layoutDirection: params.layoutDirection || 'LR', // Default to TB if not specified
+      isContainer: params.isContainer ?? true,
+      depth: params.depth ?? (eventNode?.data.depth ? eventNode.data.depth : 0)
     },
     style: {
-      width: 300,
-      height: 200,
+      width: params.width || 300,
+      height: params.height || 200,
     },
     position,
-    parentId: eventNode?.parentId,
-    extent: eventNode?.parentId ? "parent" : undefined,
+    parentId: params.parentId || eventNode?.parentId,
+    extent: (params.parentId || eventNode?.parentId) ? "parent" : undefined,
   };
 };
