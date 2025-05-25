@@ -24,7 +24,6 @@ const DeleteSelectedButton = () => {
       icon={<Trash2 className="size-4" />}
       onClick={deleteSelected}
       disabled={!hasSelection}
-      active={hasSelection}
     />
   );
 };

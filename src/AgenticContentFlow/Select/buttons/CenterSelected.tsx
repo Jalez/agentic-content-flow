@@ -17,7 +17,7 @@ const CenterSelectedButton = () => {
       icon={<Target className="size-4" />}
       onClick={handleCenterOnSelected}
       disabled={!hasSelection}
-      active={hasSelection}
+
     />
   );
 };
