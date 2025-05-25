@@ -3,8 +3,8 @@ import { useCallback } from "react";
 import { createNodeFromTemplate } from "../../registry/nodeTypeRegistry";
 import { useNodeContext } from "../../store/useNodeContext";
 import { useEdgeContext } from "../../../Edge/store/useEdgeContext";
-import { useTransaction } from "@jalez/react-state-history";
 import { getCumulativeParentOffset } from "../utils/positionUtils";
+import { useInvisibleNodeOperations } from "../useInvisibleNodeOperations";
 
 export const useDragToCreateOperations = () => {
   const { 
@@ -18,7 +18,10 @@ export const useDragToCreateOperations = () => {
   } = useEdgeContext();
   
   const { screenToFlowPosition } = useReactFlow();
-  const { withTransaction } = useTransaction();
+  const { 
+    handleDragToCreateWithInvisibleNode,
+    executeInvisibleNodeOperation 
+  } = useInvisibleNodeOperations();
 
   const onConnectEnd = useCallback(
     (event: MouseEvent | TouchEvent, connectionState: any) => {
@@ -86,16 +89,27 @@ export const useDragToCreateOperations = () => {
             : draggedHandle  // The dragged handle is the target
         };
 
-        withTransaction(
-          () => {
+        // Handle invisible node management for horizontal connections
+        executeInvisibleNodeOperation(() => {
+          const result = handleDragToCreateWithInvisibleNode(
+            newNode, 
+            connectionState.fromNode, 
+            newEdge
+          );
+          
+          // Add the edge
+          onEdgeAdd(newEdge);
+          
+          // If no invisible node was created, add the new node normally
+          if (!result.newInvisibleNode) {
             addNode(newNode);
-            onEdgeAdd(newEdge);
-          },
-          "onConnectEndTransaction"
-        );
+          }
+          
+          return result;
+        }, "Drag-to-create with invisible node management");
       }
     },
-    [screenToFlowPosition, addNode, onEdgeAdd, nodeMap, edges]
+    [screenToFlowPosition, addNode, onEdgeAdd, nodeMap, edges, handleDragToCreateWithInvisibleNode, executeInvisibleNodeOperation]
   );
 
   return {
