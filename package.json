@@ -12,7 +12,7 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@jalez/react-flow-automated-layout": "^1.2.2",
+    "@jalez/react-flow-automated-layout": "^1.2.3",
     "@jalez/react-state-history": "^0.4.0",
     "@radix-ui/react-accordion": "^1.2.10",
     "@radix-ui/react-dialog": "^1.1.13",

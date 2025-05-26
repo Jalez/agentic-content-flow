@@ -1,6 +1,5 @@
 import { Node, Edge } from "@xyflow/react";
 import { NodeData } from "../../../types";
-import { createNodeFromTemplate } from "../../registry/nodeTypeRegistry";
 
 /**
  * Check if a connection is horizontal (left/right)
