@@ -82,3 +82,12 @@ export const updateNodeExtentInLocalNodes = (
     return localNode;
   });
 };
+
+
+/**
+ * Check if a connection is horizontal (left/right)
+ */
+export const isHorizontalConnection = (sourceHandle: string | null | undefined, targetHandle: string | null | undefined): boolean => {
+  return (sourceHandle === 'left' || sourceHandle === 'right') || 
+         (targetHandle === 'left' || targetHandle === 'right');
+};
