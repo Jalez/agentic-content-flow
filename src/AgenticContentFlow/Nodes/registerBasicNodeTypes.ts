@@ -21,6 +21,11 @@ import ConditionalNode from "./ConditionalNode/ConditionalNode";
 import { createConditionalNodeTemplate } from "./ConditionalNode/createConditionalNodeTemplate";
 import { InvisibleNode } from './InvisibleNode/InvisibleNode';
 import { createInvisibleNodeTemplate } from './InvisibleNode/createInvisibleNodeTemplate';
+import { StatisticsNode } from './StatisticsNode/StatisticsNode';
+
+// Import handle type registration
+import { ensureHandleTypesRegistered } from "../Handle/registry/registerBasicHandleTypes";
+import { createStatisticsNodeTemplate } from "./StatisticsNode/createStatisticsNodeTemplate";
 
 // Track initialization state
 let registered = false;
@@ -45,6 +50,10 @@ export function ensureNodeTypesRegistered(): void {
   registerNodeType("viewnode", ViewNode, createViewNodeTemplate, true);
   registerNodeType("conditionalnode", ConditionalNode, createConditionalNodeTemplate);
   registerNodeType("invisiblenode", InvisibleNode, createInvisibleNodeTemplate, true);
+  registerNodeType("statisticsnode", StatisticsNode, createStatisticsNodeTemplate, true);
+
+  // Register handle type configurations
+  ensureHandleTypesRegistered();
 
   // Register the node creation control with all available node types
   registerControl(
@@ -61,7 +70,8 @@ export function ensureNodeTypesRegistered(): void {
         "pagenode", 
         "viewnode", 
         "conditionalnode",
-        "invisiblenode"
+        "invisiblenode",
+        "statisticsnode"
       ] 
     }
   );

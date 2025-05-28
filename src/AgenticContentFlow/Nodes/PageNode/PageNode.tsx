@@ -13,9 +13,9 @@ import ExpandCollapseButton from '../common/ExpandCollapseButton';
 import ConnectionHandles from '../common/ConnectionHandles';
 import CornerResizer from '../common/CornerResizer';
 import { colorByDepth } from '../common/utils/colorByDepth';
-import CircleStackIcon from '@/components/icons/circle-stack';
+  import CircleStackIcon from '@/components/icons/circle-stack';
+  import ChartIcon from '@/components/icons/chart'; 
 import WebIcon from '@/components/icons/web';
-import ChartIcon from '@/components/icons/chart';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useSelect } from '../../Select/contexts/SelectContext';
 
@@ -77,14 +77,9 @@ export const PageNode: React.FC<NodeProps> = ({ id, data, selected }) => {
           backgroundColor: color,
         }}
       >
-        <ConnectionHandles 
-          color={color} 
-          icons={{
-            left: <CircleStackIcon />,
-            right: <ChartIcon />,
-            top: <ArrowDown className="size-4" />,
-            bottom: <ArrowDown className="size-4" />
-          }}
+        <ConnectionHandles nodeType="pagenode" 
+                            color={color} 
+
         />
         <NodeHeader className="dragHandle">
           <WebIcon

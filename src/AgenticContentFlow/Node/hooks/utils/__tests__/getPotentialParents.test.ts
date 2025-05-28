@@ -34,10 +34,10 @@ describe('getPotentialParentId', () => {
         const unrelatedNode = createNode('node-1003');
         const unrelatedChild = createNode('node-1004', 'node-1003'); // Make unrelatedNode a parent
 
-        const parentIdWithChildren = new Map<string, Node<NodeData>[]>([
-            ['node-1000', [child]],
-            ['node-1001', [grandChild]],
-            ['node-1003', [unrelatedChild]] // Add unrelatedNode as a parent
+        const parentIdWithChildren = new Map<string, Set<string>>([
+            ['node-1000', new Set(['node-1001'])],
+            ['node-1001', new Set(['node-1002'])],
+            ['node-1003', new Set(['node-1004'])] // Add unrelatedNode as a parent
         ]);
 
         const poolOfAllNodes = new Map([
@@ -68,10 +68,10 @@ describe('getPotentialParentId', () => {
         const olderSiblingChild = createNode('node-1003', 'node-1001');
         const youngerSiblingChild = createNode('node-1004', 'node-1002');
 
-        const parentIdWithChildren = new Map<string, Node<NodeData>[]>([
-            ['parent-1', [node, olderSibling, youngerSibling]],
-            ['node-1001', [olderSiblingChild]],
-            ['node-1002', [youngerSiblingChild]]
+        const parentIdWithChildren = new Map<string, Set<string>>([
+            ['parent-1', new Set(['node-1000', 'node-1001', 'node-1002'])],
+            ['node-1001', new Set(['node-1003'])],
+            ['node-1002', new Set(['node-1004'])]
         ]);
 
         const poolOfAllNodes = new Map([
@@ -102,10 +102,10 @@ describe('getPotentialParentId', () => {
         // Make the sibling a parent by giving it a child
         const siblingChild = createNode('node-1002', 'node-1001');
 
-        const parentIdWithChildren = new Map<string, Node<NodeData>[]>([
-            ['grandparent-1', [parent]],
-            ['parent-1', [node, sibling]],
-            ['node-1001', [siblingChild]]
+        const parentIdWithChildren = new Map<string, Set<string>>([
+            ['grandparent-1', new Set(['parent-1'])],
+            ['parent-1', new Set(['node-1000', 'node-1001'])],
+            ['node-1001', new Set(['node-1002'])]
         ]);
 
         const poolOfAllNodes = new Map([
@@ -131,8 +131,8 @@ describe('getPotentialParentId', () => {
         const node = createNode('node-1000');
         const child = createNode('node-1001', 'node-1000');
 
-        const parentIdWithChildren = new Map<string, Node<NodeData>[]>([
-            ['node-1000', [child]]
+        const parentIdWithChildren = new Map<string, Set<string>>([
+            ['node-1000', new Set(['node-1001'])]
         ]);
 
         const poolOfAllNodes = new Map([
@@ -159,9 +159,9 @@ describe('getPotentialParentId', () => {
         const overlappingNodeChild = createNode('node-1003', 'node-1001');
         const nonOverlappingNodeChild = createNode('node-1004', 'node-1002');
 
-        const parentIdWithChildren = new Map<string, Node<NodeData>[]>([
-            ['node-1001', [overlappingNodeChild]],
-            ['node-1002', [nonOverlappingNodeChild]]
+        const parentIdWithChildren = new Map<string, Set<string>>([
+            ['node-1001', new Set(['node-1003'])],
+            ['node-1002', new Set(['node-1004'])]
         ]);
 
         const poolOfAllNodes = new Map([
@@ -191,9 +191,9 @@ describe('getPotentialParentId', () => {
         const closerNodeChild = createNode('node-1003', 'node-1001');
         const fartherNodeChild = createNode('node-1004', 'node-1002');
 
-        const parentIdWithChildren = new Map<string, Node<NodeData>[]>([
-            ['node-1001', [closerNodeChild]],
-            ['node-1002', [fartherNodeChild]]
+        const parentIdWithChildren = new Map<string, Set<string>>([
+            ['node-1001', new Set(['node-1003'])],
+            ['node-1002', new Set(['node-1004'])]
         ]);
 
         const poolOfAllNodes = new Map([
@@ -223,9 +223,9 @@ describe('getPotentialParentId', () => {
         const moreOverlapChild = createNode('node-1003', 'node-1001');
         const lessOverlapChild = createNode('node-1004', 'node-1002');
 
-        const parentIdWithChildren = new Map<string, Node<NodeData>[]>([
-            ['node-1001', [moreOverlapChild]],
-            ['node-1002', [lessOverlapChild]]
+        const parentIdWithChildren = new Map<string, Set<string>>([
+            ['node-1001', new Set(['node-1003'])],
+            ['node-1002', new Set(['node-1004'])]
         ]);
 
         const poolOfAllNodes = new Map([
@@ -254,11 +254,11 @@ describe('getPotentialParentId', () => {
         const child = createNode('node-1003', 'node-1002');
         const grandChild = createNode('node-1004', 'node-1003');
 
-        const parentIdWithChildren = new Map<string, Node<NodeData>[]>([
-            ['node-1000', [parent]],
-            ['node-1001', [node]],
-            ['node-1002', [child]],
-            ['node-1003', [grandChild]]
+        const parentIdWithChildren = new Map<string, Set<string>>([
+            ['node-1000', new Set(['node-1001'])],
+            ['node-1001', new Set(['node-1002'])],
+            ['node-1002', new Set(['node-1003'])],
+            ['node-1003', new Set(['node-1004'])]
         ]);
 
         const poolOfAllNodes = new Map([
@@ -310,8 +310,8 @@ describe('getPotentialParentId', () => {
         node.position = { x: 100, y: 100 };
         otherCandidate.position = { x: 110, y: 110 };
 
-        const parentIdWithChildren = new Map<string, Node<NodeData>[]>([
-            ['node-1000', [node]]
+        const parentIdWithChildren = new Map<string, Set<string>>([
+            ['node-1000', new Set(['node-1001'])]
         ]);
 
         const poolOfAllNodes = new Map([
@@ -345,9 +345,9 @@ describe('getPotentialParentId', () => {
         existingParent.position = { x: 110, y: 110 }; // More overlap with node
         nonParent.position = { x: 200, y: 200 }; // Less overlap with node
 
-        const parentIdWithChildren = new Map<string, Node<NodeData>[]>([
-            ['node-1000', [node]], // current parent
-            ['node-1002', [childOfExistingParent]] // another parent
+        const parentIdWithChildren = new Map<string, Set<string>>([
+            ['node-1000', new Set(['node-1001'])], // current parent
+            ['node-1002', new Set(['node-1004'])] // another parent
         ]);
 
         const poolOfAllNodes = new Map([
@@ -401,9 +401,9 @@ describe('getPotentialParentId', () => {
         const child1 = createNode('child-1', 'root-1');
         const child2 = createNode('child-2', 'root-2');
 
-        const parentIdWithChildren = new Map<string, Node<NodeData>[]>([
-            ['root-1', [child1]],
-            ['root-2', [child2]]
+        const parentIdWithChildren = new Map<string, Set<string>>([
+            ['root-1', new Set(['child-1'])],
+            ['root-2', new Set(['child-2'])]
         ]);
 
         const poolOfAllNodes = new Map([

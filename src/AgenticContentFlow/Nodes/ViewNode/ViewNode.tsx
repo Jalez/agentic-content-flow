@@ -94,6 +94,7 @@ export const ViewNode: React.FC<NodeProps> = ({ id, data, selected }) => {
       >
         {/* Connection handles */}
         <ConnectionHandles 
+          nodeType="viewnode"
           color={color} 
           icons={{
             left: <ArrowLeft className="size-4" />,

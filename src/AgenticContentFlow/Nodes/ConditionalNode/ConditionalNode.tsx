@@ -40,6 +40,7 @@ export const ConditionalNode: React.FC<NodeProps> = ({
         }}
       >
         <ConnectionHandles
+          nodeType="conditionalnode"
           color={color}
         />
         <GitFork 

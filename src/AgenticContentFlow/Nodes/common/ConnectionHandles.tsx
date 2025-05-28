@@ -1,56 +1,38 @@
-import { Position } from "@xyflow/react";
 import { ReactNode } from "react";
-import { BaseHandle } from "@/components/base-handle";
+import { TypedHandle } from "../../Handle/components/TypedHandle";
+import { handleRegistry } from "../../Handle/registry/handleTypeRegistry";
 
 interface ConnectionHandlesProps {
-    color: string;
+    nodeType: string;
+    color?: string; // Keep for backward compatibility - now used to set handle background
     icons?: {
         left?: ReactNode;
         right?: ReactNode;
         top?: ReactNode;
         bottom?: ReactNode;
-    };
+    }; // Keep for backward compatibility
 }
 
-const ConnectionHandles = ({ color, icons }: ConnectionHandlesProps) => {
+const ConnectionHandles = ({ nodeType, color }: ConnectionHandlesProps) => {
+    // Get handle definitions from registry
+    const handleDefinitions = handleRegistry.getNodeHandles(nodeType);
+    
+    // If no handle definitions found, render nothing (or could fallback to old system)
+    if (handleDefinitions.length === 0) {
+        console.warn(`No handle definitions found for node type: ${nodeType}`);
+        return null;
+    }
+
     return (
         <>
-            <BaseHandle 
-                type="target" 
-                position={Position.Left} 
-                id="left" 
-                style={{ backgroundColor: color }}
-            >
-                {icons?.left && <div className="w-3.5 h-3.5 flex items-center justify-center">{icons.left}</div>}
-            </BaseHandle>
-
-            <BaseHandle 
-                type="source" 
-                position={Position.Right} 
-                id="right" 
-                style={{ backgroundColor: color }}
-            >
-                {icons?.right && <div className="w-3.5 h-3.5 flex items-center justify-center">{icons.right}</div>}
-            </BaseHandle>
-
-            <BaseHandle 
-                type="target" 
-                position={Position.Top} 
-                id="top" 
-                style={{ backgroundColor: color }}
-            >
-                {icons?.top && <div className="w-3.5 h-3.5 flex 
-                items-center justify-center">{icons.top}</div>}
-            </BaseHandle>
-
-            <BaseHandle 
-                type="source" 
-                position={Position.Bottom} 
-                id="bottom" 
-                style={{ backgroundColor: color }}
-            >
-                {icons?.bottom && <div className="w-3.5 h-3.5 flex items-center justify-center">{icons.bottom}</div>}
-            </BaseHandle>
+            {handleDefinitions.map((handleDef, index) => (
+                <TypedHandle
+                    key={`${handleDef.position}-${index}`}
+                    nodeType={nodeType}
+                    handleDefinition={handleDef}
+                    nodeBackgroundColor={color} // Pass the node's background color
+                />
+            ))}
         </>
     );
 }

@@ -316,6 +316,22 @@ export const lmsChildNodesData: Array<Node> = [
     parentId: "instance-1",
     extent: "parent",
   }
+  //Add a statistic node for course 0
+  ,{
+    id: "course-0-stats",
+    type: "statisticsnode",
+    data: {
+      label: "Course 0 Stats",
+      details: "Course 0 analytics data",
+      level: "advanced",
+      subject: "data",
+      depth: 0,
+      isParent: true // Explicitly mark this node as a parent
+    },
+    position: { x: 500, y: 800 },
+    parentId: "container-course-lr-lms", // Set the parentId to the course node
+    extent: "parent",
+  },
 ];
 
 // Combined nodes for easy import - CRITICAL: parent nodes MUST come before child nodes

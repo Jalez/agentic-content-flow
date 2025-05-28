@@ -80,4 +80,14 @@ export const lmsEdgesData: Edge[] = [
     sourceHandle: "bottom", // Bottom of course (for routing)
     targetHandle: "top",  // Top of dependent course (for routing)
   },
+
+  //Connect course 0 to its statistics
+  {
+    id: "e-course0-stats",
+    type: "package", // Use package edge type for data flow
+    source: "course-0-lms",
+    target: "course-0-stats",
+    sourceHandle: "right", // Right side of course node
+    targetHandle: "left",  // Left side of stats node
+  },
 ];

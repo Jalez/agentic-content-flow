@@ -1,4 +1,4 @@
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useSelect } from "../../Select/contexts/SelectContext";
 import { useConnectionOperations } from "../../Node/hooks/useConnectionOperations";
 import { NodeData } from "../../types";

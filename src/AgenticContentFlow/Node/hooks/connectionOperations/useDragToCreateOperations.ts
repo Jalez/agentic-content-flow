@@ -39,6 +39,7 @@ export const useDragToCreateOperations = () => {
           event
         );
         const newNodeId = `node-${Date.now()}`;
+        
         // Use the node registry to create a new node
         const newToNode = createConnectionNode(
           fromNode,
@@ -46,9 +47,15 @@ export const useDragToCreateOperations = () => {
           position,
         );
 
+        if (!newToNode) {
+          console.error("Failed to create new node on connect end: node type not registered");
+          return;
+        }
+
         // The edge should connect from the specific handle being dragged
         // to the appropriate corresponding handle on the new node
-        const newEdge = createConnectionEdge(newNodeId, connectionState);
+        // Pass the new node type to get the correct edge type
+        const newEdge = createConnectionEdge(newNodeId, connectionState, newToNode.type);
 
         // Handle invisible node management for horizontal connections
         withTransaction(() => {
@@ -71,12 +78,11 @@ export const useDragToCreateOperations = () => {
             updateNode(updatedFromNode);
           }
 
-        }, "Drag-to-create");
+        }, "onConnectEndTransaction");
       }
     },
-    [screenToFlowPosition, addNode, onEdgeAdd, nodeMap, edges]
+    [screenToFlowPosition, addNode, onEdgeAdd, nodeMap, edges, updateNode, updateNodes, nodeParentIdMapWithChildIdSet, withTransaction]
   );
-
 
   const calculateNewNodeStartPosition = useCallback(
     (oldNode: Node<NodeData>, event: MouseEvent | TouchEvent) => {

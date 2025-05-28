@@ -1,9 +1,9 @@
-import { Connection, Edge } from "@xyflow/react";
+import { Connection } from "@xyflow/react";
 import { useCallback } from "react";
 import { withErrorHandler } from "../../../utils/withErrorHandler";
 import { useEdgeContext } from "../../../Edge/store/useEdgeContext";
 import { useNodeContext } from "../../store/useNodeContext";
-import { createConnectionWithTargetHandle } from "../../../Edge/hooks/utils/edgeUtils";
+import { createConnectionWithTargetHandle, validateConnection, createEdge } from "../../../Edge/hooks/utils/edgeUtils";
 import { useTransaction } from "@jalez/react-state-history";
 import { handleContainerization } from "../utils/nodeUtils";
 
@@ -22,21 +22,36 @@ export const useDirectConnectionOperations = () => {
     withErrorHandler("onConnect", (params: Connection) => {
       const connection = createConnectionWithTargetHandle(params);
 
-      const newEdge: Edge = {
-        id: `e-${connection.source}-${connection.target}`,
-        source: connection.source!,
-        target: connection.target!,
-        sourceHandle: connection.sourceHandle,
-        targetHandle: connection.targetHandle,
-      };
-
-      const sourceNode = nodeMap.get(newEdge.source);
-      const targetNode = nodeMap.get(newEdge.target);
+      const sourceNode = nodeMap.get(connection.source!);
+      const targetNode = nodeMap.get(connection.target!);
 
       if (!sourceNode || !targetNode) {
+        console.warn("Source or target node not found for connection");
         return;
       }
 
+      // Validate connection using handle registry
+      const isValidConnection = validateConnection(
+        sourceNode.type || '',
+        connection.sourceHandle || '',
+        targetNode.type || '',
+        connection.targetHandle || ''
+      );
+
+      if (!isValidConnection) {
+        console.warn(`Invalid connection between ${sourceNode.type} and ${targetNode.type}`);
+        return;
+      }
+
+      // Create edge with proper type based on node types and handles
+      const newEdge = createEdge(
+        connection.source!,
+        connection.target!,
+        connection.sourceHandle || '',
+        connection.targetHandle || '',
+        sourceNode.type,
+        targetNode.type
+      );
 
       withTransaction(() => {
         const {
