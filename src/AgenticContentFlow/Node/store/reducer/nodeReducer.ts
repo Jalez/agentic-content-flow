@@ -217,9 +217,20 @@ export const nodeReducer = (state: NodeStoreState, action: NodeAction): NodeStor
           if (oldNode?.parentId !== updatedNode?.parentId) {
             // Remove from old parent's child set
             const oldParentId = oldNode?.parentId || "no-parent";
-            const oldChildSet = newNodeParentIdMapWithChildIdSet.get(oldParentId);
-            if (oldChildSet) {
-              oldChildSet.delete(updatedNode.id);
+            const OldSiblings = newNodeParentIdMapWithChildIdSet.get(oldParentId);
+            if (OldSiblings) {
+              OldSiblings.delete(updatedNode.id);
+              const oldParentNode = newNodeMap.get(oldParentId);
+              if (OldSiblings.size === 0 && oldParentNode?.data?.deleteOnEmpty) {
+                newNodeParentIdMapWithChildIdSet.delete(oldParentId);
+                if (oldParentNode && oldParentNode.parentId) {
+                  const oldParentsSiblings = newNodeParentIdMapWithChildIdSet.get(oldParentNode.parentId);
+                  if (oldParentsSiblings) {
+                    oldParentsSiblings.delete(oldParentId);
+                  }
+                }
+                newNodeMap.delete(oldParentId); 
+              }
             }
   
             // Add to new parent's child set

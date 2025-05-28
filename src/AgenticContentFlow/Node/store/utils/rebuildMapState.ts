@@ -3,7 +3,7 @@ import { NodeStoreState } from "../useNodeContext";
 import { isParentNodeType } from "./nodeTypeCheck";
 import { normalizeNodeExpandedState } from "./normalizeNodeExpandedState";
 
-export const rebuildMapState = (nodes: Node<any>[]): Omit<NodeStoreState, 'nodes' | 'parentNodes' | 'childNodes'> => {
+export const rebuildMapState = (nodes: Node<any>[]): Omit<NodeStoreState, 'nodes' | 'parentNodes' | 'childNodes' | 'isNewState' > => {
     const nodeMap = new Map<string, Node<any>>();
     const nodeParentIdMapWithChildIdSet = new Map<string, Set<string>>();
     const pureChildIdSet = new Set<string>();
