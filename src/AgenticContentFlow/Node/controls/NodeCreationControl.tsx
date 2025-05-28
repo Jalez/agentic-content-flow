@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useReactFlow, Node } from "@xyflow/react";
+import { useReactFlow } from "@xyflow/react";
 import { PlusCircle } from "lucide-react";
 import ControlDropdown from "../../Controls/Components/ControlDropdown";
 import { createNodeFromTemplate } from "../registry/nodeTypeRegistry";
@@ -7,9 +7,7 @@ import { useNodeContext } from "../store/useNodeContext";
 import { useSelect } from "../../Select/contexts/SelectContext";
 import { useEdgeContext } from "../../Edge/store/useEdgeContext";
 import { useTransaction } from "@jalez/react-state-history";
-import { useInvisibleNodeOperations } from "../hooks/useInvisibleNodeOperations";
-import { getHandlesForNodeType } from "../hooks/utils/edgeUtils";
-import { NodeData } from "../../types";
+import { getHandlesForNodeType } from "../../Edge/hooks/utils/edgeUtils";
 
 interface NodeCreationControlProps {
   availableNodeTypes: string[];
@@ -23,10 +21,7 @@ const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
   const { screenToFlowPosition } = useReactFlow();
   const { selectedNodes } = useSelect();
   const { withTransaction } = useTransaction();
-  const { 
-    handleConnectionWithInvisibleNode,
-    executeInvisibleNodeOperation 
-  } = useInvisibleNodeOperations();
+
 
   const [open, setOpen] = useState(false);
 
@@ -57,6 +52,7 @@ const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
           const selectedHandles = getHandlesForNodeType(selectedNode.type);
           const newNodeHandles = getHandlesForNodeType(nodeType);
 
+
           const newEdge = {
             id: `e-${selectedNode.id}-${newNodeId}`,
             source: selectedNode.id,
@@ -65,25 +61,13 @@ const NodeCreationControl: React.FC<NodeCreationControlProps> = ({
             targetHandle: newNodeHandles.targetHandle,
           };
 
-          // Handle invisible node management for horizontal connections
-          if (newNode) {
-            executeInvisibleNodeOperation(() => {
-              // Cast nodes to the correct type since we know they have the required NodeData structure
-              const typedSelectedNode = selectedNode as unknown as Node<NodeData>;
-              const typedNewNode = newNode as Node<NodeData>;
 
-              const result = handleConnectionWithInvisibleNode(
-                newEdge,
-                typedSelectedNode,
-                typedNewNode
-              );
-              
-              // Add the edge
-              onEdgeAdd(newEdge);
-              
-              return result;
-            }, `NodeCreationControl: Create connection with invisible node management`);
-          }
+          // Add the edge
+          onEdgeAdd(newEdge);
+
+
+
+
         }
       }
     }, "NodeCreationControl/Add");

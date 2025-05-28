@@ -45,10 +45,10 @@ export const edgeReducer = (state: EdgeStoreState, action: EdgeAction): EdgeStor
       // Get the new edge from the updatedEdges
       const newEdge = updatedEdges[updatedEdges.length - 1];
 
-      if (state.edgeMap.has(newEdge.id)) {
-        console.warn(`Edge with id ${newEdge.id} already exists.`);
-        return state; // No changes made
-      }
+      // if (state.edgeMap.has(newEdge.id)) {
+      //   console.warn(`Edge with id ${newEdge.id} already exists.`);
+      //   return state; // No changes made
+      // }
 
       // Update edgeMap
       const updatedMap = new Map(state.edgeMap);

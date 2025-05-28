@@ -24,7 +24,6 @@ import { ensureNodeTypesRegistered } from "./Nodes/registerBasicNodeTypes";
 import "@xyflow/react/dist/style.css"; // Ensure to import the styles for React Flow
 import ReactStateHistory from "./History/ReactStateHistory";
 import { LayoutProvider } from "@jalez/react-flow-automated-layout";
-import { useHistoryStateContext } from "@jalez/react-state-history";
 
 // Register node types before any rendering occurs
 ensureNodeTypesRegistered();
@@ -32,8 +31,7 @@ ensureNodeTypesRegistered();
 export function AgenticContentFlowContent() {
   const flowWrapper = useRef<HTMLDivElement>(null);
   const { showGrid, gridVariant } = useViewPreferencesStore();
-  const { nodeMap, nodeParentIdMapWithChildIdSet, updateNodes } = useNodeContext();
-  const stateContext = useHistoryStateContext();
+  const { updateNodes } = useNodeContext();
 
 
   const { updateEdges } = useEdgeContext();
@@ -49,11 +47,11 @@ export function AgenticContentFlowContent() {
       document.exitFullscreen();
     }
   }, [flowWrapper]);
-  const testCallNodes = useCallback((nodes: Node[]) => {
+  const handleNodeUpdate = useCallback((nodes: Node[]) => {
     updateNodes(nodes, false);
   }, [updateNodes])
 
-  const testCallEdges = useCallback((edges: Edge[]) => {
+  const handleEdgeUpdate = useCallback((edges: Edge[]) => {
     updateEdges(edges, false);
   }, [updateEdges]);
 
@@ -76,13 +74,9 @@ export function AgenticContentFlowContent() {
         width: 300,
         height: 200,
       }}
-      updateNodes={testCallNodes}
-      updateEdges={testCallEdges}
-      nodeParentIdMapWithChildIdSet={nodeParentIdMapWithChildIdSet}
-      nodeIdWithNode={nodeMap}
-      disableAutoLayoutEffect={stateContext.lastCommandType === "undo"}
-      //disableAutoLayoutEffect={stateContext.lastCommandType === "undo" || stateContext.lastCommandType === "redo"}
-    >
+      updateNodes={handleNodeUpdate}
+      updateEdges={handleEdgeUpdate}
+  >
       <FlowContainer ref={flowWrapper} onWheel={handleWheel}>
         <Flow>
           <UnifiedControls

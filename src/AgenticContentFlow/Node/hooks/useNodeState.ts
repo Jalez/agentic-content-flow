@@ -70,20 +70,20 @@ export const useNodeHistoryStateImpl = (
       } else {
         // Only track significant changes in history
         // Skip position changes as they're too frequent and will be tracked by onNodeDragStop
-        const hasNonPositionChanges = changes.some(change =>
-          change.type !== 'position' && change.type !== 'remove' && change.type !== 'add'
-        );
-
-        if (hasNonPositionChanges && lastExecutedAction !== "onNodeRemove" && lastExecutedAction !== "onNodeAdd" && lastExecutedAction !== "handleUpdateNodes") {
-          const updatedNodes = applyNodeChanges(changes, nodes) as Node<NodeData>[];
-          // Create a deep copy of the nodes to avoid mutating the original state
-          const deepCopyNodes = nodes.map(node => ({ ...node }));
-          trackUpdateNodes(updatedNodes, deepCopyNodes, "Update nodes on change");
-          setLastExecutedAction("onNodesChange");
-        } else {
-          const updatedNodes = applyNodeChanges(changes, nodes) as Node<NodeData>[];
-          updateNodes(updatedNodes);
-        }
+        // const hasNonPositionChanges = changes.some(change =>
+        //   change.type !== 'position' && change.type !== 'remove' && change.type !== 'add'
+        // );
+        
+        // if (hasNonPositionChanges && lastExecutedAction !== "onNodeRemove" && lastExecutedAction !== "onNodeAdd" && lastExecutedAction !== "handleUpdateNodes") {
+        //   const updatedNodes = applyNodeChanges(changes, nodes) as Node<NodeData>[];
+        //   // Create a deep copy of the nodes to avoid mutating the original state
+        //   const deepCopyNodes = nodes.map(node => ({ ...node }));
+        //   trackUpdateNodes(updatedNodes, deepCopyNodes, "Update nodes on change");
+        //   setLastExecutedAction("onNodesChange");
+        // } else {
+        // }
+        const updatedNodes = applyNodeChanges(changes, nodes) as Node<NodeData>[];
+        updateNodes(updatedNodes);
       }
     }),
     [nodes, trackUpdateNodes, setNodes, isDraggingRef, setLocalNodes, localNodes, lastExecutedAction]
@@ -92,11 +92,10 @@ export const useNodeHistoryStateImpl = (
   const handleUpdateNodes = useCallback(
     withErrorHandler("handleUpdateNodes", (updatedNodes: Node<NodeData>[], isClick = true) => {
       if (!isClick) {
-        //Dont track if not a click
         updateNodes(updatedNodes);
         return;
       }
-      const deepCopyNodes = nodes.map(node => ({ ...node }));
+      const deepCopyNodes = JSON.parse(JSON.stringify(nodes)); // Create a deep copy of the nodes
       trackUpdateNodes(updatedNodes, deepCopyNodes, "Update nodes on handleUpdateNodes");
       setLastExecutedAction("handleUpdateNodes");
     }),
@@ -121,7 +120,8 @@ export const useNodeHistoryStateImpl = (
         updateNode(updatedNode);
         return;
       }
-      trackUpdateNode(updatedNode, nodes, "Update node");
+      const deepCopyNodes = JSON.parse(JSON.stringify(nodes)); // Create a deep copy of the nodes
+      trackUpdateNode(updatedNode, deepCopyNodes, "Update node");
       setLastExecutedAction("handleUpdateNode");
 
     }),

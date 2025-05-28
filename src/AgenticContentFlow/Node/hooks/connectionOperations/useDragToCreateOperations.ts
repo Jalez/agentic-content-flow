@@ -1,118 +1,115 @@
-import { useReactFlow } from "@xyflow/react";
+import { Node, useReactFlow } from "@xyflow/react";
 import { useCallback } from "react";
-import { createNodeFromTemplate } from "../../registry/nodeTypeRegistry";
 import { useNodeContext } from "../../store/useNodeContext";
 import { useEdgeContext } from "../../../Edge/store/useEdgeContext";
 import { getCumulativeParentOffset } from "../utils/positionUtils";
-import { useInvisibleNodeOperations } from "../useInvisibleNodeOperations";
+import { createConnectionNode, handleContainerization } from "../utils/nodeUtils";
+import { useTransaction } from "@jalez/react-state-history";
+import { createConnectionEdge } from "@/AgenticContentFlow/Edge/hooks/utils/edgeUtils";
+import { NodeData } from "@/AgenticContentFlow/types";
 
 export const useDragToCreateOperations = () => {
-  const { 
-    addNode, 
-    nodeMap
+  const {
+    addNode,
+    nodeMap,
+    updateNode,
+    updateNodes,
+    nodeParentIdMapWithChildIdSet 
   } = useNodeContext();
-  
-  const { 
-    edges, 
+
+  const {
+    edges,
     onEdgeAdd
   } = useEdgeContext();
-  
-  const { screenToFlowPosition } = useReactFlow();
-  const { 
-    handleDragToCreateWithInvisibleNode,
-    executeInvisibleNodeOperation 
-  } = useInvisibleNodeOperations();
+
+  const { screenToFlowPosition } = useReactFlow();;
+
+  const { withTransaction } = useTransaction();
+
 
   const onConnectEnd = useCallback(
     (event: MouseEvent | TouchEvent, connectionState: any) => {
       // Create a new node when dragging from a source node to the pane
       // This happens when connectionState.fromNode exists but there's no valid connection
       if (connectionState.fromNode && !connectionState.toNode) {
-        // Get cursor position
-        const { clientX, clientY } =
-          "changedTouches" in event ? event.changedTouches[0] : event;
+        const { fromNode } = connectionState;
 
-        // Generate unique ID for the new node
+        const position = calculateNewNodeStartPosition(
+          fromNode,
+          event
+        );
         const newNodeId = `node-${Date.now()}`;
-
-        // Calculate flow position from screen position
-        const globalPosition = screenToFlowPosition({ x: clientX, y: clientY });
-
-        let position = globalPosition;
-
-        // If there's a source parent, adjust by subtracting the chain's cumulative offset.
-        if (connectionState.fromNode) {
-          const cumulativeOffset = getCumulativeParentOffset(
-            connectionState.fromNode,
-            nodeMap
-          );
-          position = {
-            x: globalPosition.x - cumulativeOffset.x,
-            y: globalPosition.y - cumulativeOffset.y,
-          };
-        }
-
         // Use the node registry to create a new node
-        const newNode = createNodeFromTemplate(connectionState.fromNode.type, {
-          id: newNodeId,
+        const newToNode = createConnectionNode(
+          fromNode,
+          newNodeId,
           position,
-          eventNode: connectionState.fromNode,
-          details: "Add details about this concept",
-        });
-
-        if (!newNode) {
-          console.error(
-            "Failed to create new node on connect end: node type not registered"
-          );
-          return;
-        }
+        );
 
         // The edge should connect from the specific handle being dragged
         // to the appropriate corresponding handle on the new node
-        const draggedHandle = connectionState.fromPosition;
-        
-        // Determine whether the dragged handle should be source or target
-        const isDraggedHandleSource = draggedHandle === 'right' || draggedHandle === 'bottom';
-        
-        // Create edge with correct source/target based on which handle was dragged
-        const newEdge = {
-          id: isDraggedHandleSource 
-            ? `e-${connectionState.fromNode.id}-${newNodeId}` 
-            : `e-${newNodeId}-${connectionState.fromNode.id}`,
-          source: isDraggedHandleSource ? connectionState.fromNode.id : newNodeId,
-          target: isDraggedHandleSource ? newNodeId : connectionState.fromNode.id,
-          sourceHandle: isDraggedHandleSource 
-            ? draggedHandle  // The dragged handle is the source
-            : (draggedHandle === 'left' ? 'right' : 'bottom'),  // The corresponding handle on new node
-          targetHandle: isDraggedHandleSource 
-            ? (draggedHandle === 'right' ? 'left' : 'top')  // The corresponding handle on new node
-            : draggedHandle  // The dragged handle is the target
-        };
+        const newEdge = createConnectionEdge(newNodeId, connectionState);
 
         // Handle invisible node management for horizontal connections
-        executeInvisibleNodeOperation(() => {
-          const result = handleDragToCreateWithInvisibleNode(
-            newNode, 
-            connectionState.fromNode, 
-            newEdge
+        withTransaction(() => {
+
+          const { updatedToNode, updatedFromNode, containerToAdd, updatedToNodeSiblings } = handleContainerization(
+            newToNode,
+            fromNode,
+            newEdge,
+            nodeMap,
+            nodeParentIdMapWithChildIdSet
           );
-          
-          // Add the edge
+
           onEdgeAdd(newEdge);
-          
-          // If no invisible node was created, add the new node normally
-          if (!result.newInvisibleNode) {
-            addNode(newNode);
+          containerToAdd && addNode(containerToAdd);
+          updatedToNode && addNode(updatedToNode);
+          updatedToNodeSiblings && updateNodes(updatedToNodeSiblings);
+
+          if (
+            updatedFromNode && JSON.stringify(updatedFromNode) !== JSON.stringify(fromNode)) {
+            updateNode(updatedFromNode);
           }
-          
-          return result;
-        }, "Drag-to-create with invisible node management");
+
+        }, "Drag-to-create");
       }
     },
-    [screenToFlowPosition, addNode, onEdgeAdd, nodeMap, edges, handleDragToCreateWithInvisibleNode, executeInvisibleNodeOperation]
+    [screenToFlowPosition, addNode, onEdgeAdd, nodeMap, edges]
   );
 
+
+  const calculateNewNodeStartPosition = useCallback(
+    (oldNode: Node<NodeData>, event: MouseEvent | TouchEvent) => {
+
+      // Get cursor position
+      const { clientX, clientY } =
+        "changedTouches" in event ? event.changedTouches[0] : event;
+
+      // Calculate flow position from screen position
+      const globalPosition = screenToFlowPosition({ x: clientX, y: clientY });
+
+      let position = globalPosition;
+
+      // If there's a source parent, adjust by subtracting the chain's cumulative offset.
+      if (oldNode) {
+        const cumulativeOffset = getCumulativeParentOffset(
+          oldNode,
+          nodeMap
+        );
+        position = {
+          x: globalPosition.x - cumulativeOffset.x,
+          y: globalPosition.y - cumulativeOffset.y,
+        };
+      }
+
+      return position;
+    },
+    [screenToFlowPosition, nodeMap]
+  );
   return {
     onConnectEnd,
   };
 };
+
+
+

@@ -5,7 +5,6 @@ import { useEdgeSelect } from "../Edge/hooks/useEdgeSelect";
 import { VIEWPORT_CONSTRAINTS } from "../constants";
 import { useConnectionOperations } from "../Node/hooks/useConnectionOperations";
 import { useNodeTypeRegistry } from "../Node/registry/nodeTypeRegistry";
-import { ensureNodeTypesRegistered } from "../Nodes/registerBasicNodeTypes";
 import { useSelect } from "../Select/contexts/SelectContext";
 import { useNodeContext } from "../Node/store/useNodeContext";
 import { useEdgeContext } from "../Edge/store/useEdgeContext";
@@ -108,7 +107,7 @@ function Flow({ children }: { children?: React.ReactNode }) {
         if (hasSelectedNodes) {
           console.log("Deleting selected nodes:", selectedNodesRef.current);
           removeNodes(selectedNodesRef.current);
-          selectedNodesRef.current = [];
+          selectedNodesRef.current = [];  
         }
         
         console.log("Connected edges to delete:", connectedEdges, visibleEdges);
@@ -130,7 +129,6 @@ function Flow({ children }: { children?: React.ReactNode }) {
 
   // Ensure node types are registered on component mount
   useEffect(() => {
-    ensureNodeTypesRegistered();
   }, []);
 
   // Use the improved node type registry hook

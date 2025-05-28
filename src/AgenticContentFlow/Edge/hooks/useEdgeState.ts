@@ -49,25 +49,17 @@ export const useEdgeStateImpl = (
         return;
       }
 
-      // Filter changes to only track significant ones
-      // Most edge changes like selection should be applied but not tracked in history
-      const significantChanges = changes.filter(_ =>
-        // Add specific change types that should be tracked in history
-        // Add other significant change types here
-        false
-      );
-
       // Always apply all changes to maintain UI state
       const newEdges = applyEdgeChanges(changes, edges);
-
-      if (significantChanges.length > 0 && lastExecutedAction !== "onEdgeRemove" && lastExecutedAction !== "onEdgeAdd") {
-        // Only track in history if we have significant changes
-        trackUpdateEdges(newEdges, edges, "Update edges on significant change");
-        setLastExecutedAction("onEdgesChange");
-      } else {
-        // Otherwise just update the state without history tracking
-        setEdges(newEdges);
-      }
+      
+      setEdges(newEdges);
+      // if (significantChanges.length > 0 && lastExecutedAction !== "onEdgeRemove" && lastExecutedAction !== "onEdgeAdd") {
+      //   // Only track in history if we have significant changes
+      //   trackUpdateEdges(newEdges, edges, "Update edges on significant change");
+      //   setLastExecutedAction("onEdgesChange");
+      // } else {
+      //   // Otherwise just update the state without history tracking
+      // }
     }),
     [edges, setEdges, trackUpdateEdges, setLastExecutedAction]
   );
@@ -132,6 +124,7 @@ export const useEdgeStateImpl = (
         return;
       }
       const deepCopyEdges = edges.map((edge) => ({ ...edge }));
+      console.log("Deep copy edges for tracking:", deepCopyEdges);
       trackAddEdge(newEdge, deepCopyEdges, "Add edge"); // Use onEdgeAdd for consistency
       setLastExecutedAction("onEdgeAdd");
     }),

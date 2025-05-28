@@ -5,23 +5,21 @@ import { useNodeContext } from "../store/useNodeContext";
 import { useEdgeContext } from "../../Edge/store/useEdgeContext";
 import { useTransaction } from "@jalez/react-state-history";
 import {
-  isHorizontalConnection,
-  findLRInvisibleParent,
-  createInvisibleNodeForHorizontalConnection,
-  calculateInvisibleNodePosition,
-  getSiblingNodes,
   removeInvisibleNodeAndReparentChildren
 } from "./utils/invisibleNodeUtils";
+import { isHorizontalConnection } from "./utils/dragUtils";
+import { calculateInitialContainerNodePosition, getNodeParentIfType, getSiblingNodes } from "./utils/nodeUtils";
+import { createNodeFromTemplate } from "../registry/nodeTypeRegistry";
 
 export const useInvisibleNodeOperations = () => {
-  const { 
-    addNode, 
+  const {
+    addNode,
     updateNode,
     removeNodes,
-    nodeMap, 
-    nodeParentIdMapWithChildIdSet 
+    nodeMap,
+    nodeParentIdMapWithChildIdSet
   } = useNodeContext();
-  
+
   const { edges } = useEdgeContext();
   const { withTransaction } = useTransaction();
 
@@ -38,18 +36,22 @@ export const useInvisibleNodeOperations = () => {
       return { updatedNodes: [], newInvisibleNode: null, shouldRemoveNodes: [] };
     }
 
-    const sourceLRParent = findLRInvisibleParent(sourceNode.id, nodeMap);
-    const targetLRParent = findLRInvisibleParent(targetNode.id, nodeMap);
+    const sourceParent = getNodeParentIfType(sourceNode.id, nodeMap, "invisiblenode")
+    const targetParent = getNodeParentIfType(targetNode.id, nodeMap, "invisiblenode");
 
     let updatedNodes: Node<NodeData>[] = [];
-    let newInvisibleNode: Node<NodeData> | null = null;
+    let newInvisibleNode: Node<NodeData> | undefined = undefined;
     let shouldRemoveNodes: string[] = [];
 
-    // Case 1: Neither node has an LR invisible parent - create one
-    if (!sourceLRParent && !targetLRParent) {
-      const containerPosition = calculateInvisibleNodePosition([sourceNode, targetNode]);
-      newInvisibleNode = createInvisibleNodeForHorizontalConnection(sourceNode, containerPosition);
-      
+    // Case 1: Neither node has an invisible parent - create one
+    if (!sourceParent && !targetParent) {
+      const containerPosition = calculateInitialContainerNodePosition([sourceNode, targetNode]);
+      newInvisibleNode = createNodeFromTemplate("invisiblenode", {
+        id: `invisible-${Date.now()}`,
+        position: containerPosition,
+
+      });
+
       if (newInvisibleNode) {
         // Update both nodes to be children of the new container
         const updatedSourceNode = {
@@ -57,47 +59,47 @@ export const useInvisibleNodeOperations = () => {
           parentId: newInvisibleNode.id,
           extent: "parent" as const
         };
-        
+
         const updatedTargetNode = {
           ...targetNode,
           parentId: newInvisibleNode.id,
           extent: "parent" as const
         };
-        
+
         updatedNodes = [updatedSourceNode, updatedTargetNode];
       }
     }
-    
+
     // Case 2: One node has LR parent, other doesn't - add the other to existing container
-    else if (sourceLRParent && !targetLRParent) {
+    else if (sourceParent && !targetParent) {
       const updatedTargetNode = {
         ...targetNode,
-        parentId: sourceLRParent.id,
+        parentId: sourceParent.id,
         extent: "parent" as const
       };
       updatedNodes = [updatedTargetNode];
     }
-    else if (!sourceLRParent && targetLRParent) {
+    else if (!sourceParent && targetParent) {
       const updatedSourceNode = {
         ...sourceNode,
-        parentId: targetLRParent.id,
+        parentId: targetParent.id,
         extent: "parent" as const
       };
       updatedNodes = [updatedSourceNode];
     }
-    
+
     // Case 3: Both nodes have different LR parents - merge containers
-    else if (sourceLRParent && targetLRParent && sourceLRParent.id !== targetLRParent.id) {
+    else if (sourceParent && targetParent && sourceParent.id !== targetParent.id) {
       // Move all children from target's parent to source's parent
       const targetParentChildren = removeInvisibleNodeAndReparentChildren(
-        targetLRParent.id,
-        sourceLRParent.id,
+        targetParent.id,
+        sourceParent.id,
         nodeMap,
         nodeParentIdMapWithChildIdSet
       );
-      
+
       updatedNodes = targetParentChildren;
-      shouldRemoveNodes = [targetLRParent.id];
+      shouldRemoveNodes = [targetParent.id];
     }
 
     return { updatedNodes, newInvisibleNode, shouldRemoveNodes };
@@ -106,54 +108,7 @@ export const useInvisibleNodeOperations = () => {
   /**
    * Process drag-to-create operation with invisible node management
    */
-  const handleDragToCreateWithInvisibleNode = useCallback((
-    newNode: Node<NodeData>,
-    sourceNode: Node<NodeData>,
-    edge: Edge
-  ) => {
-    if (!isHorizontalConnection(edge.sourceHandle, edge.targetHandle)) {
-      return { updatedNodes: [newNode], newInvisibleNode: null };
-    }
 
-    const sourceLRParent = findLRInvisibleParent(sourceNode.id, nodeMap);
-    let updatedNodes: Node<NodeData>[] = [];
-    let newInvisibleNode: Node<NodeData> | null = null;
-
-    // If source node has an LR parent, add new node to it
-    if (sourceLRParent) {
-      const updatedNewNode = {
-        ...newNode,
-        parentId: sourceLRParent.id,
-        extent: "parent" as const
-      };
-      updatedNodes = [updatedNewNode];
-    } 
-    // Otherwise, create a new LR container for both nodes
-    else {
-      const containerPosition = calculateInvisibleNodePosition([sourceNode, newNode]);
-      newInvisibleNode = createInvisibleNodeForHorizontalConnection(sourceNode, containerPosition);
-      
-      if (newInvisibleNode) {
-        const updatedSourceNode = {
-          ...sourceNode,
-          parentId: newInvisibleNode.id,
-          extent: "parent" as const
-        };
-        
-        const updatedNewNode = {
-          ...newNode,
-          parentId: newInvisibleNode.id,
-          extent: "parent" as const
-        };
-        
-        updatedNodes = [updatedSourceNode, updatedNewNode];
-      } else {
-        updatedNodes = [newNode];
-      }
-    }
-
-    return { updatedNodes, newInvisibleNode };
-  }, [nodeMap]);
 
   /**
    * Check if an invisible node should be removed when connections are deleted
@@ -167,13 +122,13 @@ export const useInvisibleNodeOperations = () => {
 
     const sourceNode = nodeMap.get(removedEdge.source);
     const targetNode = nodeMap.get(removedEdge.target);
-    
+
     if (!sourceNode || !targetNode) {
       return { shouldRemoveNodes: [] };
     }
 
-    const sourceLRParent = findLRInvisibleParent(sourceNode.id, nodeMap);
-    
+    const sourceLRParent = getNodeParentIfType(sourceNode.id, nodeMap, "invisiblenode");
+
     if (!sourceLRParent) {
       return { shouldRemoveNodes: [] };
     }
@@ -181,10 +136,10 @@ export const useInvisibleNodeOperations = () => {
     // Check if there are still horizontal connections between siblings
     const siblings = getSiblingNodes(sourceNode.id, nodeMap, nodeParentIdMapWithChildIdSet);
     const allSiblingIds = [sourceNode.id, targetNode.id, ...siblings.map((s: Node<NodeData>) => s.id)];
-    
-    const remainingHorizontalEdges = edges.filter((edge: Edge) => 
+
+    const remainingHorizontalEdges = edges.filter((edge: Edge) =>
       edge.id !== removedEdge.id &&
-      allSiblingIds.includes(edge.source) && 
+      allSiblingIds.includes(edge.source) &&
       allSiblingIds.includes(edge.target) &&
       isHorizontalConnection(edge.sourceHandle, edge.targetHandle)
     );
@@ -210,17 +165,17 @@ export const useInvisibleNodeOperations = () => {
   ) => {
     withTransaction(() => {
       const result = operation();
-      
+
       // Add new invisible node if created
       if (result.newInvisibleNode) {
         addNode(result.newInvisibleNode);
       }
-      
+
       // Update existing nodes
       result.updatedNodes.forEach(node => {
         updateNode(node);
       });
-      
+
       // Remove nodes if needed
       if (result.shouldRemoveNodes && result.shouldRemoveNodes.length > 0) {
         // First reparent children
@@ -230,16 +185,16 @@ export const useInvisibleNodeOperations = () => {
           if (nodeToRemove) {
             // Reparent children before removing
             const children = removeInvisibleNodeAndReparentChildren(
-              nodeId, 
-              undefined, 
-              nodeMap, 
+              nodeId,
+              undefined,
+              nodeMap,
               nodeParentIdMapWithChildIdSet
             );
             children.forEach((child: Node<NodeData>) => updateNode(child));
             nodesToRemove.push(nodeToRemove);
           }
         });
-        
+
         // Then remove the invisible nodes
         if (nodesToRemove.length > 0) {
           removeNodes(nodesToRemove);
@@ -250,7 +205,6 @@ export const useInvisibleNodeOperations = () => {
 
   return {
     handleConnectionWithInvisibleNode,
-    handleDragToCreateWithInvisibleNode,
     handleConnectionRemovalCleanup,
     executeInvisibleNodeOperation,
     isHorizontalConnection

@@ -7,7 +7,7 @@ import { useNodeContext } from "../../store/useNodeContext";
 import { useEdgeContext } from "../../../Edge/store/useEdgeContext";
 import { useTransaction } from "@jalez/react-state-history";
 import { calculateTargetNodePosition } from "../utils/positionUtils";
-import { createEdge, getHandlesForNodeType } from "../utils/edgeUtils";
+import { createEdge, getHandlesForNodeType } from "../../../Edge/hooks/utils/edgeUtils";
 
 export const useTargetNodeOperations = () => {
   const { 
