@@ -17,7 +17,7 @@ const handleBaseStyles = {
 export const BaseHandle = forwardRef<HTMLDivElement, BaseHandleProps>(
   ({ className, children, style = {}, ...props }, ref) => {
     // Function to ensure clicks are captured and propagated properly
-    const handleInnerClick = (e: React.MouseEvent) => {
+    const handleInnerClick = (_e: React.MouseEvent) => {
       // Don't stop propagation, allowing the Handle component to receive the event
     };
 
