@@ -1,7 +1,8 @@
 import { Node, Edge } from "@xyflow/react";
 import { NodeData } from "../../../types";
-import { isHorizontalConnection, calculateInvisibleNodePosition } from "./invisibleNodeUtils";
 import { createNodeFromTemplate } from "../../registry/nodeTypeRegistry";
+import { isHorizontalConnection } from "./dragUtils";
+import { calculateInitialContainerNodePosition } from "./nodeUtils";
 
 interface ProcessedGraphData {
   nodes: Node<NodeData>[];
@@ -85,7 +86,7 @@ export const processInitialGraphData = (
     }
 
     // Calculate position for the invisible container
-    const containerPosition = calculateInvisibleNodePosition(groupNodes);
+    const containerPosition = calculateInitialContainerNodePosition(groupNodes);
     
     // Create invisible container
     const containerId = `container-lr-auto-${Date.now()}-${groupKey}`;
