@@ -5,11 +5,7 @@ import { describe, test, expect, beforeEach } from 'vitest';
 import { Node, Edge } from '@xyflow/react';
 import { NodeData } from '../../../../types';
 import {
-  isHorizontalConnection,
-  findLRInvisibleParent,
-  createInvisibleNodeForHorizontalConnection,
-  calculateInvisibleNodePosition,
-  getSiblingNodes,
+
   removeInvisibleNodeAndReparentChildren,
   shouldCreateInvisibleContainer
 } from '../invisibleNodeUtils';
@@ -18,30 +14,12 @@ import {
   testNodesWithExistingLRContainers,
   testNodesForContainerMerging,
 } from './testData';
+import { calculateInitialContainerNodePosition, getNodeParentIfType, getSiblingNodes } from '../nodeUtils';
+import { createNodeFromTemplate } from '@/AgenticContentFlow/Node/registry/nodeTypeRegistry';
 
 describe('invisibleNodeUtils', () => {
-  describe('isHorizontalConnection', () => {
-    test('should return true for left/right connections', () => {
-      expect(isHorizontalConnection('left', 'right')).toBe(true);
-      expect(isHorizontalConnection('right', 'left')).toBe(true);
-      expect(isHorizontalConnection('left', null)).toBe(true);
-      expect(isHorizontalConnection(null, 'right')).toBe(true);
-    });
 
-    test('should return false for top/bottom connections', () => {
-      expect(isHorizontalConnection('top', 'bottom')).toBe(false);
-      expect(isHorizontalConnection('bottom', 'top')).toBe(false);
-      expect(isHorizontalConnection('top', null)).toBe(false);
-      expect(isHorizontalConnection(null, 'bottom')).toBe(false);
-    });
-
-    test('should return false for null/undefined handles', () => {
-      expect(isHorizontalConnection(null, null)).toBe(false);
-      expect(isHorizontalConnection(undefined, undefined)).toBe(false);
-    });
-  });
-
-  describe('findLRInvisibleParent', () => {
+  describe('getNodeParentIfType', () => {
     let nodeMap: Map<string, Node<NodeData>>;
 
     beforeEach(() => {
@@ -49,26 +27,30 @@ describe('invisibleNodeUtils', () => {
     });
 
     test('should find LR invisible parent', () => {
-      const parent = findLRInvisibleParent('node-in-container-1', nodeMap);
+      const parent = getNodeParentIfType('node-in-container-1', nodeMap, 'invisiblenode');
       expect(parent?.id).toBe('container-lr-existing');
       expect(parent?.data.layoutDirection).toBe('LR');
     });
 
     test('should return null for nodes without LR parent', () => {
-      const parent = findLRInvisibleParent('node-outside-container', nodeMap);
+      const parent = getNodeParentIfType('node-outside-container', nodeMap, 'invisiblenode');
       expect(parent).toBeNull();
     });
 
     test('should return null for non-existent nodes', () => {
-      const parent = findLRInvisibleParent('non-existent', nodeMap);
+      const parent = getNodeParentIfType('non-existent', nodeMap, 'invisiblenode');
       expect(parent).toBeNull();
     });
   });
 
   describe('createInvisibleNodeForHorizontalConnection', () => {
     test('should create LR invisible container with correct properties', () => {
-      const baseNode = testNodesForHorizontalConnections[0];
-      const container = createInvisibleNodeForHorizontalConnection(baseNode);
+      const container = createNodeFromTemplate("invisiblenode", {
+        id: `invisible-${Date.now()}`,
+        position: { x: 0, y: 0 },
+        data: {
+        }
+      });
 
       expect(container).not.toBeNull();
       expect(container?.type).toBe('invisiblenode');
@@ -79,17 +61,23 @@ describe('invisibleNodeUtils', () => {
     });
 
     test('should use custom position if provided', () => {
-      const baseNode = testNodesForHorizontalConnections[0];
       const customPosition = { x: 500, y: 600 };
-      const container = createInvisibleNodeForHorizontalConnection(baseNode, customPosition);
+      const container = createNodeFromTemplate("invisiblenode", {
+        id: `invisible-${Date.now()}`,
+        position: customPosition,
+      });
 
       expect(container?.position).toEqual(customPosition);
     });
 
     test('should set depth based on base node', () => {
-      const baseNode = { ...testNodesForHorizontalConnections[0] };
-      baseNode.data.depth = 2;
-      const container = createInvisibleNodeForHorizontalConnection(baseNode);
+      const container = createNodeFromTemplate("invisiblenode", {
+        id: `invisible-${Date.now()}`,
+        position: { x: 0, y: 0 },
+        data: {
+          depth: 2
+        }
+      });
 
       expect(container?.data.depth).toBe(2);
     });
@@ -102,13 +90,13 @@ describe('invisibleNodeUtils', () => {
         { ...testNodesForHorizontalConnections[1], position: { x: 300, y: 150 } }
       ];
 
-      const position = calculateInvisibleNodePosition(nodes);
+      const position = calculateInitialContainerNodePosition(nodes);
       expect(position.x).toBe(50); // min x (100) - 50 padding
       expect(position.y).toBe(100); // min y (150) - 50 padding
     });
 
     test('should handle empty node array', () => {
-      const position = calculateInvisibleNodePosition([]);
+      const position = calculateInitialContainerNodePosition([]);
       expect(position).toEqual({ x: 0, y: 0 });
     });
   });
