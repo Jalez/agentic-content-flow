@@ -5,6 +5,7 @@ export const lmsEdgesData: Edge[] = [
   // Connect data to Module 1 view
   {
     id: "e-data-module1-view",
+    type: "package", // Use package edge type for data flow
     source: "data-module-1",
     target: "view-module-1",
     sourceHandle: "right", // Right side of data node
@@ -14,6 +15,7 @@ export const lmsEdgesData: Edge[] = [
   // Connect data sources to Module 2 view
   {
     id: "e-data1-module2-view",
+    type: "package",
     source: "data-module-2",
     target: "view-module-2",
     sourceHandle: "right", // Right side of data node
@@ -21,6 +23,7 @@ export const lmsEdgesData: Edge[] = [
   },
   {
     id: "e-data2-module2-view",
+    type: "package",
     source: "data-2-module-2",
     target: "view-module-2",
     sourceHandle: "right", // Right side of data node
@@ -55,6 +58,7 @@ export const lmsEdgesData: Edge[] = [
   // Connect Course Stats to Course 0 - This is DATA flow, so left/right is correct
   {
     id: "e-stats-course0",
+    type: "package", // Use package edge type for data flow
     source: "course-stats",
     target: "course-0-lms",
     sourceHandle: "right", // Right side of data node

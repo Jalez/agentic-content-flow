@@ -12,12 +12,14 @@ import { useEdgeContext } from "../Edge/store/useEdgeContext";
 import GridControlsRegistration from "./controls/GridControlsRegistration";
 import { useLayoutContext } from "@jalez/react-flow-automated-layout";
 import { useTransaction } from "@jalez/react-state-history";
+import { useEdgeTypeRegistry } from "../Edge/registry/edgeTypeRegistry";
+import { ensureEdgeTypesRegistered } from "../Edges/registerBasicEdgeTypes";
 
 
 const defaultEdgeOptions = {
   zIndex: 1,
   type: "default",
-  animated: true,
+  //animated: true,
   markerEnd: { type: MarkerType.Arrow },
 };
 
@@ -27,6 +29,16 @@ function Flow({ children }: { children?: React.ReactNode }) {
   const selectedNodesRef = useRef<any[]>([]);
   const selectedEdgesRef = useRef<any[]>([]);
 
+  const { nodeTypes } = useNodeTypeRegistry();
+  const { edgeTypes } = useEdgeTypeRegistry();
+
+  // Ensure both node and edge types are registered on component mount
+  useEffect(() => {
+    ensureEdgeTypesRegistered();
+  }, []);
+
+  const memoizedNodeTypes = useMemo(() => nodeTypes, [nodeTypes]);
+  const memoizedEdgeTypes = useMemo(() => edgeTypes, [edgeTypes]);
 
     const onChange = useCallback(
       ({ nodes, edges }: { nodes: Node[]; edges: Edge[] }) => {
@@ -124,8 +136,6 @@ function Flow({ children }: { children?: React.ReactNode }) {
   const handleClearSelection = useCallback(() => {
     clearSelection();
   }, [clearSelection]);
-  const { nodeTypes } = useNodeTypeRegistry();
-  const memoizedNodeTypes = useMemo(() => nodeTypes, [nodeTypes]);
 
   // Ensure node types are registered on component mount
   useEffect(() => {
@@ -151,52 +161,53 @@ const filteredNodes = useMemo(() => {
 
   return (
     <>
-      {/* Register the grid controls */}
-      <GridControlsRegistration />
-      
-      <ReactFlow
-        nodeTypes={memoizedNodeTypes}
-        defaultEdgeOptions={defaultEdgeOptions}
-        nodes={filteredNodes}
-        onNodesDelete={() => handleDelete("removeNodes")}
-        onNodesChange={onNodesChange}
-        onNodeDragStart={onNodeDragStart}
-        onNodeDrag={onNodeDrag}
-        onNodeDragStop={onNodeDragStop}
-        onNodeClick={DetermineNodeClickFunction}
-        onNodeDoubleClick={DetermineNodeClickFunction}
-        edges={visibleEdges}
-        onEdgesChange={onEdgesChange}
-        onEdgeClick={DetermineEdgeClickFunction}
-        onEdgeDoubleClick={DetermineEdgeClickFunction}
-        onEdgesDelete={() => handleDelete("onEdgesDelete")}
-        onConnect={onConnect}
-        onConnectEnd={onConnectEnd}
-        // Enable node functionality
-        nodesFocusable={true}
-        nodesConnectable={true}
-        elementsSelectable={true}
-        selectionMode={SelectionMode.Partial}
-        selectNodesOnDrag={true}
-        onSelectionStart={handleSelectionDragStart}
-        onSelectionEnd={handleSelectionEnd}
-        selectionKeyCode="Control"
-        multiSelectionKeyCode="Control"
-        fitView
-        zoomOnScroll={true}
-        zoomOnPinch={true}
-        minZoom={VIEWPORT_CONSTRAINTS.MIN_ZOOM}
-        maxZoom={VIEWPORT_CONSTRAINTS.MAX_ZOOM}
-        onMoveStart={handlePanStart}
-        onMoveEnd={handlePanEnd}
-        panOnScroll={false}
-        // Add this handler:
-        onPaneClick={handleClearSelection}
-      >
-        {children}
-        {/* Add any additional components or overlays here */}
-      </ReactFlow>
-    </>
+        {/* Register the grid controls */}
+        <GridControlsRegistration />
+        
+        <ReactFlow
+          nodeTypes={memoizedNodeTypes}
+          edgeTypes={memoizedEdgeTypes}
+          defaultEdgeOptions={defaultEdgeOptions}
+          nodes={filteredNodes}
+          onNodesDelete={() => handleDelete("removeNodes")}
+          onNodesChange={onNodesChange}
+          onNodeDragStart={onNodeDragStart}
+          onNodeDrag={onNodeDrag}
+          onNodeDragStop={onNodeDragStop}
+          onNodeClick={DetermineNodeClickFunction}
+          onNodeDoubleClick={DetermineNodeClickFunction}
+          edges={visibleEdges}
+          onEdgesChange={onEdgesChange}
+          onEdgeClick={DetermineEdgeClickFunction}
+          onEdgeDoubleClick={DetermineEdgeClickFunction}
+          onEdgesDelete={() => handleDelete("onEdgesDelete")}
+          onConnect={onConnect}
+          onConnectEnd={onConnectEnd}
+          // Enable node functionality
+          nodesFocusable={true}
+          nodesConnectable={true}
+          elementsSelectable={true}
+          selectionMode={SelectionMode.Partial}
+          selectNodesOnDrag={true}
+          onSelectionStart={handleSelectionDragStart}
+          onSelectionEnd={handleSelectionEnd}
+          selectionKeyCode="Control"
+          //multiSelectionKeyCode="Control"
+          fitView
+          zoomOnScroll={true}
+          zoomOnPinch={true}
+          minZoom={VIEWPORT_CONSTRAINTS.MIN_ZOOM}
+          maxZoom={VIEWPORT_CONSTRAINTS.MAX_ZOOM}
+          onMoveStart={handlePanStart}
+          onMoveEnd={handlePanEnd}
+          panOnScroll={false}
+
+          onPaneClick={handleClearSelection}
+        >
+          {children}
+          {/* Add any additional components or overlays here */}
+        </ReactFlow>
+      </>
   );
 }
 

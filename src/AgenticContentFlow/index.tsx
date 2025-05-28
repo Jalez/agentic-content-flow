@@ -20,6 +20,7 @@ import Minimap from "./Minimap/Minimap";
 import TestControlsRegistration from "./test/TestControlsRegistration";
 import LayoutControlsRegistration from "./Layout/LayoutControlsRegistration";
 import { ensureNodeTypesRegistered } from "./Nodes/registerBasicNodeTypes";
+import { ensureEdgeTypesRegistered } from "./Edges/registerBasicEdgeTypes";
 
 import "@xyflow/react/dist/style.css"; // Ensure to import the styles for React Flow
 import ReactStateHistory from "./History/ReactStateHistory";
@@ -27,6 +28,7 @@ import { LayoutProvider } from "@jalez/react-flow-automated-layout";
 
 // Register node types before any rendering occurs
 ensureNodeTypesRegistered();
+ensureEdgeTypesRegistered();
 
 export function AgenticContentFlowContent() {
   const flowWrapper = useRef<HTMLDivElement>(null);
@@ -114,5 +116,17 @@ const AgenticContentFlow = () => (
     </SelectProvider>
   </ReactFlowProvider>
 );
+
+// Export edge type registry
+export {
+  registerEdgeType,
+  unregisterEdgeType,
+  getEdgeTypeComponent,
+  getEdgeTypeInfo,
+  getAllEdgeTypes,
+  useEdgeTypeRegistry,
+} from "./Edge/registry/edgeTypeRegistry";
+
+export { ensureEdgeTypesRegistered } from "./Edges/registerBasicEdgeTypes";
 
 export default AgenticContentFlow;
