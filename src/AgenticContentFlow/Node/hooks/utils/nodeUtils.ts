@@ -186,25 +186,25 @@ export const handleContainerization = (
  * @returns The newly created node, or null if creation failed
  * @remarks
  * This function uses the node registry to create a new node based on the type of the source node in the connection.
- */ 
+ */
 export const createConnectionNode = (
     updatedFromNode: Node<NodeData>,
     newNodeId: string,
     position?: { x: number; y: number }
-  ): any => {
+): any => {
     // Use the node registry to create a new node
     const newNodeFromTemplate = createNodeFromTemplate(updatedFromNode.type || "", {
-      id: newNodeId,
-      position: position || { x: 0, y: 0 },
-      eventNode: updatedFromNode,
-      details: "Add details about this concept",
-      
+        id: newNodeId,
+        position: position || { x: 0, y: 0 },
+        eventNode: updatedFromNode,
+        details: "Add details about this concept",
+
     });
-  
+
     if (!newNodeFromTemplate) {
-      console.error("Failed to create new node on connect end: node type not registered");
-      return null;
+        console.error("Failed to create new node on connect end: node type not registered");
+        return null;
     }
-  
+
     return newNodeFromTemplate;
-  }
+}
