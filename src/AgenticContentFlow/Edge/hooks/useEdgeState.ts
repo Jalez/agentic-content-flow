@@ -124,7 +124,6 @@ export const useEdgeStateImpl = (
         return;
       }
       const deepCopyEdges = edges.map((edge) => ({ ...edge }));
-      console.log("Deep copy edges for tracking:", deepCopyEdges);
       trackAddEdge(newEdge, deepCopyEdges, "Add edge"); // Use onEdgeAdd for consistency
       setLastExecutedAction("onEdgeAdd");
     }),

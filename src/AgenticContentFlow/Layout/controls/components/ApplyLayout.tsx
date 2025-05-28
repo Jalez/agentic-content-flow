@@ -7,7 +7,6 @@ const ApplyLayout: React.FC = () => {
   const { layoutInProgress, applyLayout } = useLayoutContext();
 
   const handleApplyLayout = useCallback(() => {
-    console.log("Applying layout...");
     applyLayout();
   }, [applyLayout]);
 

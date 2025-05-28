@@ -21,7 +21,6 @@ export const edgeReducer = (state: EdgeStoreState, action: EdgeAction): EdgeStor
         console.error("Invalid edges value:", edges);
         return state;
       }
-      console.log("Setting edges:", edges);
 
       // Rebuild maps from the new edges
       const { edgeMap, edgeSourceMap } = rebuildEdgeMapState(edges);

@@ -67,7 +67,6 @@ function Flow({ children }: { children?: React.ReactNode }) {
   useEffect(() => {
     // Apply layout when nodes change
     if (isNewState) {
-      console.log("Applying layout due to new state");
       autoLayout && applyLayout();
       changeStateAge(false);
     }
@@ -100,7 +99,6 @@ function Flow({ children }: { children?: React.ReactNode }) {
   const { clearSelection } = useSelect();
 
   const handleDelete = (source: string) => {
-    console.log("handleDelete called from:", source);
     if (isDeleting.current) {
       console.warn("Deletion already in progress. Ignoring this request.");
       return;
@@ -111,25 +109,20 @@ function Flow({ children }: { children?: React.ReactNode }) {
 
     if (hasSelectedNodes || hasSelectedEdges) {
       withTransaction(() => {
-        console.log("Starting deletion transaction", hasSelectedNodes, hasSelectedEdges);
         // The edges connected to the selected nodes should also be deleted
         const connectedEdges = visibleEdges.filter(edge =>
           selectedNodesRef.current.some(node => node.id === edge.source || node.id === edge.target)
         );
         if (hasSelectedNodes) {
-          console.log("Deleting selected nodes:", selectedNodesRef.current);
           removeNodes(selectedNodesRef.current);
           selectedNodesRef.current = [];  
         }
         
-        console.log("Connected edges to delete:", connectedEdges, visibleEdges);
         if (hasSelectedEdges || connectedEdges.length > 0) {
           const alledgesToDelete = [...selectedEdgesRef.current, ...connectedEdges];
-          console.log("Deleting selected edges:", alledgesToDelete);
           onEdgeRemove(alledgesToDelete);
           selectedEdgesRef.current = [];
         }
-        console.log("Deletion completed");
       }, "Delete selection");
     }
   };
