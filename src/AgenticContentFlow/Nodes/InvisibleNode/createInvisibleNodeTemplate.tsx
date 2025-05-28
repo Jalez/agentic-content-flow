@@ -35,7 +35,8 @@ export const createInvisibleNodeTemplate = (
       // Support for LR container layout direction
       layoutDirection: params.layoutDirection || 'LR', // Default to TB if not specified
       isContainer: params.isContainer ?? true,
-      depth: params.depth ?? (eventNode?.data.depth ? eventNode.data.depth : 0)
+      depth: params.depth ?? (eventNode?.data.depth ? eventNode.data.depth : 0),
+      deleteOnEmpty: params.deleteOnEmpty ?? true, // Default to true for invisible nodes
     },
     style: {
       width: params.width || 300,
