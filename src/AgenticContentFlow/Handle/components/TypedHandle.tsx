@@ -16,6 +16,11 @@ export interface TypedHandleProps extends Omit<BaseHandleProps, 'position' | 'id
   handleDefinition: HandleTypeDefinition;
   nodeBackgroundColor?: string; // New prop for node's background color
   onConnectionAttempt?: (isValid: boolean, targetType?: string) => void;
+  // Speed dial configuration props
+  speedDialRadius?: number; // Distance of speed dial buttons from center
+  speedDialButtonSize?: number; // Size of each speed dial button
+  speedDialIconSize?: number; // Size of icons within speed dial buttons
+  speedDialArcSpan?: number; // Arc span in degrees for speed dial layout
 }
 
 // Icon mapping - added ChartIcon
@@ -43,7 +48,18 @@ const getReactFlowHandleType = (handleType: 'source' | 'target' | 'both'): Handl
 };
 
 export const TypedHandle = forwardRef<HTMLDivElement, TypedHandleProps>(
-  ({ nodeType, handleDefinition, nodeBackgroundColor, onConnectionAttempt, style = {}, ...props }, ref) => {
+  ({ 
+    nodeType, 
+    handleDefinition, 
+    nodeBackgroundColor, 
+    onConnectionAttempt, 
+    speedDialRadius,
+    speedDialButtonSize,
+    speedDialIconSize,
+    speedDialArcSpan,
+    style = {}, 
+    ...props 
+  }, ref) => {
     
     const [isHovered, setIsHovered] = useState(false);
     const handleRef = useRef<HTMLDivElement>(null);
@@ -92,19 +108,15 @@ export const TypedHandle = forwardRef<HTMLDivElement, TypedHandleProps>(
       if (isHovered) {
         // Use CSS pseudo-elements or box-shadow to create visual expansion
         // without changing the actual element dimensions
-        baseStyle.zIndex = 1000; // Higher z-index to ensure it's above edges
         // Create a larger visual appearance using multiple box shadows
         // Make the shadows more opaque and solid to look like the element itself
-        baseStyle.boxShadow = `
-          0 0 0 8px ${backgroundColor || handleDefinition.color},
-          0 0 0 16px ${backgroundColor || handleDefinition.color}E6,
-          0 0 0 24px ${backgroundColor || handleDefinition.color}CC,
-          0 4px 16px rgba(0, 0, 0, 0.25)
-        `;
+        baseStyle.boxShadow = "none"
         // Use separate border properties to avoid conflicts
-        baseStyle.borderWidth = '3px';
+        baseStyle.borderWidth = '2px';
         baseStyle.borderStyle = 'solid';
-        baseStyle.borderColor = backgroundColor;
+        baseStyle.borderColor = 'black';
+
+        //baseStyle.borderColor = backgroundColor;
       } else {
         // Reset effects when not hovered
         baseStyle.boxShadow = 'none';
@@ -157,6 +169,10 @@ export const TypedHandle = forwardRef<HTMLDivElement, TypedHandleProps>(
           <HandleSpeedDial
             nodeType={nodeType}
             handleDefinition={handleDefinition}
+            radius={speedDialRadius}
+            buttonSize={speedDialButtonSize}
+            iconSize={speedDialIconSize}
+            arcSpan={speedDialArcSpan}
             onNodeTypeSelect={(nodeType) => {
               console.log(`Selected to connect to: ${nodeType}`);
               // Here you could trigger node creation or highlight compatible nodes
