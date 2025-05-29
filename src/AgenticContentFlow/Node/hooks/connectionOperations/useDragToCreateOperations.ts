@@ -34,6 +34,7 @@ export const useDragToCreateOperations = () => {
       if (connectionState.fromNode && !connectionState.toNode) {
         const { fromNode } = connectionState;
 
+        console.log("onConnectEnd: Creating new node from drag event")
         const position = calculateNewNodeStartPosition(
           fromNode,
           event
@@ -69,8 +70,8 @@ export const useDragToCreateOperations = () => {
           );
 
           onEdgeAdd(newEdge);
-          containerToAdd && addNode(containerToAdd);
-          updatedToNode && addNode(updatedToNode);
+          containerToAdd && addNode(containerToAdd) 
+          updatedToNode && addNode(updatedToNode) || addNode(newToNode);
           updatedToNodeSiblings && updateNodes(updatedToNodeSiblings);
 
           if (
