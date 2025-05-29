@@ -47,15 +47,15 @@ export const StatisticsNode: React.FC<NodeProps> = ({ id, data, selected }) => {
 
     // Default dimensions for the container
     const collapsedDimensions = {
-        width: 280,
-        height: 80,
-    };
-
-    const expandedDimensions = {
-        width: nodeInFlow?.width || 280,
-        height: nodeInFlow?.height || 200,
-    };
-
+        width: 300,
+        height: 200,
+      };
+    
+      const expandedDimensions = {
+        width: nodeInFlow?.width || collapsedDimensions.width,
+        height: nodeInFlow?.height || collapsedDimensions.height,
+      };
+      
     // Type checking for data properties
     const nodeLabel = data?.label ? String(data.label) : 'Statistics';
     const metrics = data?.metrics ? String(data.metrics) : 'No metrics available';
