@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { NodeProps } from '@xyflow/react';
-// Remove ArrowUp as it's not being used
-import { ArrowDown } from 'lucide-react';
 import { PageNodeContainer } from './PageNodeStyles';
 import {
   NodeHeader,
@@ -13,8 +11,6 @@ import ExpandCollapseButton from '../common/ExpandCollapseButton';
 import ConnectionHandles from '../common/ConnectionHandles';
 import CornerResizer from '../common/CornerResizer';
 import { colorByDepth } from '../common/utils/colorByDepth';
-  import CircleStackIcon from '@/components/icons/circle-stack';
-  import ChartIcon from '@/components/icons/chart'; 
 import WebIcon from '@/components/icons/web';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useSelect } from '../../Select/contexts/SelectContext';
