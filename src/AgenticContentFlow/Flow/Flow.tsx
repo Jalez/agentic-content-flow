@@ -17,7 +17,7 @@ import { ensureEdgeTypesRegistered } from "../Edges/registerBasicEdgeTypes";
 
 
 const defaultEdgeOptions = {
-  zIndex: 1,
+  zIndex: 10000, //WARNING: THIS NEEDS TO BE HIGHER THAN THE Z-INDEX OF THE NODE OVERLAY
   type: "default",
   //animated: true,
   markerEnd: { type: MarkerType.Arrow },
