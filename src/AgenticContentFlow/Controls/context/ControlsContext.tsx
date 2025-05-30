@@ -1,5 +1,5 @@
 /** @format */
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext } from "react";
 import { useViewPreferencesStore } from "../../stores";
 
 // Define the context interface
@@ -13,10 +13,7 @@ interface ControlsContextValue {
   touchMode: boolean;
   setTouchMode: (enabled: boolean) => void;
 
-  // UI Controls
-  showShortcuts: boolean;
-  toggleShortcuts: () => void;
-
+  // Navigation
   toggleFullscreen: () => void;
 }
 
@@ -32,14 +29,12 @@ interface ControlsProviderProps {
 
 /**
  * Provider component that manages the mindmap controls state
+ * Shortcuts functionality has been moved to the dedicated ShortcutsManager
  */
 export const ControlsProvider: React.FC<ControlsProviderProps> = ({
   children,
   onToggleFullscreen,
 }) => {
-  // Local UI state
-  const [showShortcuts, setShowShortcuts] = useState(false);
-
   // Access Zustand store state and actions
   const {
     showGrid,
@@ -50,11 +45,6 @@ export const ControlsProvider: React.FC<ControlsProviderProps> = ({
     setTouchMode,
   } = useViewPreferencesStore();
 
-  // UI action handlers
-  const toggleShortcuts = useCallback(() => {
-    setShowShortcuts((prev) => !prev);
-  }, []);
-
   // Create context value
   const value: ControlsContextValue = {
     // View settings
@@ -64,9 +54,6 @@ export const ControlsProvider: React.FC<ControlsProviderProps> = ({
     setSnapToGrid,
     touchMode,
     setTouchMode,
-    // UI controls
-    showShortcuts,
-    toggleShortcuts,
     // Navigation
     toggleFullscreen: onToggleFullscreen,
   };

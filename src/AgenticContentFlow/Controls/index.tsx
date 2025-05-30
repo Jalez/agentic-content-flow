@@ -1,6 +1,6 @@
 /** @format */
 import React, { memo, useCallback, useMemo } from "react";
-import { ControlsProvider, useControls } from "./context/ControlsContext";
+import { ControlsProvider } from "./context/ControlsContext";
 import { registerControl } from "./registry/controlsRegistry";
 
 // Import the UnifiedControlsPanel that uses the registry
@@ -12,6 +12,7 @@ import { CONTROL_IDS, CONTROL_PRIORITIES, CONTROL_TYPES } from "../constants";
 
 interface UnifiedControlsProps {
   onToggleFullscreen: () => void;
+  children?: React.ReactNode;
 }
 
 /**
@@ -21,16 +22,10 @@ interface UnifiedControlsProps {
 const ControlsRegistration = memo<UnifiedControlsProps>(({
   onToggleFullscreen,
 }) => {
-  const { showShortcuts, toggleShortcuts } = useControls();
-
   // Memoize the navigation controls component creation
   const NavControlsWithProps = useCallback(() => (
-    <NavigationControls
-      onToggleFullscreen={onToggleFullscreen}
-      showShortcuts={showShortcuts}
-      onToggleShortcuts={toggleShortcuts}
-    />
-  ), [onToggleFullscreen, showShortcuts, toggleShortcuts]);
+    <NavigationControls onToggleFullscreen={onToggleFullscreen} />
+  ), [onToggleFullscreen]);
 
   // Register the default navigation controls
   React.useEffect(() => {
@@ -50,15 +45,6 @@ const ControlsRegistration = memo<UnifiedControlsProps>(({
     };
   }, [NavControlsWithProps]); // Only depend on the memoized component creator
 
-  // Register view settings controls - only once
-  React.useEffect(() => {
-
-    // Clean up when unmounted
-    return () => {
-      // No need to unregister as the component is unmounting
-    };
-  }, []); // Empty dependency array = only run once
-
   // Memoize the UnifiedControlsPanel to prevent unnecessary re-renders
   const memoizedPanel = useMemo(() => <UnifiedControlsPanel />, []);
   
@@ -70,26 +56,25 @@ ControlsRegistration.displayName = 'ControlsRegistration';
 /**
  * UnifiedControls Component
  *
- * @version 2.0.0
+ * @version 3.0.0
  *
  * An improved version of the mindmap controls using the registry system.
  * Registers the default controls and provides the context for all controls.
+ * Shortcuts functionality has been moved to the dedicated ShortcutsManager.
  */
 const UnifiedControls = memo<UnifiedControlsProps>(({
   onToggleFullscreen,
+  children,
 }) => {
-
   const memoizedToggleFullscreen = useCallback(() => {
     onToggleFullscreen();
   }, [onToggleFullscreen]);
   
   return (
-    <ControlsProvider
-      onToggleFullscreen={memoizedToggleFullscreen}
-    >
-      <ControlsRegistration
-        onToggleFullscreen={memoizedToggleFullscreen}
-      />
+    <ControlsProvider onToggleFullscreen={memoizedToggleFullscreen}>
+      {children}
+      {/* Render the ControlsRegistration component to register controls */}
+      <ControlsRegistration onToggleFullscreen={memoizedToggleFullscreen} />
     </ControlsProvider>
   );
 });

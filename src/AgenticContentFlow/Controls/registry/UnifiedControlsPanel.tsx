@@ -3,8 +3,6 @@ import { Fragment, useMemo, memo } from "react";
 import { Panel, PanelPosition } from "@xyflow/react";
 
 import RegisteredControls from "./RegisteredControls";
-import KeyboardShortcutPanel from "../../ShortCuts";
-import { useControls } from "../context/ControlsContext";
 import { CONTROL_TYPES } from "../../constants";
 import { useControlsRegistry } from "./controlsRegistry";
 
@@ -16,11 +14,11 @@ interface UnifiedControlsPanelProps {
 /**
  * UnifiedControlsPanel Component
  *
- * @version 2.0.0
+ * @version 3.0.0
  *
  * A panel component that displays registered controls of different types.
  * Uses the controls registry system to dynamically render controls.
- * Now supports dynamically registered control types.
+ * Now uses the new decoupled shortcuts system.
  *
  * @example
  * ```tsx
@@ -38,7 +36,6 @@ const UnifiedControlsPanel: React.FC<UnifiedControlsPanelProps> = memo(({
   position = "top-right",
   context = CONTROL_TYPES.MINDMAP,
 }) => {
-  const { showShortcuts } = useControls();
   const { getControlTypes } = useControlsRegistry();
 
   // Get all registered control types for this context
@@ -65,13 +62,7 @@ const UnifiedControlsPanel: React.FC<UnifiedControlsPanelProps> = memo(({
     </Panel>
   ), [position, controlTypes, context]);
 
-  return (
-    <>
-      {controlsPanel}
-      {/* Keyboard Shortcuts Panel */}
-      {showShortcuts && <KeyboardShortcutPanel />}
-    </>
-  );
+  return controlsPanel;
 });
 
 UnifiedControlsPanel.displayName = 'UnifiedControlsPanel';
