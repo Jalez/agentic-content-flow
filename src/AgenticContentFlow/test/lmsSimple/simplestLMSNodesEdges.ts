@@ -31,7 +31,7 @@ export const testNodesMinimalSiblingNested: Node[] = [
   },
   {
     id: 'node-orange-view',
-    type: 'viewnode',
+    type: 'contentnode',
     position: { x: 0, y: 0 }, // Positions inside container are relative after layout
     data: { label: 'View Node (Orange)', isParent: true },
     style: { width: 250, height: 100 }, // Container needs initial dimensions for rendering

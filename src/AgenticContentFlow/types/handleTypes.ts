@@ -2,7 +2,7 @@
 
 export type HandlePosition = 'top' | 'bottom' | 'left' | 'right';
 export type DataFlowType = 'data' | 'control' | 'reference' | 'dependency' | 'analytics' | 'utility' | 'statistics' | 'view';
-export type NodeCategory = 'data' | 'view' | 'logic' | 'container' | 'page' | 'utility' | 'statistics';
+export type NodeCategory = 'data' | 'view' | 'logic' | 'container' | 'page' | 'utility' | 'statistics' | 'integration';
 
 export interface HandleTypeDefinition {
   position: HandlePosition;

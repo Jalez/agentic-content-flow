@@ -32,8 +32,8 @@ describe('HandleTypeRegistry', () => {
     ]
   };
 
-  const sampleViewNodeConfig: NodeHandleConfiguration = {
-    nodeType: 'viewnode',
+  const sampleContentNodeConfig: NodeHandleConfiguration = {
+    nodeType: 'contentnode',
     category: 'view',
     handles: [
       {
@@ -72,25 +72,25 @@ describe('HandleTypeRegistry', () => {
   describe('connection validation', () => {
     beforeEach(() => {
       registry.registerNodeHandles(sampleDataNodeConfig);
-      registry.registerNodeHandles(sampleViewNodeConfig);
+      registry.registerNodeHandles(sampleContentNodeConfig);
     });
 
     it('should allow valid connections', () => {
-      const result = registry.canConnect('datanode', 'right', 'viewnode', 'left');
+      const result = registry.canConnect('datanode', 'right', 'contentnode', 'left');
       
       expect(result.isValid).toBe(true);
       expect(result.edgeType).toBe('package');
     });
 
     it('should reject invalid connections', () => {
-      const result = registry.canConnect('datanode', 'top', 'viewnode', 'left');
+      const result = registry.canConnect('datanode', 'top', 'contentnode', 'left');
       
       expect(result.isValid).toBe(false);
       expect(result.reason).toContain('Invalid handle direction');
     });
 
     it('should reject connections with wrong handle directions', () => {
-      const result = registry.canConnect('viewnode', 'left', 'datanode', 'right');
+      const result = registry.canConnect('contentnode', 'left', 'datanode', 'right');
       
       expect(result.isValid).toBe(false);
       expect(result.reason).toBe('Invalid handle direction for connection');
@@ -100,16 +100,16 @@ describe('HandleTypeRegistry', () => {
   describe('edge type determination', () => {
     beforeEach(() => {
       registry.registerNodeHandles(sampleDataNodeConfig);
-      registry.registerNodeHandles(sampleViewNodeConfig);
+      registry.registerNodeHandles(sampleContentNodeConfig);
     });
 
     it('should return correct edge type for valid connections', () => {
-      const edgeType = registry.getEdgeTypeForConnection('datanode', 'right', 'viewnode', 'left');
+      const edgeType = registry.getEdgeTypeForConnection('datanode', 'right', 'contentnode', 'left');
       expect(edgeType).toBe('package');
     });
 
     it('should return default edge type for invalid connections', () => {
-      const edgeType = registry.getEdgeTypeForConnection('unknownnode', 'right', 'viewnode', 'left');
+      const edgeType = registry.getEdgeTypeForConnection('unknownnode', 'right', 'contentnode', 'left');
       expect(edgeType).toBe('default');
     });
   });

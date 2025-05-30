@@ -183,11 +183,11 @@ export const lmsParentNodesData: Array<Node> = [
     extent: "parent",
   },
   {
-    id: "course-stats",
+    id: "course-content",
     type: "datanode",
     data: {
-      label: "Course Stats",
-      details: "Course analytics data",
+      label: "Course 0 content",
+      details: "Course content data",
       level: "advanced",
       subject: "data",
       depth: 0,
@@ -244,10 +244,10 @@ export const lmsChildNodesData: Array<Node> = [
   },
   {
     id: "view-module-1",
-    type: "viewnode",
+    type: "contentnode",
     data: {
-      label: "Module 1",
-      details: "Module 1 visualization",
+      label: "Article 1",
+      details: "This is the first article in Module 1",
       level: "basic",
       subject: "visualization",
       depth: 3,
@@ -289,10 +289,10 @@ export const lmsChildNodesData: Array<Node> = [
   },
   {
     id: "view-module-2",
-    type: "viewnode",
+    type: "contentnode",
     data: {
-      label: "Module 2",
-      details: "Module 2 visualization",
+      label: "Exercise: MCQ",
+      details: "MCQ exercise in Module 2",
       level: "basic",
       subject: "visualization",
       depth: 3,
