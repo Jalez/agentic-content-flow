@@ -19,6 +19,10 @@ import { lmsEdgesData } from "./lms/edgeData";
 // Import LMS simplest data
 import { testEdgesMinimalSiblingNested, testNodesMinimalSiblingNested } from "./lmsSimple/simplestLMSNodesEdges";
 
+// Import REST API example data
+import { apiFlowNodesData, apiFlowEdgesData } from "./rest/apiFlowNodesEdges";
+import { restFlowNodesData, restFlowEdgesData } from "./rest/restFlowNodesEdges";
+
 /**
  * @description Switcher for loading different test data sets
  */
@@ -50,6 +54,26 @@ export const TestDataSwitcher = () => {
         })));
         setEdges([...lmsEdgesData])
         break;
+      case "rest-api":
+        setNodes(apiFlowNodesData.map((node) => ({
+          ...node,
+          style: {
+            width: node.type === "restnode" ? 280 : 300,
+            height: node.type === "restnode" ? 120 : 200,
+          }
+        })));
+        setEdges(apiFlowEdgesData);
+        break;
+      case "rest-simple":
+        setNodes(restFlowNodesData.map((node) => ({
+          ...node,
+          style: {
+            width: node.type === "restnode" ? 280 : 300,
+            height: node.type === "restnode" ? 120 : 200,
+          }
+        })));
+        setEdges(restFlowEdgesData);
+        break;
       default:
         console.warn("Unknown test data set:", dataSet);
     }
@@ -75,6 +99,16 @@ export const TestDataSwitcher = () => {
       key: "lms",
       label: "LMS Basic Example Data",
       onClick: () => switchToDataSet("lms")
+    },
+    {
+      key: "rest-api",
+      label: "REST API Flow (with Analytics)",
+      onClick: () => switchToDataSet("rest-api")
+    },
+    {
+      key: "rest-simple",
+      label: "REST API Simple Flow",
+      onClick: () => switchToDataSet("rest-simple")
     }
   ];
 
