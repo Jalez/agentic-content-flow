@@ -14,6 +14,7 @@ import { useLayoutContext } from "@jalez/react-flow-automated-layout";
 import { useTransaction } from "@jalez/react-state-history";
 import { useEdgeTypeRegistry } from "../Edge/registry/edgeTypeRegistry";
 import { ensureEdgeTypesRegistered } from "../Edges/registerBasicEdgeTypes";
+import NodeConfigPanel from "../Config/NodeConfigPanel";
 
 
 const defaultEdgeOptions = {
@@ -98,7 +99,7 @@ function Flow({ children }: { children?: React.ReactNode }) {
   // Add this to get clearSelection
   const { clearSelection } = useSelect();
 
-  const handleDelete = (source: string) => {
+  const handleDelete = (_source: string) => {
     if (isDeleting.current) {
       console.warn("Deletion already in progress. Ignoring this request.");
       return;
@@ -200,6 +201,9 @@ const filteredNodes = useMemo(() => {
           {children}
           {/* Add any additional components or overlays here */}
         </ReactFlow>
+        
+        {/* Node Configuration Panel */}
+        <NodeConfigPanel />
       </>
   );
 }
