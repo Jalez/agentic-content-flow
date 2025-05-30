@@ -1,67 +1,38 @@
 /** @format */
-import React from "react";
-import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
-import { useControls } from "../Controls/context/ControlsContext";
-import { cn } from "@/lib/utils";
 
-interface KeyboardShortcut {
-  key: string;
-  description: string;
-}
+// Main shortcuts manager - the primary entry point
+export { default as ShortcutsManager } from "./ShortcutsManager";
 
-interface KeyboardShortcutPanelProps {
-  shortcuts?: KeyboardShortcut[];
-}
+// Registry system exports
+export {
+  registerShortcut,
+  unregisterShortcut,
+  getShortcuts,
+  getAllShortcuts,
+  getShortcutCategories,
+  clearShortcuts,
+  hasShortcut,
+  executeShortcut,
+  useShortcutsRegistry,
+  useKeyboardShortcutHandler,
+  DEFAULT_SHORTCUT_CATEGORIES,
+  parseKeyCombo,
+  matchesKeyCombo,
+} from "./registry/shortcutsRegistry";
 
-/**
- * Component that displays available keyboard shortcuts
- */
-const KeyboardShortcutPanel: React.FC<KeyboardShortcutPanelProps> = ({
-  shortcuts = [
-    { key: "Ctrl+F", description: "Fit all nodes" },
-    { key: "Ctrl+Shift+C", description: "Center selected node" },
-    { key: "Ctrl++ / Ctrl+-", description: "Zoom in/out" },
-    { key: "M", description: "Toggle mini-map" },
-  ],
-}) => {
-  const {
-    showGrid,
-    setShowGrid,
-    snapToGrid,
-    setSnapToGrid,
-    showShortcuts,
-    toggleShortcuts,
-    toggleFullscreen
-  } = useControls();
+// Context exports
+export { useShortcuts, ShortcutsProvider } from "./context/ShortcutsContext";
 
-  // Use keyboard shortcuts
-  useKeyboardShortcuts({
-    showGrid,
-    setShowGrid,
-    snapToGrid,
-    setSnapToGrid,
-    showShortcuts,
-    toggleShortcuts,
-    toggleFullscreen
-  });
+// Component exports
+export { default as ShortcutsDisplay } from "./components/ShortcutsDisplay";
+export { default as ShortcutsToggleButton } from "./components/ShortcutsToggleButton";
 
-  return (
-    <div
-      className={cn(
-        "absolute bottom-5 left-5 bg-background p-3 rounded-md text-sm",
-        "max-w-[250px] shadow-md z-10 border border-border"
-      )}
-    >
-      <h2 className="text-lg font-semibold mb-2">Keyboard Shortcuts</h2>
-      <ul className="my-1 pl-5 space-y-1">
-        {shortcuts.map((shortcut, index) => (
-          <li key={index} className="text-sm">
-            <span className="font-medium">{shortcut.key}</span>: {shortcut.description}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-};
+// Type exports
+export type {
+  ShortcutEntry,
+  ShortcutCategory,
+  KeyCombination,
+} from "./registry/shortcutsRegistry";
 
-export default KeyboardShortcutPanel;
+// Example exports
+export { default as ExampleShortcutsRegistration } from "./examples/ExampleShortcutsRegistration";
