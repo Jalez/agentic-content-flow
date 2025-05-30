@@ -25,6 +25,7 @@ import { ensureEdgeTypesRegistered } from "./Edges/registerBasicEdgeTypes";
 import "@xyflow/react/dist/style.css"; // Ensure to import the styles for React Flow
 import ReactStateHistory from "./History/ReactStateHistory";
 import { LayoutProvider } from "@jalez/react-flow-automated-layout";
+import ShortcutsManager from "./ShortCuts/ShortcutsManager";
 
 // Register node types before any rendering occurs
 ensureNodeTypesRegistered();
@@ -34,14 +35,11 @@ export function AgenticContentFlowContent() {
   const flowWrapper = useRef<HTMLDivElement>(null);
   const { showGrid, gridVariant } = useViewPreferencesStore();
   const { updateNodes } = useNodeContext();
-
-
   const { updateEdges } = useEdgeContext();
 
   // Use custom hooks for functionality
   const { handleWheel } = useViewportManager(flowWrapper);
 
-  
   const handleToggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
       flowWrapper.current?.requestFullscreen();
@@ -49,6 +47,7 @@ export function AgenticContentFlowContent() {
       document.exitFullscreen();
     }
   }, [flowWrapper]);
+
   const handleNodeUpdate = useCallback((nodes: Node[]) => {
     updateNodes(nodes, false);
   }, [updateNodes])
@@ -56,7 +55,6 @@ export function AgenticContentFlowContent() {
   const handleEdgeUpdate = useCallback((edges: Edge[]) => {
     updateEdges(edges, false);
   }, [updateEdges]);
-
 
   return (
     <LayoutProvider
@@ -78,27 +76,27 @@ export function AgenticContentFlowContent() {
       }}
       updateNodes={handleNodeUpdate}
       updateEdges={handleEdgeUpdate}
-  >
-      <FlowContainer ref={flowWrapper} onWheel={handleWheel}>
-        <Flow>
-          <UnifiedControls
-            onToggleFullscreen={handleToggleFullscreen}
-          />
-          {showGrid && (
-            <Background
-              variant={gridVariant}
-              gap={GRID_SETTINGS.BACKGROUND_GAP}
-              size={GRID_SETTINGS.BACKGROUND_SIZE}
-              color="var(--color-border)"
-            />
-          )}
-          <SelectLogic />
-          <Minimap />
-          {/* Register available controls here */}
-          <TestControlsRegistration />
-          <LayoutControlsRegistration />
-        </Flow>
-      </FlowContainer>
+    >
+      <ShortcutsManager>
+        <FlowContainer ref={flowWrapper} onWheel={handleWheel}>
+          <Flow>
+            <UnifiedControls onToggleFullscreen={handleToggleFullscreen} />
+            {showGrid && (
+              <Background
+                variant={gridVariant}
+                gap={GRID_SETTINGS.BACKGROUND_GAP}
+                size={GRID_SETTINGS.BACKGROUND_SIZE}
+                color="var(--color-border)"
+              />
+            )}
+            <SelectLogic />
+            <Minimap />
+            {/* Register available controls here */}
+            <TestControlsRegistration />
+            <LayoutControlsRegistration />
+          </Flow>
+        </FlowContainer>
+      </ShortcutsManager>
     </LayoutProvider>
   );
 }
