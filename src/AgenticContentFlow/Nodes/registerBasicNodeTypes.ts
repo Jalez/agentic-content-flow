@@ -15,17 +15,19 @@ import DataNode from "./DataNode/DataNode";
 import { createDataNodeTemplate } from "./DataNode/createDataNodeTemplate";
 import PageNode from "./PageNode/PageNode";
 import { createPageNodeTemplate } from "./PageNode/createPageNodeTemplate";
-import ViewNode from "./ViewNode/ViewNode";
-import { createViewNodeTemplate } from "./ViewNode/createViewNodeTemplate";
+import ContentNode from "./ContentNode/ContentNode";
+import { createContentNodeTemplate } from "./ContentNode/createContentNodeTemplate";
 import ConditionalNode from "./ConditionalNode/ConditionalNode";
 import { createConditionalNodeTemplate } from "./ConditionalNode/createConditionalNodeTemplate";
 import { InvisibleNode } from './InvisibleNode/InvisibleNode';
 import { createInvisibleNodeTemplate } from './InvisibleNode/createInvisibleNodeTemplate';
 import { StatisticsNode } from './StatisticsNode/StatisticsNode';
+import { createStatisticsNodeTemplate } from "./StatisticsNode/createStatisticsNodeTemplate";
+import RestNode from "./RestNode/RestNode";
+import { createRestNodeTemplate } from "./RestNode/createRestNodeTemplate";
 
 // Import handle type registration
-import { ensureHandleTypesRegistered } from "../Handle/registry/registerBasicHandleTypes";
-import { createStatisticsNodeTemplate } from "./StatisticsNode/createStatisticsNodeTemplate";
+import { ensureHandleTypesRegistered } from "../Handles/registerBasicHandleTypes";
 
 // Track initialization state
 let registered = false;
@@ -47,10 +49,11 @@ export function ensureNodeTypesRegistered(): void {
   // Register new node types
   registerNodeType("datanode", DataNode, createDataNodeTemplate, true);
   registerNodeType("pagenode", PageNode, createPageNodeTemplate, true);
-  registerNodeType("viewnode", ViewNode, createViewNodeTemplate, true);
+  registerNodeType("contentnode", ContentNode, createContentNodeTemplate, true);
   registerNodeType("conditionalnode", ConditionalNode, createConditionalNodeTemplate);
   registerNodeType("invisiblenode", InvisibleNode, createInvisibleNodeTemplate, true);
   registerNodeType("statisticsnode", StatisticsNode, createStatisticsNodeTemplate, true);
+  registerNodeType("restnode", RestNode, createRestNodeTemplate, false);
 
   // Register handle type configurations
   ensureHandleTypesRegistered();
@@ -68,10 +71,11 @@ export function ensureNodeTypesRegistered(): void {
         "modulenode", 
         "datanode", 
         "pagenode", 
-        "viewnode", 
+        "contentnode", 
         "conditionalnode",
         "invisiblenode",
-        "statisticsnode"
+        "statisticsnode",
+        "restnode"
       ] 
     }
   );
