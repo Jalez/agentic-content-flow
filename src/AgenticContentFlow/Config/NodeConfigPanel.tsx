@@ -3,6 +3,7 @@ import { useSelect } from '../Select/contexts/SelectContext';
 import { useNodeContext } from '../Node/store/useNodeContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 import { getNodeConfig, getVariantFields } from './nodeConfigs';
 import { PanelFooter } from './components/PanelFooter';
 import { PropertiesTab } from './components/PropertiesTab';
@@ -13,6 +14,7 @@ import { PositionSelector } from './components/PositionSelector';
 import { PanelToggleDragHandle } from './components/PanelToggleDragHandle';
 import { PanelContainer } from './components/PanelContainer';
 import { useResizePanel } from './hooks/useResizePanel';
+import { PreviewTab } from './components/PreviewTab';
 
 type PanelPosition = 'top' | 'bottom' | 'left' | 'right';
 
@@ -125,10 +127,16 @@ export const NodeConfigPanel: React.FC = () => {
 
               {/* Tabs */}
               <Tabs defaultValue="properties" className="flex flex-col flex-1 overflow-hidden">
-                <TabsList className="grid grid-cols-3 mb-4">
+                <TabsList className={cn(
+                  "grid mb-4",
+                  activeNode.type === "restnode" ? "grid-cols-4" : "grid-cols-3"
+                )}>
                   <TabsTrigger value="properties">Properties</TabsTrigger>
                   <TabsTrigger value="appearance">Appearance</TabsTrigger>
                   <TabsTrigger value="advanced">Advanced</TabsTrigger>
+                  {activeNode.type === "restnode" && (
+                    <TabsTrigger value="preview">Preview</TabsTrigger>
+                  )}
                 </TabsList>
                 
                 <div className="flex-1 overflow-y-auto">
@@ -153,6 +161,11 @@ export const NodeConfigPanel: React.FC = () => {
                       onFieldChange={handleFieldChange}
                     />
                   </TabsContent>
+                  {activeNode.type === "restnode" && (
+                    <TabsContent value="preview" className="m-0">
+                      <PreviewTab formData={formData} />
+                    </TabsContent>
+                  )}
                 </div>
               </Tabs>
 
