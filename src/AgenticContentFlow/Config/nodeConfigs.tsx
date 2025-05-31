@@ -18,10 +18,10 @@ export const mockConfigurations: Record<string, NodeConfig> = {
       category: 'integration'
     },
     configFields: {
-      requestName: {
+      label: {
         fieldType: 'text',
-        label: 'Request Name',
-        defaultValue: 'API Request',
+        label: 'Node Label',
+        defaultValue: 'REST API',
         required: true
       },
       method: {
@@ -33,7 +33,10 @@ export const mockConfigurations: Record<string, NodeConfig> = {
           { value: 'GET', label: 'GET' },
           { value: 'POST', label: 'POST' },
           { value: 'PUT', label: 'PUT' },
-          { value: 'DELETE', label: 'DELETE' }
+          { value: 'DELETE', label: 'DELETE' },
+          { value: 'PATCH', label: 'PATCH' },
+          { value: 'HEAD', label: 'HEAD' },
+          { value: 'OPTIONS', label: 'OPTIONS' }
         ]
       },
       url: {
@@ -41,6 +44,12 @@ export const mockConfigurations: Record<string, NodeConfig> = {
         label: 'API Endpoint',
         required: true,
         placeholder: 'https://api.example.com/endpoint'
+      },
+      headers: {
+        fieldType: 'textarea',
+        label: 'Request Headers',
+        placeholder: '{\n  "Content-Type": "application/json",\n  "Authorization": "Bearer token"\n}',
+        description: 'JSON object containing request headers'
       },
       timeout: {
         fieldType: 'number',
@@ -54,8 +63,24 @@ export const mockConfigurations: Record<string, NodeConfig> = {
         body: {
           fieldType: 'textarea',
           label: 'Request Body',
-          placeholder: '{"key": "value"}',
-          description: 'JSON payload for POST request'
+          placeholder: '{\n  "key": "value"\n}',
+          description: 'JSON payload for request'
+        }
+      },
+      PUT: {
+        body: {
+          fieldType: 'textarea',
+          label: 'Request Body',
+          placeholder: '{\n  "key": "value"\n}',
+          description: 'JSON payload for request'
+        }
+      },
+      PATCH: {
+        body: {
+          fieldType: 'textarea',
+          label: 'Request Body',
+          placeholder: '{\n  "key": "value"\n}',
+          description: 'JSON payload for request'
         }
       }
     }
