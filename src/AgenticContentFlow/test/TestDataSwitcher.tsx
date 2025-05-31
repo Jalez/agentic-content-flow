@@ -58,8 +58,8 @@ export const TestDataSwitcher = () => {
         setNodes(apiFlowNodesData.map((node) => ({
           ...node,
           style: {
-            width: node.type === "restnode" ? 280 : 300,
-            height: node.type === "restnode" ? 120 : 200,
+            width: node.type === "restnode" ? 200 : 300,
+            height: node.type === "restnode" ? 200 : 200,
           }
         })));
         setEdges(apiFlowEdgesData);
@@ -68,8 +68,8 @@ export const TestDataSwitcher = () => {
         setNodes(restFlowNodesData.map((node) => ({
           ...node,
           style: {
-            width: node.type === "restnode" ? 280 : 300,
-            height: node.type === "restnode" ? 120 : 200,
+            width: node.type === "restnode" ? 200 : 300,
+            height: node.type === "restnode" ? 200 : 200,
           }
         })));
         setEdges(restFlowEdgesData);

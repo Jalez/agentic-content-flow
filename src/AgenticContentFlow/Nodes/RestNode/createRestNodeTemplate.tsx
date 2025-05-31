@@ -43,8 +43,8 @@ export const createRestNodeTemplate = (
       }
     },
     style: {
-      width: 300,
-      height: 60,
+      width: 200,
+      height: 200,
     },
     position,
     parentId: eventNode?.parentId,
